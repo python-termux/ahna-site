@@ -1,53 +1,57 @@
 import { createClient } from "@/lib/supabase/server";
 import { fetchPlaceFromUrl } from "@/lib/places";
 import { slugify } from "@/lib/slugify";
+import { generateWhyUs } from "@/lib/why-us";
 import { NextResponse } from "next/server";
 
-async function uniqueSlugSupabase(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
-  base: string
-): Promise<string> {
+const MAPS_URL_RE = /^https:\/\/(maps\.app\.goo\.gl|maps\.google\.com|www\.google\.com\/maps|goo\.gl\/maps)\//;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function uniqueSlug(supabase: any, base: string): Promise<string> {
+  const MAX = 50;
   let candidate = base || "business";
   let i = 2;
-  while (true) {
-    const { data } = await supabase
-      .from("businesses")
-      .select("id")
-      .eq("slug", candidate)
-      .maybeSingle();
+  while (i <= MAX) {
+    const { data } = await supabase.from("businesses").select("id").eq("slug", candidate).maybeSingle();
     if (!data) return candidate;
     candidate = `${base}-${i++}`;
   }
+  return `${base}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 // POST /api/places
-// Body: { mapsUrl: string }
 export async function POST(request: Request) {
-  const { mapsUrl } = await request.json();
-  if (!mapsUrl?.trim()) {
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  const mapsUrl = typeof body.mapsUrl === "string" ? body.mapsUrl.trim() : "";
+
+  if (!mapsUrl) {
     return NextResponse.json({ error: "mapsUrl is required" }, { status: 400 });
+  }
+  if (mapsUrl.length > 500) {
+    return NextResponse.json({ error: "URL too long" }, { status: 400 });
+  }
+  if (!MAPS_URL_RE.test(mapsUrl)) {
+    return NextResponse.json({ error: "Must be a valid Google Maps URL" }, { status: 400 });
   }
 
   let place;
   try {
-    place = await fetchPlaceFromUrl(mapsUrl.trim());
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to fetch place" },
-      { status: 422 }
-    );
+    place = await fetchPlaceFromUrl(mapsUrl);
+  } catch {
+    return NextResponse.json({ error: "Could not fetch business data from that URL" }, { status: 422 });
   }
 
-  const base = slugify(place.name || "business");
-
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const slug = await uniqueSlugSupabase(supabase, base);
+  const base = slugify(place.name || "business");
+  const slug = await uniqueSlug(supabase, base);
+  const whyUs = await generateWhyUs(place.name, place.category, place.reviews);
 
   const { data, error } = await supabase
     .from("businesses")
@@ -61,10 +65,10 @@ export async function POST(request: Request) {
       phone: place.phone,
       email: "",
       address: place.address,
-      maps_url: place.mapsUrl,
+      maps_url: mapsUrl,
       website: place.website,
-      hero_image: place.images[0] ?? "",
-      gallery: place.images.slice(1, 4),
+      hero_image: "",
+      gallery: place.images,
       hours: place.hours,
       services: [],
       testimonials: place.reviews.map((r) => ({
@@ -78,6 +82,7 @@ export async function POST(request: Request) {
       stat_years: "",
       stat_clients: place.reviewCount ? `${place.reviewCount.toLocaleString()}+` : "",
       stat_projects: place.rating ? `${place.rating} ★` : "",
+      why_us: whyUs,
     })
     .select("id, slug")
     .single();

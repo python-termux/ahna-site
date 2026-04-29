@@ -1,22 +1,31 @@
 import { fetchPlaceFromUrl } from "@/lib/places";
 import { NextResponse } from "next/server";
 
-// POST /api/places/preview
-// Body: { mapsUrl: string }
-// Returns place data WITHOUT saving anything — used during registration preview step
+const MAPS_URL_RE = /^https:\/\/(maps\.app\.goo\.gl|maps\.google\.com|www\.google\.com\/maps|goo\.gl\/maps)\//;
+
+// POST /api/places/preview — public, no auth (used during registration before account exists)
 export async function POST(request: Request) {
-  const { mapsUrl } = await request.json();
-  if (!mapsUrl?.trim()) {
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  const mapsUrl = typeof body.mapsUrl === "string" ? body.mapsUrl.trim() : "";
+
+  if (!mapsUrl) {
     return NextResponse.json({ error: "mapsUrl is required" }, { status: 400 });
+  }
+  if (mapsUrl.length > 500) {
+    return NextResponse.json({ error: "URL too long" }, { status: 400 });
+  }
+  if (!MAPS_URL_RE.test(mapsUrl)) {
+    return NextResponse.json({ error: "Must be a valid Google Maps URL" }, { status: 400 });
   }
 
   try {
-    const place = await fetchPlaceFromUrl(mapsUrl.trim());
+    const place = await fetchPlaceFromUrl(mapsUrl);
     return NextResponse.json(place);
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to fetch place" },
-      { status: 422 }
-    );
+  } catch {
+    return NextResponse.json({ error: "Could not fetch business data from that URL" }, { status: 422 });
   }
 }

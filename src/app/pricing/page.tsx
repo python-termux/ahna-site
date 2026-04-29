@@ -1,12 +1,15 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Zap, ChevronDown } from "lucide-react";
+import { Check, X, Zap, ChevronDown, Flame } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
+import { createClient } from "@/lib/supabase/client";
+
+const TOTAL_SLOTS = 10;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -143,6 +146,27 @@ const faqs = [
 
 export default function PricingPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [slotsLeft, setSlotsLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function fetchCount() {
+      const { data, error } = await supabase.rpc("get_registered_user_count");
+      if (!error && typeof data === "number") {
+        setSlotsLeft(Math.max(0, TOTAL_SLOTS - data));
+      }
+    }
+
+    fetchCount();
+
+    const channel = supabase
+      .channel("pricing-user-count")
+      .on("postgres_changes", { event: "*", schema: "public", table: "businesses" }, fetchCount)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
@@ -234,16 +258,34 @@ export default function PricingPage() {
                   <p className="text-xs text-gray-500 mt-2">{plan.description}</p>
                 </div>
 
-                <Link
-                  href={plan.name === "Enterprise" ? "/contact" : "/register"}
-                  className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-[6px] font-medium transition-all mb-6 ${
-                    plan.popular
-                      ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/25"
-                      : "border border-input hover:border-indigo-500 text-muted-foreground hover:text-indigo-600 dark:hover:text-white"
-                  }`}
-                >
-                  {plan.buttonText}
-                </Link>
+                {plan.name === "Basic" && slotsLeft === 0 ? (
+                  <button
+                    disabled
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[6px] font-medium mb-6 border border-border bg-secondary text-muted-foreground opacity-50 cursor-not-allowed"
+                  >
+                    Fully Booked
+                  </button>
+                ) : (
+                  <Link
+                    href={plan.name === "Enterprise" ? "/contact" : "/register"}
+                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-[6px] font-medium transition-all mb-6 ${
+                      plan.popular
+                        ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/25"
+                        : "border border-input hover:border-indigo-500 text-muted-foreground hover:text-indigo-600 dark:hover:text-white"
+                    }`}
+                  >
+                    {plan.name === "Basic" ? (
+                      slotsLeft === null ? (
+                        <span className="opacity-60">Loading…</span>
+                      ) : (
+                        <>
+                          <Flame size={14} className="text-orange-400 shrink-0" />
+                          Limited · {slotsLeft} Slot{slotsLeft !== 1 ? "s" : ""} Left
+                        </>
+                      )
+                    ) : plan.buttonText}
+                  </Link>
+                )}
 
                 <div className="space-y-3">
                   {plan.features.map((feature, idx) => (

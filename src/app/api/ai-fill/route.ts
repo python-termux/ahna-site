@@ -1,6 +1,7 @@
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-const URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MODEL = "llama-3.3-70b-versatile";
 
 const FIELDS: Record<string, {
@@ -39,8 +40,16 @@ const FIELDS: Record<string, {
   },
 };
 
+// Strip control characters and null bytes from a string, enforce max length
+function sanitize(v: unknown, maxLen = 300): string {
+  return String(v ?? "")
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+    .trim()
+    .slice(0, maxLen);
+}
+
 async function callAI(prompt: string, maxTokens: number, key: string): Promise<string> {
-  const res = await fetch(URL, {
+  const res = await fetch(GROQ_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${key}`,
@@ -53,22 +62,35 @@ async function callAI(prompt: string, maxTokens: number, key: string): Promise<s
       temperature: 0.7,
     }),
   });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`${res.status}: ${err}`);
-  }
+  if (!res.ok) throw new Error("AI request failed");
   const data = await res.json();
   return (data.choices?.[0]?.message?.content ?? "").trim().replace(/^["']|["']$/g, "");
 }
 
 export async function POST(request: Request) {
-  const { field, context } = await request.json() as {
-    field: string;
-    context: Record<string, string>;
-  };
+  // Auth required — no free AI access
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  const field = sanitize(body.field, 50);
+  const rawCtx = body.context as Record<string, unknown>;
 
   const cfg = FIELDS[field];
   if (!cfg) return NextResponse.json({ error: "Unknown field" }, { status: 400 });
+
+  // Sanitize every context value — these go into AI prompts
+  const context: Record<string, string> = {};
+  if (rawCtx && typeof rawCtx === "object") {
+    for (const [k, v] of Object.entries(rawCtx)) {
+      context[sanitize(k, 50)] = sanitize(v, 300);
+    }
+  }
 
   const key = process.env.GROQ_API_KEY;
   if (!key) return NextResponse.json({ error: "AI not configured" }, { status: 500 });
@@ -79,23 +101,16 @@ export async function POST(request: Request) {
     for (let attempt = 0; attempt < 3; attempt++) {
       const prompt = attempt === 0
         ? cfg.prompt(context)
-        : `The text below is ${value.length} characters, but it MUST be between ${cfg.minChars} and ${cfg.maxChars} characters. Rewrite it and add more detail, description, and elaboration until it reaches at least ${cfg.minChars} characters. Count carefully. Return ONLY the rewritten text:\n\n${value}`;
+        : `The text below is ${value.length} characters, but it MUST be between ${cfg.minChars} and ${cfg.maxChars} characters. Rewrite it and add more detail until it reaches at least ${cfg.minChars} characters. Count carefully. Return ONLY the rewritten text:\n\n${value}`;
 
       value = await callAI(prompt, cfg.maxTokens + attempt * 50, key);
 
-      // Truncate if over max
-      if (value.length > cfg.maxChars) {
-        value = value.slice(0, cfg.maxChars);
-        break;
-      }
-
-      // In range — done
+      if (value.length > cfg.maxChars) { value = value.slice(0, cfg.maxChars); break; }
       if (cfg.minChars === 0 || value.length >= cfg.minChars) break;
     }
 
     return NextResponse.json({ value });
-  } catch (err) {
-    console.error("AI error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "AI generation failed" }, { status: 500 });
   }
 }

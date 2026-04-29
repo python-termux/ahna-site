@@ -339,9 +339,10 @@ export default function RegisterPage() {
         phone: place.phone,
         email: "",
         address: place.address,
+        maps_url: mapsUrl,
         website: place.website,
-        hero_image: place.images[0] ?? "",
-        gallery: place.images.slice(1, 6),
+        hero_image: "",
+        gallery: place.images,
         hours: place.hours,
         services: [],
         testimonials: place.reviews.map((r) => ({

@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LogOut, ExternalLink, ChevronRight,
-  Pencil, Check, X, Loader2, Trash2, Plus, Sparkles, MoreVertical, AlertTriangle,
+  LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
+  MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
+  BarChart2, Clock, Share2, Star,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
@@ -29,6 +30,18 @@ interface Business {
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 const ACCENT_THEMES = ["indigo","violet","rose","orange","emerald","sky","amber"];
 
+const NAV = [
+  { id: "branding",  label: "Branding",  icon: Type      },
+  { id: "theme",     label: "Theme",     icon: Palette   },
+  { id: "images",    label: "Images",    icon: Images    },
+  { id: "services",  label: "Services",  icon: Layers    },
+  { id: "contact",   label: "Contact",   icon: Phone     },
+  { id: "stats",     label: "Stats",     icon: BarChart2 },
+  { id: "hours",     label: "Hours",     icon: Clock     },
+  { id: "social",    label: "Social",    icon: Share2    },
+  { id: "reviews",   label: "Reviews",   icon: Star      },
+] as const;
+
 // ─── main component ────────────────────────────────────────────────────────────
 export default function DashboardClient({ user, businesses }: {
   user: User; businesses: Business[];
@@ -49,7 +62,6 @@ export default function DashboardClient({ user, businesses }: {
     return (
       <EditForm
         biz={activeBiz}
-        userId={user.id}
         onBack={businesses.length > 1 ? () => setActiveBiz(null) : undefined}
         onLogout={logout}
       />
@@ -89,7 +101,7 @@ export default function DashboardClient({ user, businesses }: {
         </motion.h1>
 
         {businesses.length === 0 ? (
-          <div className="text-center py-20 text-muted-foreground">No pages found.</div>
+          <NoPagesState />
         ) : (
           <motion.div
             initial="hidden"
@@ -131,10 +143,120 @@ export default function DashboardClient({ user, businesses }: {
   );
 }
 
+// ─── NO PAGES STATE ───────────────────────────────────────────────────────────
+function NoPagesState() {
+  const router = useRouter();
+  const [mapsUrl, setMapsUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  async function importBusiness() {
+    if (!mapsUrl.trim()) return;
+    setLoading(true);
+    const res = await fetch("/api/places", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mapsUrl: mapsUrl.trim() }),
+    });
+    const json = await res.json();
+    setLoading(false);
+    if (!res.ok) { toast.error(json.error ?? "Failed to import business"); return; }
+    toast.success("Business imported!");
+    router.refresh();
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+      className="flex flex-col items-center gap-6 py-16 max-w-md mx-auto text-center"
+    >
+      <div className="w-14 h-14 rounded-[8px] bg-secondary flex items-center justify-center">
+        <Plus size={24} className="text-muted-foreground" />
+      </div>
+      <div>
+        <h2 className="text-lg font-semibold mb-1">No business pages yet</h2>
+        <p className="text-sm text-muted-foreground">Paste your Google Maps link below to import your business.</p>
+      </div>
+      <div className="w-full flex gap-2">
+        <input
+          value={mapsUrl}
+          onChange={(e) => setMapsUrl(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && importBusiness()}
+          placeholder="https://maps.app.goo.gl/..."
+          className="flex-1 bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500"
+        />
+        <button
+          onClick={importBusiness}
+          disabled={loading || !mapsUrl.trim()}
+          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-[6px] transition-colors whitespace-nowrap"
+        >
+          {loading ? <Loader2 size={14} className="animate-spin" /> : "Import"}
+        </button>
+      </div>
+
+      <button
+        onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
+        className="text-xs text-red-400 hover:text-red-300 transition-colors mt-4"
+      >
+        Delete my account
+      </button>
+
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-sm bg-card border border-border rounded-[6px] p-6 shadow-lg"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-[4px] bg-red-950 flex items-center justify-center shrink-0">
+                <AlertTriangle size={16} className="text-red-400" />
+              </div>
+              <h3 className="font-semibold text-foreground">Delete account?</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              This permanently removes your account. Type <span className="font-mono font-semibold text-foreground">DELETE</span> to confirm.
+            </p>
+            <input
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+              className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground mb-4 focus:outline-none focus:border-red-500"
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-[4px] border border-border text-sm text-foreground transition-colors"
+              >Cancel</button>
+              <button
+                disabled={deleteConfirm !== "DELETE" || deleteLoading}
+                onClick={async () => {
+                  setDeleteLoading(true);
+                  const res = await fetch("/api/delete-account", { method: "DELETE" });
+                  if (!res.ok) {
+                    const json = await res.json().catch(() => ({}));
+                    toast.error(json.error ?? "Failed to delete account");
+                    setDeleteLoading(false);
+                    return;
+                  }
+                  const supabase = (await import("@/lib/supabase/client")).createClient();
+                  await supabase.auth.signOut();
+                  toast.success("Account deleted.");
+                  window.location.href = "/";
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-[4px] bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+              >
+                {deleteLoading ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14} /> Delete</>}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 // ─── EDIT FORM ────────────────────────────────────────────────────────────────
-function EditForm({ biz, userId, onBack, onLogout }: {
+function EditForm({ biz, onBack, onLogout }: {
   biz: Business;
-  userId: string;
   onBack?: () => void;
   onLogout: () => void;
 }) {
@@ -142,7 +264,7 @@ function EditForm({ biz, userId, onBack, onLogout }: {
   const savedSnapshot = useRef(JSON.stringify(biz));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [open, setOpen] = useState<string>("header");
+  const [active, setActive] = useState<string>("branding");
   const [aiLoading, setAiLoading] = useState<Record<string, boolean>>({});
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -161,11 +283,8 @@ function EditForm({ biz, userId, onBack, onLogout }: {
 
   function tryBack() {
     if (!onBack) return;
-    if (isDirty) {
-      setDiscardModal({ onConfirm: onBack });
-    } else {
-      onBack();
-    }
+    if (isDirty) setDiscardModal({ onConfirm: onBack });
+    else onBack();
   }
 
   function update(k: keyof Business, v: unknown) { setData((d) => ({ ...d, [k]: v })); }
@@ -190,33 +309,32 @@ function EditForm({ biz, userId, onBack, onLogout }: {
 
   async function save() {
     if (data.tagline && data.tagline.length < 250) {
-      toast.error(`Tagline is too short — minimum 250 characters (currently ${data.tagline.length})`);
-      setOpen("header"); return;
+      toast.error(`Tagline too short — min 250 chars (currently ${data.tagline.length})`);
+      setActive("branding"); return;
     }
     if (data.tagline && data.tagline.length > 300) {
-      toast.error(`Tagline is too long — maximum 300 characters (currently ${data.tagline.length})`);
-      setOpen("header"); return;
+      toast.error(`Tagline too long — max 300 chars (currently ${data.tagline.length})`);
+      setActive("branding"); return;
     }
     if (data.description && data.description.length < 350) {
-      toast.error(`About description is too short — minimum 350 characters (currently ${data.description.length})`);
-      setOpen("header"); return;
+      toast.error(`Description too short — min 350 chars (currently ${data.description.length})`);
+      setActive("branding"); return;
     }
     if (data.description && data.description.length > 400) {
-      toast.error(`About description is too long — maximum 400 characters (currently ${data.description.length})`);
-      setOpen("header"); return;
+      toast.error(`Description too long — max 400 chars (currently ${data.description.length})`);
+      setActive("branding"); return;
     }
     for (let i = 0; i < data.services.length; i++) {
       const svc = data.services[i];
       if (svc.description && svc.description.length < 150) {
-        toast.error(`Service "${svc.title || `#${i + 1}`}" description too short — must be exactly 150 characters (currently ${svc.description.length})`);
-        setOpen("services"); return;
+        toast.error(`Service "${svc.title || `#${i + 1}`}" description must be exactly 150 chars`);
+        setActive("services"); return;
       }
       if (svc.description && svc.description.length > 150) {
-        toast.error(`Service "${svc.title || `#${i + 1}`}" description too long — must be exactly 150 characters (currently ${svc.description.length})`);
-        setOpen("services"); return;
+        toast.error(`Service "${svc.title || `#${i + 1}`}" description must be exactly 150 chars`);
+        setActive("services"); return;
       }
     }
-
     setSaving(true); setSaved(false);
     const id = toast.loading("Saving changes…");
     const res = await fetch("/api/business", {
@@ -243,481 +361,387 @@ function EditForm({ biz, userId, onBack, onLogout }: {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b border-border px-4 sm:px-6 py-4 bg-background flex items-center justify-between max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-3">
-          {onBack ? (
-            <button onClick={tryBack} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
-          ) : (
-            <span className="font-bold text-sm">ahna</span>
-          )}
-          <span className="font-semibold truncate max-w-[160px] text-sm text-foreground">{data.name}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <AnimatePresence>
-            {isDirty && (
-              <motion.button
-                key="save-btn"
-                initial={{ opacity: 0, scale: 0.85, x: 10 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.85, x: 10 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                onClick={save}
-                disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium transition-colors"
-              >
-                {saving && <Loader2 size={13} className="animate-spin" />}
-                {saving ? "Saving…" : "Save"}
-              </motion.button>
-            )}
-          </AnimatePresence>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
-              <button className="p-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                <MoreVertical size={18} />
+
+      {/* ── Sticky header ── */}
+      <header className="sticky top-0 z-30 bg-background border-b border-border md:border-0">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between md:border-b md:border-border">
+          <div className="flex items-center gap-3">
+            {onBack ? (
+              <button onClick={tryBack} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X size={18} />
               </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content
-                align="end"
-                sideOffset={8}
-                className="z-50 w-52 bg-card border border-border rounded-[6px] shadow-2xl overflow-hidden"
-              >
-                <div className="p-2 flex flex-col gap-0.5">
-                  <DropdownMenu.Item asChild>
-                    <Link
-                      href={`/site/${data.slug}`}
-                      target="_blank"
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none"
-                    >
-                      <ExternalLink size={15} className="shrink-0" />
-                      Preview site
-                    </Link>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item asChild>
-                    <button
-                      onClick={save}
-                      disabled={saving}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none disabled:opacity-50"
-                    >
-                      {saving ? <Loader2 size={15} className="animate-spin shrink-0" /> : <Check size={15} className="shrink-0" />}
-                      {saving ? "Saving…" : saved ? "Saved!" : "Save changes"}
-                    </button>
-                  </DropdownMenu.Item>
-                </div>
-                <div className="border-t border-border p-2">
-                  <DropdownMenu.Item asChild>
-                    <button
-                      onClick={onLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors cursor-pointer outline-none"
-                    >
-                      <LogOut size={15} className="shrink-0" />
-                      Log out
-                    </button>
-                  </DropdownMenu.Item>
-                </div>
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
+            ) : (
+              <span className="font-bold text-sm">ahna</span>
+            )}
+            <span className="text-sm font-semibold truncate max-w-[180px] text-foreground">{data.name}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <AnimatePresence>
+              {isDirty && (
+                <motion.button
+                  key="save-btn"
+                  initial={{ opacity: 0, scale: 0.85, x: 10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.85, x: 10 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  onClick={save}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium transition-colors"
+                >
+                  {saving && <Loader2 size={13} className="animate-spin" />}
+                  {saving ? "Saving…" : "Save"}
+                </motion.button>
+              )}
+            </AnimatePresence>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button className="p-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                  <MoreVertical size={18} />
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content align="end" sideOffset={8}
+                  className="z-50 w-52 bg-card border border-border rounded-[6px] shadow-2xl overflow-hidden">
+                  <div className="p-2 flex flex-col gap-0.5">
+                    <DropdownMenu.Item asChild>
+                      <Link href={`/site/${data.slug}`} target="_blank"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none">
+                        <ExternalLink size={15} className="shrink-0" /> Preview site
+                      </Link>
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item asChild>
+                      <button onClick={save} disabled={saving}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none disabled:opacity-50">
+                        {saving ? <Loader2 size={15} className="animate-spin shrink-0" /> : <Check size={15} className="shrink-0" />}
+                        {saving ? "Saving…" : saved ? "Saved!" : "Save changes"}
+                      </button>
+                    </DropdownMenu.Item>
+                  </div>
+                  <div className="border-t border-border p-2">
+                    <DropdownMenu.Item asChild>
+                      <button onClick={onLogout}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-red-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer outline-none">
+                        <LogOut size={15} className="shrink-0" /> Log out
+                      </button>
+                    </DropdownMenu.Item>
+                  </div>
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-3">
+      {/* ── Mobile tab strip ── */}
+      <div className="md:hidden sticky top-14 z-20 bg-background border-b border-border overflow-x-auto">
+        <div className="flex gap-0.5 px-4 sm:px-6 py-1.5 w-max min-w-full">
+          {NAV.map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => setActive(id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-xs whitespace-nowrap transition-colors ${
+                active === id ? "bg-secondary text-foreground font-medium" : "text-muted-foreground"
+              }`}
+            >
+              <Icon size={12} />{label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        {/* ── Header & branding ── */}
-        <Section title="Header & branding" id="header" open={open} setOpen={setOpen}>
-          <div className="flex flex-col gap-4">
-            <Field
-              label="Business name (shown in header)"
-              value={data.name}
-              onChange={(v) => update("name", v)}
-              maxLength={20}
-              placeholder="Your business name"
-            />
-            <Field
-              label="Tagline"
-              value={data.tagline}
-              onChange={(v) => update("tagline", v)}
-              placeholder="e.g. Best pizza in town since 1998"
-              maxLength={300}
-              minLength={250}
-              aiLoading={aiLoading["tagline"]}
-              onAI={async () => {
-                const v = await fillWithAI("tagline", "tagline", { name: data.name, category: data.category });
-                if (v) update("tagline", v);
-              }}
-            />
-            <TextareaField
-              label="About description"
-              value={data.description}
-              onChange={(v) => update("description", v)}
-              maxLength={400}
-              minLength={350}
-              aiLoading={aiLoading["description"]}
-              onAI={async () => {
-                const v = await fillWithAI("description", "description", { name: data.name, category: data.category, tagline: data.tagline });
-                if (v) update("description", v);
-              }}
-            />
-            <div>
-              <label className="block text-sm text-foreground mb-1.5">Category</label>
-              <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">
-                {data.category || "—"}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Auto-set from Google Places · cannot be changed</p>
-            </div>
-          </div>
-        </Section>
+      {/* ── Two-column body ── */}
+      <div className="max-w-6xl mx-auto flex px-4 sm:px-6 py-6 sm:py-8 gap-6 lg:gap-10">
 
-        {/* ── Theme ── */}
-        <Section title="Theme" id="theme" open={open} setOpen={setOpen}>
-          <div className="flex flex-col gap-4">
-            <div>
-              <p className="text-sm text-foreground mb-2 font-medium">Mode</p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => update("theme_color", `white-${currentAccent}`)}
-                  className={`px-5 py-2 rounded-[6px] text-sm font-medium border transition-all ${
-                    isLight ? "bg-white text-gray-900 border-white shadow-sm" : "text-muted-foreground border-border hover:border-gray-500"
-                  }`}
-                >
-                  Light
-                </button>
-                <button
-                  type="button"
-                  onClick={() => update("theme_color", currentAccent)}
-                  className={`px-5 py-2 rounded-[6px] text-sm font-medium border transition-all ${
-                    !isLight ? "bg-secondary text-foreground border-gray-600" : "text-muted-foreground border-border hover:border-gray-500"
-                  }`}
-                >
-                  Dark
-                </button>
-              </div>
+        {/* ── Sidebar (desktop) ── */}
+        <aside className="hidden md:block w-44 shrink-0">
+          <nav className="sticky top-[calc(3.5rem+1px)] flex flex-col gap-0.5 pt-2">
+            {NAV.map(({ id, label, icon: Icon }) => (
+              <button key={id} onClick={() => setActive(id)}
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-sm transition-colors text-left w-full ${
+                  active === id
+                    ? "bg-secondary text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                <Icon size={15} className="shrink-0" />{label}
+              </button>
+            ))}
+            <div className="mt-3 pt-3 border-t border-border">
+              <button
+                onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-sm text-red-400 hover:text-red-500 hover:bg-red-500/10 w-full transition-colors"
+              >
+                <Trash2 size={15} className="shrink-0" /> Delete account
+              </button>
             </div>
-            <div>
-              <p className="text-sm text-foreground mb-2 font-medium">Accent colour</p>
-              <div className="flex gap-2.5 flex-wrap">
-                {ACCENT_THEMES.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => update("theme_color", isLight ? `white-${t}` : t)}
-                    title={t.charAt(0).toUpperCase() + t.slice(1)}
-                    className={`w-8 h-8 rounded-[6px] border-2 transition-all bg-${t}-600 ${
-                      currentAccent === t ? "border-white scale-110 ring-2 ring-white/40" : "border-transparent hover:border-white/40"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </Section>
+          </nav>
+        </aside>
 
-        {/* ── Images ── */}
-        <Section title="Images" id="images" open={open} setOpen={setOpen}>
-          <div className="flex flex-col gap-5">
-            <div>
-              <p className="text-sm text-foreground mb-3 font-medium">Hero image</p>
-              {data.hero_image ? (
-                <div className="relative group w-full h-40 rounded-[6px] overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={data.hero_image} alt="hero" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button
-                      onClick={() => update("hero_image", "")}
-                      className="bg-red-600 hover:bg-red-500 text-white rounded-[4px] px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors"
-                    >
-                      <Trash2 size={12} /> Remove hero image
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-border rounded-[6px] h-40 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                  <p className="text-sm">No hero image</p>
-                  <p className="text-xs">Paste a URL below to set one</p>
-                </div>
-              )}
-              <input
-                value={data.hero_image}
-                onChange={(e) => update("hero_image", e.target.value)}
-                placeholder="https://... paste image URL"
-                className="mt-2 w-full bg-secondary border border-border rounded-[6px] px-3 py-2 text-xs text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500"
+        {/* ── Content ── */}
+        <main className="flex-1 min-w-0">
+          <div className="w-full max-w-2xl flex flex-col gap-5">
+
+            {/* BRANDING */}
+            {active === "branding" && <>
+              <Field label="Business name" value={data.name} onChange={(v) => update("name", v)} maxLength={20} placeholder="Your business name" />
+              <Field
+                label="Tagline"
+                value={data.tagline}
+                onChange={(v) => update("tagline", v)}
+                placeholder="e.g. Best pizza in town since 1998"
+                maxLength={300} minLength={250}
+                aiLoading={aiLoading["tagline"]}
+                onAI={async () => { const v = await fillWithAI("tagline", "tagline", { name: data.name, category: data.category }); if (v) update("tagline", v); }}
               />
-            </div>
+              <TextareaField
+                label="About description"
+                value={data.description}
+                onChange={(v) => update("description", v)}
+                maxLength={400} minLength={350}
+                aiLoading={aiLoading["description"]}
+                onAI={async () => { const v = await fillWithAI("description", "description", { name: data.name, category: data.category, tagline: data.tagline }); if (v) update("description", v); }}
+              />
+              <div>
+                <label className="block text-sm text-foreground mb-1.5">Category</label>
+                <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.category || "—"}</div>
+                <p className="text-[10px] text-muted-foreground mt-1">Auto-set from Google Places · cannot be changed</p>
+              </div>
+            </>}
 
-            <div>
-              <p className="text-sm text-foreground mb-3 font-medium">
-                Gallery <span className="text-muted-foreground font-normal">({data.gallery.length} images)</span>
-              </p>
-              {data.gallery.length > 0 ? (
-                <div className="grid grid-cols-3 gap-2">
-                  {data.gallery.map((url, i) => (
-                    <div key={i} className="relative group aspect-square rounded-[6px] overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt={`gallery ${i + 1}`} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button
-                          onClick={() => update("gallery", data.gallery.filter((_, idx) => idx !== i))}
-                          className="bg-red-600 hover:bg-red-500 text-white rounded-[4px] p-1.5 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
+            {/* THEME */}
+            {active === "theme" && <>
+              <div>
+                <p className="text-sm text-foreground mb-2 font-medium">Mode</p>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => update("theme_color", `white-${currentAccent}`)}
+                    className={`px-5 py-2 rounded-[6px] text-sm font-medium border transition-all ${isLight ? "bg-white text-gray-900 border-white shadow-sm" : "text-muted-foreground border-border hover:border-gray-500"}`}>
+                    Light
+                  </button>
+                  <button type="button" onClick={() => update("theme_color", currentAccent)}
+                    className={`px-5 py-2 rounded-[6px] text-sm font-medium border transition-all ${!isLight ? "bg-secondary text-foreground border-gray-600" : "text-muted-foreground border-border hover:border-gray-500"}`}>
+                    Dark
+                  </button>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-foreground mb-2 font-medium">Accent colour</p>
+                <div className="flex gap-2.5 flex-wrap">
+                  {ACCENT_THEMES.map((t) => (
+                    <button key={t} type="button"
+                      onClick={() => update("theme_color", isLight ? `white-${t}` : t)}
+                      title={t.charAt(0).toUpperCase() + t.slice(1)}
+                      className={`relative w-9 h-9 rounded-[6px] border-2 transition-all flex items-center justify-center bg-${t}-600 ${currentAccent === t ? "border-white ring-2 ring-white/30 scale-110" : "border-transparent hover:border-white/30"}`}
+                    >
+                      {currentAccent === t && <Check size={14} className="text-white drop-shadow" strokeWidth={3} />}
+                    </button>
                   ))}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No gallery images.</p>
-              )}
-            </div>
+              </div>
+            </>}
 
-            <div>
-              <p className="text-sm text-foreground mb-3 font-medium">About Us image</p>
-              {(() => {
-                const allImgs = [data.hero_image, ...(data.gallery ?? [])].filter(Boolean);
-                return (
-                  <>
+            {/* IMAGES */}
+            {active === "images" && <>
+              <div>
+                <p className="text-sm text-foreground mb-3 font-medium">
+                  Gallery <span className="text-muted-foreground font-normal">({data.gallery.length} images)</span>
+                </p>
+                {data.gallery.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-2">
+                    {data.gallery.map((url, i) => (
+                      <div key={i} className="relative aspect-square rounded-[6px] overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt={`gallery ${i + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => update("gallery", data.gallery.filter((_, idx) => idx !== i))}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-[4px] bg-black/50 hover:bg-red-500 text-white flex items-center justify-center transition-colors"
+                        >
+                          <X size={11} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="text-sm text-muted-foreground">No gallery images.</p>}
+              </div>
+              <div>
+                <p className="text-sm text-foreground mb-3 font-medium">About Us image</p>
+                {(() => {
+                  const allImgs = (data.gallery ?? []).filter(Boolean);
+                  return (<>
                     {allImgs.length > 0 && (
                       <div className="grid grid-cols-4 gap-2 mb-3">
                         {allImgs.map((url, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => update("about_image", url)}
-                            className={`relative aspect-square rounded-[6px] overflow-hidden border-2 transition-all ${
-                              data.about_image === url ? "border-indigo-500 ring-2 ring-indigo-500/40" : "border-transparent"
-                            }`}
-                          >
+                          <button key={i} type="button" onClick={() => update("about_image", url)}
+                            className={`relative aspect-square rounded-[6px] overflow-hidden border-2 transition-all ${data.about_image === url ? "border-indigo-500 ring-2 ring-indigo-500/40" : "border-transparent"}`}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={url} alt={`img ${i + 1}`} className="w-full h-full object-cover" />
                           </button>
                         ))}
                       </div>
                     )}
-                    <input
-                      value={data.about_image ?? ""}
-                      onChange={(e) => update("about_image", e.target.value)}
+                    <input value={data.about_image ?? ""} onChange={(e) => update("about_image", e.target.value)}
                       placeholder="Or paste any image URL…"
-                      className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2 text-xs text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500"
-                    />
+                      className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2 text-xs text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500" />
                     {data.about_image && (
-                      <div className="mt-2 relative group w-full h-32 rounded-[6px] overflow-hidden">
+                      <div className="mt-2 relative w-full h-32 rounded-[6px] overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={data.about_image} alt="about" className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => update("about_image", "")}
-                          className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 text-white rounded-[4px] px-2 py-1 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          Remove
+                        <button onClick={() => update("about_image", "")}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-[4px] bg-black/50 hover:bg-red-500 text-white flex items-center justify-center transition-colors">
+                          <X size={11} />
                         </button>
                       </div>
                     )}
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-        </Section>
+                  </>);
+                })()}
+              </div>
+            </>}
 
-        {/* ── Reviews ── */}
-        <Section title={`Reviews (${data.testimonials.length})`} id="reviews" open={open} setOpen={setOpen}>
-          <div className="flex flex-col gap-3">
-            {data.testimonials.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No reviews imported.</p>
-            ) : (
-              data.testimonials.map((t, i) => (
-                <motion.div
-                  key={i}
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-secondary rounded-[6px] p-4 flex items-start justify-between gap-3"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-foreground">{t.author}</span>
-                      <span className="flex gap-0.5">
-                        {[1,2,3,4,5].map((n) => (
-                          <span key={n} className={`text-xs ${n <= t.rating ? "text-yellow-400" : "text-gray-700"}`}>★</span>
-                        ))}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{t.text}</p>
-                  </div>
-                  <button
-                    onClick={() => update("testimonials", data.testimonials.filter((_, idx) => idx !== i))}
-                    className="text-muted-foreground hover:text-red-400 transition-colors shrink-0"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </motion.div>
-              ))
+            {/* SERVICES */}
+            {active === "services" && (
+              <ServicesEditor
+                value={data.services}
+                onChange={(v) => update("services", v)}
+                bizName={data.name}
+                bizCategory={data.category}
+                aiLoading={aiLoading}
+                onFillAI={fillWithAI}
+              />
             )}
-            <p className="text-xs text-muted-foreground mt-1">Reviews and ratings are imported from Google Maps at registration and cannot be modified.</p>
-          </div>
-        </Section>
 
-        {/* ── Contact ── */}
-        <Section title="Contact information" id="contact" open={open} setOpen={setOpen}>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Phone" value={data.phone} onChange={(v) => update("phone", v)} placeholder="+1 234 567 8900" />
-            <Field label="Email" value={data.email} onChange={(v) => update("email", v)} placeholder="hello@yourbusiness.com" />
-            <div>
-              <label className="text-sm text-foreground block mb-1.5">Address</label>
-              <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">
-                {data.address || "—"}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Set during registration · cannot be changed</p>
-            </div>
-            <Field
-              label={<span className="flex items-center gap-1.5"><img src="/social-icons/whatsapp.png" alt="WhatsApp" width={14} height={14} className="object-contain" />WhatsApp</span>}
-              value={(data.social as Record<string, string>).whatsapp ?? ""}
-              onChange={(v) => update("social", { ...data.social, whatsapp: v })}
-              placeholder="+1234567890"
-            />
-          </div>
-        </Section>
-
-        {/* ── Stats ── */}
-        <Section title="Stats (hero section)" id="stats" open={open} setOpen={setOpen}>
-          <div className="grid sm:grid-cols-3 gap-4">
-            <Field label="Years in business" value={data.stat_years} onChange={(v) => update("stat_years", v)} placeholder="e.g. 12+" />
-            <div>
-              <label className="text-sm text-foreground block mb-1.5">Clients / Reviews</label>
-              <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">
-                {data.stat_clients || "—"}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Auto-fetched from Google Places</p>
-            </div>
-            <div>
-              <label className="text-sm text-foreground block mb-1.5">Rating</label>
-              <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">
-                {data.stat_projects || "—"}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Auto-fetched from Google Places</p>
-            </div>
-          </div>
-        </Section>
-
-        {/* ── Opening hours ── */}
-        <Section title="Opening hours" id="hours" open={open} setOpen={setOpen}>
-          <div className="flex flex-col gap-3">
-            {DAYS.map((day) => (
-              <div key={day} className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground w-24 shrink-0">{day}</span>
-                <input
-                  value={(data.hours as Record<string,string>)[day] ?? ""}
-                  onChange={(e) => update("hours", { ...data.hours, [day]: e.target.value })}
-                  placeholder="9am – 6pm or Closed"
-                  className="flex-1 bg-secondary border border-border rounded-[6px] px-3 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-            ))}
-          </div>
-        </Section>
-
-        {/* ── Social links ── */}
-        <Section title="Social links" id="social" open={open} setOpen={setOpen}>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {(["instagram","facebook","twitter","tiktok"] as const).map((k) => {
-              const iconMap: Record<string, string> = {
-                instagram: "/social-icons/instagram.png",
-                facebook: "/social-icons/facebook.png",
-                twitter: "/social-icons/x.png",
-                tiktok: "/social-icons/tiktok.png",
-              };
-              return (
+            {/* CONTACT */}
+            {active === "contact" && (
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Field label="Phone" value={data.phone} onChange={(v) => update("phone", v)} placeholder="+1 234 567 8900" />
+                <Field label="Email" value={data.email} onChange={(v) => update("email", v)} placeholder="hello@yourbusiness.com" />
+                <div>
+                  <label className="text-sm text-foreground block mb-1.5">Address</label>
+                  <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.address || "—"}</div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Set during registration · cannot be changed</p>
+                </div>
                 <Field
-                  key={k}
-                  label={
-                    <span className="flex items-center gap-1.5">
-                      <img src={iconMap[k]} alt={k} width={14} height={14} className="object-contain" />
-                      {k.charAt(0).toUpperCase() + k.slice(1)}
-                    </span>
-                  }
-                  value={(data.social as Record<string, string>)[k] ?? ""}
-                  onChange={(v) => update("social", { ...data.social, [k]: v })}
-                  placeholder={`https://${k}.com/yourpage`}
+                  label={<span className="flex items-center gap-1.5"><img src="/social-icons/whatsapp.png" alt="WhatsApp" width={14} height={14} className="object-contain" />WhatsApp</span>}
+                  value={(data.social as Record<string, string>).whatsapp ?? ""}
+                  onChange={(v) => update("social", { ...data.social, whatsapp: v })}
+                  placeholder="+1234567890"
                 />
-              );
-            })}
+              </div>
+            )}
+
+            {/* STATS */}
+            {active === "stats" && (
+              <div className="grid sm:grid-cols-3 gap-4">
+                <Field label="Years in business" value={data.stat_years} onChange={(v) => update("stat_years", v)} placeholder="e.g. 12+" />
+                <div>
+                  <label className="text-sm text-foreground block mb-1.5">Clients / Reviews</label>
+                  <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.stat_clients || "—"}</div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Auto-fetched from Google Places</p>
+                </div>
+                <div>
+                  <label className="text-sm text-foreground block mb-1.5">Rating</label>
+                  <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.stat_projects || "—"}</div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Auto-fetched from Google Places</p>
+                </div>
+              </div>
+            )}
+
+            {/* HOURS */}
+            {active === "hours" && (
+              <div className="flex flex-col gap-3">
+                {DAYS.map((day) => (
+                  <div key={day} className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground w-24 shrink-0">{day}</span>
+                    <input
+                      value={(data.hours as Record<string, string>)[day] ?? ""}
+                      onChange={(e) => update("hours", { ...data.hours, [day]: e.target.value })}
+                      placeholder="9am – 6pm or Closed"
+                      className="flex-1 bg-secondary border border-border rounded-[6px] px-3 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* SOCIAL */}
+            {active === "social" && (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {(["instagram", "facebook", "twitter", "tiktok"] as const).map((k) => {
+                  const iconMap: Record<string, string> = {
+                    instagram: "/social-icons/instagram.png",
+                    facebook: "/social-icons/facebook.png",
+                    twitter: "/social-icons/x.png",
+                    tiktok: "/social-icons/tiktok.png",
+                  };
+                  return (
+                    <Field key={k}
+                      label={<span className="flex items-center gap-1.5"><img src={iconMap[k]} alt={k} width={14} height={14} className="object-contain" />{k.charAt(0).toUpperCase() + k.slice(1)}</span>}
+                      value={(data.social as Record<string, string>)[k] ?? ""}
+                      onChange={(v) => update("social", { ...data.social, [k]: v })}
+                      placeholder={`https://${k}.com/yourpage`}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {/* REVIEWS */}
+            {active === "reviews" && (
+              <div className="flex flex-col gap-3">
+                {data.testimonials.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No reviews imported.</p>
+                ) : data.testimonials.map((t, i) => (
+                  <motion.div key={i} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="bg-secondary rounded-[6px] p-4 flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-foreground">{t.author}</span>
+                        <span className="flex gap-0.5">
+                          {[1,2,3,4,5].map((n) => <span key={n} className={`text-xs ${n <= t.rating ? "text-yellow-400" : "text-gray-700"}`}>★</span>)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{t.text}</p>
+                    </div>
+                    <button onClick={() => update("testimonials", data.testimonials.filter((_, idx) => idx !== i))}
+                      className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded-[6px] transition-colors shrink-0">
+                      <Trash2 size={14} />
+                    </button>
+                  </motion.div>
+                ))}
+                <p className="text-xs text-muted-foreground mt-1">Reviews imported from Google Maps · cannot be modified.</p>
+              </div>
+            )}
+
+            {/* Mobile: delete account */}
+            <div className="md:hidden mt-6 pt-5 border-t border-border">
+              <button onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
+                className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors">
+                <Trash2 size={15} /> Delete account
+              </button>
+            </div>
+
           </div>
-        </Section>
+        </main>
+      </div>
 
-        {/* ── Services ── */}
-        <Section title="Services" id="services" open={open} setOpen={setOpen}>
-          <ServicesEditor
-            value={data.services}
-            onChange={(v) => update("services", v)}
-            bizName={data.name}
-            bizCategory={data.category}
-            aiLoading={aiLoading}
-            onFillAI={fillWithAI}
-          />
-        </Section>
-
-        {/* ── Danger zone ── */}
-        <div className="bg-red-950/20 border border-red-900/50 rounded-lg p-5 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-red-400">Delete account</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Permanently delete your account and all business data. This cannot be undone.</p>
-          </div>
-          <button
-            onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-[4px] text-sm font-medium transition-colors"
-          >
-            <Trash2 size={14} /> Delete account
-          </button>
-        </div>
-
-      </main>
-
-      {/* ── Unsaved changes confirm modal ── */}
+      {/* ── Unsaved changes modal ── */}
       <AnimatePresence>
         {discardModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 8 }}
-              transition={{ duration: 0.18 }}
-              className="w-full max-w-sm bg-card border border-border rounded-[6px] p-6 shadow-lg"
-            >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }} transition={{ duration: 0.18 }}
+              className="w-full max-w-sm bg-card border border-border rounded-[6px] p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-9 h-9 rounded-[4px] bg-amber-950/60 flex items-center justify-center shrink-0">
                   <AlertTriangle size={16} className="text-amber-400" />
                 </div>
                 <h3 className="font-semibold text-foreground">Unsaved changes</h3>
               </div>
-              <p className="text-sm text-muted-foreground mb-5">
-                You have unsaved changes that will be lost. Do you want to save before leaving, or discard?
-              </p>
+              <p className="text-sm text-muted-foreground mb-5">You have unsaved changes. Save before leaving or discard them?</p>
               <div className="flex gap-2">
-                <button
-                  onClick={() => setDiscardModal(null)}
-                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors"
-                >
-                  Stay
-                </button>
-                <button
-                  onClick={() => { setDiscardModal(null); discardModal.onConfirm(); }}
-                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-muted-foreground hover:text-foreground hover:border-border/60 transition-colors"
-                >
-                  Discard
-                </button>
-                <button
-                  onClick={async () => { await save(); setDiscardModal(null); discardModal.onConfirm(); }}
-                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 text-sm font-medium text-white transition-colors"
-                >
-                  Save & leave
-                </button>
+                <button onClick={() => setDiscardModal(null)}
+                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors">Stay</button>
+                <button onClick={() => { setDiscardModal(null); discardModal.onConfirm(); }}
+                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-muted-foreground hover:text-foreground transition-colors">Discard</button>
+                <button onClick={async () => { await save(); setDiscardModal(null); discardModal.onConfirm(); }}
+                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 text-sm font-medium text-white transition-colors">Save & leave</button>
               </div>
             </motion.div>
           </motion.div>
@@ -727,11 +751,8 @@ function EditForm({ biz, userId, onBack, onLogout }: {
       {/* ── Delete account modal ── */}
       {deleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md bg-card border border-border rounded-[6px] p-6 shadow-lg"
-          >
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md bg-card border border-border rounded-[6px] p-6 shadow-lg">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-[4px] bg-red-950 flex items-center justify-center shrink-0">
                 <AlertTriangle size={18} className="text-red-400" />
@@ -741,44 +762,34 @@ function EditForm({ biz, userId, onBack, onLogout }: {
                 <p className="text-xs text-muted-foreground mt-0.5">This will permanently delete all your data.</p>
               </div>
             </div>
-
             <p className="text-sm text-muted-foreground mb-4">
               This action <strong className="text-foreground">cannot be undone</strong>. All your business pages and account data will be permanently erased.
             </p>
-
             <div className="mb-5">
               <label className="text-xs text-muted-foreground block mb-1.5">
                 Type <span className="font-mono font-semibold text-foreground">DELETE</span> to confirm
               </label>
-              <input
-                value={deleteConfirm}
-                onChange={(e) => setDeleteConfirm(e.target.value)}
-                placeholder="DELETE"
-                className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-red-500 transition-colors"
-              />
+              <input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="DELETE"
+                className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-red-500 transition-colors" />
             </div>
-
             <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors"
-              >
-                Cancel
-              </button>
+              <button onClick={() => setDeleteModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors">Cancel</button>
               <button
                 disabled={deleteConfirm !== "DELETE" || deleteLoading}
                 onClick={async () => {
                   setDeleteLoading(true);
-                  const supabase = (await import("@/lib/supabase/client")).createClient();
-                  const { error } = await supabase.rpc("delete_user");
-                  if (error) {
-                    toast.error("Failed to delete account. Contact support@ahna.ae");
+                  const res = await fetch("/api/delete-account", { method: "DELETE" });
+                  if (!res.ok) {
+                    const json = await res.json().catch(() => ({}));
+                    toast.error(json.error ?? "Failed to delete account");
                     setDeleteLoading(false);
                     return;
                   }
+                  const supabase = (await import("@/lib/supabase/client")).createClient();
                   await supabase.auth.signOut();
                   toast.success("Account deleted.");
-                  onLogout();
+                  window.location.href = "/";
                 }}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-[4px] bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
               >
@@ -788,39 +799,7 @@ function EditForm({ biz, userId, onBack, onLogout }: {
           </motion.div>
         </div>
       )}
-    </div>
-  );
-}
 
-// ─── SECTION ACCORDION ────────────────────────────────────────────────────────
-function Section({ title, id, open, setOpen, children }: {
-  title: string; id: string; open: string; setOpen: (v: string) => void; children: React.ReactNode;
-}) {
-  const isOpen = open === id;
-  return (
-    <div className="bg-card border border-border rounded-[6px] overflow-hidden">
-      <button
-        onClick={() => setOpen(isOpen ? "" : id)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-accent/5 transition-colors"
-      >
-        <span className="font-medium">{title}</span>
-        <motion.span animate={{ rotate: isOpen ? 90 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronRight size={16} className="text-muted-foreground" />
-        </motion.span>
-      </button>
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] }}
-            style={{ overflow: "hidden" }}
-          >
-            <div className="px-5 pb-5 border-t border-border pt-4">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -841,18 +820,24 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
   }
   return (
     <div className="flex flex-col gap-4">
+      {value.length === 0 && (
+        <div className="rounded-[6px] border border-dashed border-border px-5 py-8 flex flex-col items-center gap-2 text-center">
+          <Layers size={20} className="text-muted-foreground/50" />
+          <p className="text-sm font-medium text-foreground">No services added yet</p>
+          <p className="text-xs text-muted-foreground">Add your services so customers know what you offer.</p>
+        </div>
+      )}
       {value.map((s, i) => (
         <div key={i} className="bg-secondary rounded-[6px] p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Service {i + 1}</span>
             <button
               onClick={() => remove(i)}
-              className="flex items-center gap-1.5 text-xs font-medium bg-red-600 hover:bg-red-500 text-white rounded-[4px] px-2.5 py-1 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-[6px] px-2 py-1 transition-colors"
             >
-              <Trash2 size={11} /> Delete
+              <Trash2 size={12} /> Remove
             </button>
           </div>
-          {/* Title — user writes, no AI, max 20 chars */}
           <Field
             label="Service name"
             value={s.title}
@@ -875,7 +860,7 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
           />
         </div>
       ))}
-      <button onClick={add} className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 border border-indigo-900 rounded-[4px] px-3 py-2 w-fit transition-colors">
+      <button onClick={add} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground bg-secondary hover:bg-secondary/80 border border-border rounded-[6px] px-4 py-2.5 w-fit transition-colors">
         <Plus size={14} /> Add service
       </button>
     </div>
@@ -895,12 +880,8 @@ function Field({ label, value, onChange, placeholder, required, maxLength, minLe
         <label className="text-sm text-foreground">{label}</label>
         <div className="flex items-center gap-2">
           {onAI && (
-            <button
-              type="button"
-              onClick={onAI}
-              disabled={aiLoading}
-              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50"
-            >
+            <button type="button" onClick={onAI} disabled={aiLoading}
+              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50">
               {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
               AI fill
             </button>
@@ -930,18 +911,23 @@ function TextareaField({ label, value, onChange, placeholder, maxLength, minLeng
   onAI?: () => void; aiLoading?: boolean;
 }) {
   const belowMin = minLength !== undefined && value.length > 0 && value.length < minLength;
+  const taRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const el = taRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [value]);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
         <label className="text-sm text-foreground">{label}</label>
         <div className="flex items-center gap-2">
           {onAI && (
-            <button
-              type="button"
-              onClick={onAI}
-              disabled={aiLoading}
-              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50"
-            >
+            <button type="button" onClick={onAI} disabled={aiLoading}
+              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50">
               {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
               AI fill
             </button>
@@ -954,12 +940,13 @@ function TextareaField({ label, value, onChange, placeholder, maxLength, minLeng
         </div>
       </div>
       <textarea
+        ref={taRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        rows={3}
         maxLength={maxLength}
-        className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500 resize-none"
+        rows={3}
+        className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500 resize-none overflow-hidden"
       />
     </div>
   );

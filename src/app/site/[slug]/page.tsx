@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Phone, MapPin, Mail, Clock,
-  Star, ArrowRight,
+  Star, ArrowRight, CheckCircle,
 } from "lucide-react";
 import HeroSlider from "@/components/site/HeroSlider";
 import ReviewMarquee from "@/components/site/ReviewMarquee";
@@ -19,6 +19,7 @@ interface Business {
   category: string; phone: string; email: string; address: string; maps_url: string; website: string;
   hero_image: string; gallery: string[]; about_image: string; hours: Record<string, string>;
   services: Service[]; testimonials: Testimonial[];
+  why_us: { title: string; description: string }[];
   social: { instagram?: string; facebook?: string; twitter?: string; tiktok?: string; whatsapp?: string };
   theme_color: string; stat_years: string; stat_clients: string; stat_projects: string;
 }
@@ -92,7 +93,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   const sb = SCROLLBAR[accentKey] ?? SCROLLBAR.indigo;
   const sbTrack = T.isLight ? "#f3f4f6" : "#111827";
 
-  const allImages = [biz.hero_image, ...(biz.gallery ?? [])].filter(Boolean);
+  const allImages = (biz.gallery ?? []).filter(Boolean);
   const sliderImages = allImages.slice(0, 6);
   const aboutImage = biz.about_image || allImages[1] || allImages[0] || "";
 
@@ -106,6 +107,8 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   const avgRating = biz.testimonials.length
     ? (biz.testimonials.reduce((s, r) => s + r.rating, 0) / biz.testimonials.length).toFixed(1)
     : null;
+
+  const whyUs = (biz.why_us ?? []).filter((p) => p.title && p.description);
 
   return (
     <div className={`min-h-screen ${T.page} ${T.text}`}>
@@ -159,8 +162,16 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
 
           {/* Left: text */}
           <div className="flex flex-col gap-4">
+            {avgRating && (
+              <div className={`inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-[6px] text-xs font-medium ${T.iconBg}`}>
+                <Star size={11} className="fill-current" />
+                {avgRating} on Google
+                {biz.stat_clients && <span className="opacity-70">· {biz.stat_clients} reviews</span>}
+              </div>
+            )}
+
             {biz.category !== "Other" && (
-              <span className={`inline-flex w-fit text-xs font-semibold px-2.5 py-1 rounded-md ${T.badge}`}>
+              <span className={`inline-flex w-fit text-xs font-semibold px-2.5 py-1 rounded-[6px] ${T.badge}`}>
                 {biz.category}
               </span>
             )}
@@ -177,12 +188,12 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
 
             {/* Stats */}
             {stats.length > 0 && (
-              <div className="flex flex-wrap gap-3 mt-1">
+              <div className="flex flex-wrap gap-2 mt-1">
                 {stats.map((s) => (
-                  <div key={s.label} className={`border rounded-[8px] px-3 py-2 text-center min-w-[80px] ${T.divider} ${T.isLight ? "bg-white" : "bg-gray-900"}`}>
-                    <p className={`text-base font-bold ${T.accentText}`}>{s.value}</p>
-                    <p className={`text-[10px] ${T.faint} mt-0.5`}>{s.label}</p>
-                  </div>
+                  <span key={s.label} className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-[6px] border ${T.divider} ${T.isLight ? "bg-white text-gray-700" : "bg-gray-900 text-gray-300"}`}>
+                    <span className={`font-bold ${T.accentText}`}>{s.value}</span>
+                    {s.label}
+                  </span>
                 ))}
               </div>
             )}
@@ -198,9 +209,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                   <Phone size={14} /> Call now
                 </a>
               )}
-              {biz.address && (
+              {(biz.maps_url || biz.address) && (
                 <a
-                  href={`https://maps.google.com/?q=${encodeURIComponent(biz.address)}`}
+                  href={biz.maps_url || `https://maps.google.com/?q=${encodeURIComponent(biz.address)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`inline-flex items-center gap-1.5 border px-4 py-2.5 font-medium text-sm transition-colors ${T.btnOutline}`}
@@ -296,6 +307,30 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                   </StaggerItem>
                 );
               })}
+            </StaggerGrid>
+          </div>
+        </section>
+      )}
+
+      {/* ── WHY US ── */}
+      {whyUs.length > 0 && (
+        <section className="pb-12 sm:pb-16">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className={`h-px mb-10 sm:mb-14 bg-gradient-to-r from-transparent ${T.isLight ? "via-gray-300" : "via-gray-800"} to-transparent`} />
+            <FadeUp className="mb-8">
+              <p className={`text-xs font-semibold uppercase tracking-widest mb-2 ${T.accentText}`}>Why choose us</p>
+              <h2 className="text-xl sm:text-2xl font-bold">Why people choose {biz.name}</h2>
+            </FadeUp>
+            <StaggerGrid className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {whyUs.map((p, i) => (
+                <StaggerItem key={i} className={`rounded-[6px] p-5 sm:p-6 border flex flex-col gap-3 ${T.card}`}>
+                  <div className={`w-9 h-9 rounded-[6px] flex items-center justify-center shrink-0 ${T.iconBg}`}>
+                    <CheckCircle size={17} />
+                  </div>
+                  <p className={`text-sm sm:text-base font-semibold leading-snug ${T.text}`}>{p.title}</p>
+                  <p className={`text-xs sm:text-sm leading-relaxed ${T.muted}`}>{p.description}</p>
+                </StaggerItem>
+              ))}
             </StaggerGrid>
           </div>
         </section>
