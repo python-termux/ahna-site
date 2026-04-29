@@ -770,7 +770,6 @@ function EditForm({ biz, userId, onBack, onLogout }: {
                 onClick={async () => {
                   setDeleteLoading(true);
                   const supabase = (await import("@/lib/supabase/client")).createClient();
-                  await supabase.from("businesses").delete().eq("user_id", userId);
                   const { error } = await supabase.rpc("delete_user");
                   if (error) {
                     toast.error("Failed to delete account. Contact support@ahna.ae");
