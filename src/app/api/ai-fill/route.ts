@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 import { NextResponse } from "next/server";
 
 const URL = "https://api.groq.com/openai/v1/chat/completions";

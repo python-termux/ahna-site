@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slugify";
 import { getHeroImage, getImagesForCategory } from "@/lib/images";

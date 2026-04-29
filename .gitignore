@@ -56,9 +56,6 @@ Desktop.ini
 *.swo
 *~
 
-# ── Lock file (cross-platform native binaries conflict) ───────────────────────
-package-lock.json
-
 # ── Vercel ────────────────────────────────────────────────────────────────────
 .vercel/
 
@@ -66,11 +63,3 @@ package-lock.json
 *.pem
 .cache/
 dist/
-
-# OpenNext
-.open-next
-
-# Cloudflare local dev
-.dev.vars
-cloudflare-env.d.ts
-.wrangler/

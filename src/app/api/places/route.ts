@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 import { createClient } from "@/lib/supabase/server";
 import { fetchPlaceFromUrl } from "@/lib/places";
 import { slugify } from "@/lib/slugify";

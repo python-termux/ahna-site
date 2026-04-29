@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
