@@ -49,6 +49,7 @@ export default function DashboardClient({ user, businesses }: {
     return (
       <EditForm
         biz={activeBiz}
+        userId={user.id}
         onBack={businesses.length > 1 ? () => setActiveBiz(null) : undefined}
         onLogout={logout}
       />
@@ -131,8 +132,9 @@ export default function DashboardClient({ user, businesses }: {
 }
 
 // ─── EDIT FORM ────────────────────────────────────────────────────────────────
-function EditForm({ biz, onBack, onLogout }: {
+function EditForm({ biz, userId, onBack, onLogout }: {
   biz: Business;
+  userId: string;
   onBack?: () => void;
   onLogout: () => void;
 }) {
@@ -768,7 +770,7 @@ function EditForm({ biz, onBack, onLogout }: {
                 onClick={async () => {
                   setDeleteLoading(true);
                   const supabase = (await import("@/lib/supabase/client")).createClient();
-                  await supabase.from("businesses").delete().eq("user_id", data.id);
+                  await supabase.from("businesses").delete().eq("user_id", userId);
                   const { error } = await supabase.rpc("delete_user");
                   if (error) {
                     toast.error("Failed to delete account. Contact support@ahna.ae");
