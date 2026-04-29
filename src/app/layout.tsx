@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import { Toaster } from "sonner";

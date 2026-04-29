@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import { fetchPlaceFromUrl } from "@/lib/places";
 import { NextResponse } from "next/server";
 
