@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,6 @@ import {
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { CATEGORIES } from "@/lib/images";
 import type { User } from "@supabase/supabase-js";
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -28,7 +27,7 @@ interface Business {
 }
 
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-const THEMES = ["indigo","violet","rose","orange","emerald","sky","amber","white"];
+const ACCENT_THEMES = ["indigo","violet","rose","orange","emerald","sky","amber"];
 
 // ─── main component ────────────────────────────────────────────────────────────
 export default function DashboardClient({ user, businesses }: {
@@ -46,7 +45,6 @@ export default function DashboardClient({ user, businesses }: {
     router.push("/");
   }
 
-  // Single business: go straight to editor
   if (activeBiz) {
     return (
       <EditForm
@@ -57,7 +55,6 @@ export default function DashboardClient({ user, businesses }: {
     );
   }
 
-  // Multiple businesses: show list
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -71,9 +68,7 @@ export default function DashboardClient({ user, businesses }: {
         transition={{ duration: 0.35 }}
         className="border-b border-border px-6 py-4 flex items-center justify-between max-w-6xl mx-auto"
       >
-        <div className="flex items-center gap-3">
-          <span className="font-bold text-lg">ahna.ae</span>
-        </div>
+        <span className="font-bold text-lg">ahna.ae</span>
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
           <button onClick={logout} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -154,7 +149,6 @@ function EditForm({ biz, onBack, onLogout }: {
 
   const isDirty = JSON.stringify(data) !== savedSnapshot.current;
 
-  // Warn on tab close / reload when dirty
   useEffect(() => {
     function onBeforeUnload(e: BeforeUnloadEvent) {
       if (isDirty) { e.preventDefault(); }
@@ -193,38 +187,31 @@ function EditForm({ biz, onBack, onLogout }: {
   }
 
   async function save() {
-    // Validate limits before saving
     if (data.tagline && data.tagline.length < 250) {
       toast.error(`Tagline is too short — minimum 250 characters (currently ${data.tagline.length})`);
-      setOpen("header");
-      return;
+      setOpen("header"); return;
     }
     if (data.tagline && data.tagline.length > 300) {
       toast.error(`Tagline is too long — maximum 300 characters (currently ${data.tagline.length})`);
-      setOpen("header");
-      return;
+      setOpen("header"); return;
     }
     if (data.description && data.description.length < 350) {
       toast.error(`About description is too short — minimum 350 characters (currently ${data.description.length})`);
-      setOpen("header");
-      return;
+      setOpen("header"); return;
     }
     if (data.description && data.description.length > 400) {
       toast.error(`About description is too long — maximum 400 characters (currently ${data.description.length})`);
-      setOpen("header");
-      return;
+      setOpen("header"); return;
     }
     for (let i = 0; i < data.services.length; i++) {
       const svc = data.services[i];
       if (svc.description && svc.description.length < 150) {
-        toast.error(`Service "${svc.title || `#${i + 1}`}" description is too short — must be exactly 150 characters (currently ${svc.description.length})`);
-        setOpen("services");
-        return;
+        toast.error(`Service "${svc.title || `#${i + 1}`}" description too short — must be exactly 150 characters (currently ${svc.description.length})`);
+        setOpen("services"); return;
       }
       if (svc.description && svc.description.length > 150) {
-        toast.error(`Service "${svc.title || `#${i + 1}`}" description is too long — must be exactly 150 characters (currently ${svc.description.length})`);
-        setOpen("services");
-        return;
+        toast.error(`Service "${svc.title || `#${i + 1}`}" description too long — must be exactly 150 characters (currently ${svc.description.length})`);
+        setOpen("services"); return;
       }
     }
 
@@ -247,6 +234,11 @@ function EditForm({ biz, onBack, onLogout }: {
     }
   }
 
+  const isLight = data.theme_color === "white" || data.theme_color.startsWith("white-");
+  const currentAccent = data.theme_color.startsWith("white-")
+    ? data.theme_color.slice(6)
+    : data.theme_color === "white" ? "indigo" : (data.theme_color || "indigo");
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-border px-4 sm:px-6 py-4 bg-background flex items-center justify-between max-w-6xl mx-auto w-full">
@@ -259,7 +251,6 @@ function EditForm({ biz, onBack, onLogout }: {
           <span className="font-semibold truncate max-w-[160px] text-sm text-foreground">{data.name}</span>
         </div>
         <div className="flex items-center gap-2">
-          {/* Animated Save button — appears when dirty */}
           <AnimatePresence>
             {isDirty && (
               <motion.button
@@ -270,73 +261,76 @@ function EditForm({ biz, onBack, onLogout }: {
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 onClick={save}
                 disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-foreground text-sm font-medium transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium transition-colors"
               >
                 {saving && <Loader2 size={13} className="animate-spin" />}
                 {saving ? "Saving…" : "Save"}
               </motion.button>
             )}
           </AnimatePresence>
-          {/* 3-dot dropdown — all screen sizes */}
-          <div>
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <button className="p-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                  <MoreVertical size={18} />
-                </button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content
-                  align="end"
-                  sideOffset={8}
-                  className="z-50 w-52 bg-card border border-border rounded-[6px] shadow-2xl overflow-hidden"
-                >
-                  <div className="p-2 flex flex-col gap-0.5">
-                    <DropdownMenu.Item asChild>
-                      <Link
-                        href={`/site/${data.slug}`}
-                        target="_blank"
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none"
-                      >
-                        <ExternalLink size={15} className="shrink-0" />
-                        Preview site
-                      </Link>
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item asChild>
-                      <button
-                        onClick={save}
-                        disabled={saving}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none disabled:opacity-50"
-                      >
-                        {saving ? <Loader2 size={15} className="animate-spin shrink-0" /> : <Check size={15} className="shrink-0" />}
-                        {saving ? "Saving…" : saved ? "Saved!" : "Save changes"}
-                      </button>
-                    </DropdownMenu.Item>
-                  </div>
-                  <div className="border-t border-border p-2">
-                    <DropdownMenu.Item asChild>
-                      <button
-                        onClick={onLogout}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors cursor-pointer outline-none"
-                      >
-                        <LogOut size={15} className="shrink-0" />
-                        Log out
-                      </button>
-                    </DropdownMenu.Item>
-                  </div>
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
-          </div>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button className="p-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                <MoreVertical size={18} />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                align="end"
+                sideOffset={8}
+                className="z-50 w-52 bg-card border border-border rounded-[6px] shadow-2xl overflow-hidden"
+              >
+                <div className="p-2 flex flex-col gap-0.5">
+                  <DropdownMenu.Item asChild>
+                    <Link
+                      href={`/site/${data.slug}`}
+                      target="_blank"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none"
+                    >
+                      <ExternalLink size={15} className="shrink-0" />
+                      Preview site
+                    </Link>
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item asChild>
+                    <button
+                      onClick={save}
+                      disabled={saving}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none disabled:opacity-50"
+                    >
+                      {saving ? <Loader2 size={15} className="animate-spin shrink-0" /> : <Check size={15} className="shrink-0" />}
+                      {saving ? "Saving…" : saved ? "Saved!" : "Save changes"}
+                    </button>
+                  </DropdownMenu.Item>
+                </div>
+                <div className="border-t border-border p-2">
+                  <DropdownMenu.Item asChild>
+                    <button
+                      onClick={onLogout}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors cursor-pointer outline-none"
+                    >
+                      <LogOut size={15} className="shrink-0" />
+                      Log out
+                    </button>
+                  </DropdownMenu.Item>
+                </div>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-3">
 
-        {/* ── Header / Business name ── */}
+        {/* ── Header & branding ── */}
         <Section title="Header & branding" id="header" open={open} setOpen={setOpen}>
           <div className="flex flex-col gap-4">
-            <Field label="Business name (shown in header)" value={data.name} onChange={(v) => update("name", v)} />
+            <Field
+              label="Business name (shown in header)"
+              value={data.name}
+              onChange={(v) => update("name", v)}
+              maxLength={20}
+              placeholder="Your business name"
+            />
             <Field
               label="Tagline"
               value={data.tagline}
@@ -364,53 +358,55 @@ function EditForm({ biz, onBack, onLogout }: {
             />
             <div>
               <label className="block text-sm text-foreground mb-1.5">Category</label>
-              <CategorySelect
-                value={data.category}
-                onChange={(v) => update("category", v)}
-                options={[...CATEGORIES]}
-              />
+              <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">
+                {data.category || "—"}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">Auto-set from Google Places · cannot be changed</p>
+            </div>
+          </div>
+        </Section>
+
+        {/* ── Theme ── */}
+        <Section title="Theme" id="theme" open={open} setOpen={setOpen}>
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="text-sm text-foreground mb-2 font-medium">Mode</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => update("theme_color", `white-${currentAccent}`)}
+                  className={`px-5 py-2 rounded-[6px] text-sm font-medium border transition-all ${
+                    isLight ? "bg-white text-gray-900 border-white shadow-sm" : "text-muted-foreground border-border hover:border-gray-500"
+                  }`}
+                >
+                  Light
+                </button>
+                <button
+                  type="button"
+                  onClick={() => update("theme_color", currentAccent)}
+                  className={`px-5 py-2 rounded-[6px] text-sm font-medium border transition-all ${
+                    !isLight ? "bg-secondary text-foreground border-gray-600" : "text-muted-foreground border-border hover:border-gray-500"
+                  }`}
+                >
+                  Dark
+                </button>
+              </div>
             </div>
             <div>
-              <label className="block text-sm text-foreground mb-2">Theme</label>
-              {(() => {
-                const isLight = data.theme_color === "white" || data.theme_color.startsWith("white-");
-                const currentAccent = data.theme_color.startsWith("white-")
-                  ? data.theme_color.slice(6)
-                  : data.theme_color === "white" ? "indigo" : (data.theme_color || "indigo");
-                const accents = THEMES.filter((t) => t !== "white");
-                return (
-                  <>
-                    <div className="flex gap-2 mb-3">
-                      <button
-                        type="button"
-                        onClick={() => update("theme_color", `white-${currentAccent}`)}
-                        className={`px-4 py-1.5 rounded-[6px] text-xs font-medium border transition-all ${
-                          isLight ? "bg-white text-gray-900 border-white" : "text-muted-foreground border-border hover:border-gray-500"
-                        }`}
-                      >Light</button>
-                      <button
-                        type="button"
-                        onClick={() => update("theme_color", currentAccent)}
-                        className={`px-4 py-1.5 rounded-[6px] text-xs font-medium border transition-all ${
-                          !isLight ? "bg-secondary text-foreground border-gray-600" : "text-muted-foreground border-border hover:border-gray-500"
-                        }`}
-                      >Dark</button>
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {accents.map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => update("theme_color", isLight ? `white-${t}` : t)}
-                          className={`w-7 h-7 rounded-[6px] border-2 transition-all bg-${t}-600 ${
-                            currentAccent === t ? "border-white scale-110 ring-2 ring-white/40" : "border-transparent"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </>
-                );
-              })()}
+              <p className="text-sm text-foreground mb-2 font-medium">Accent colour</p>
+              <div className="flex gap-2.5 flex-wrap">
+                {ACCENT_THEMES.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => update("theme_color", isLight ? `white-${t}` : t)}
+                    title={t.charAt(0).toUpperCase() + t.slice(1)}
+                    className={`w-8 h-8 rounded-[6px] border-2 transition-all bg-${t}-600 ${
+                      currentAccent === t ? "border-white scale-110 ring-2 ring-white/40" : "border-transparent hover:border-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </Section>
@@ -418,7 +414,6 @@ function EditForm({ biz, onBack, onLogout }: {
         {/* ── Images ── */}
         <Section title="Images" id="images" open={open} setOpen={setOpen}>
           <div className="flex flex-col gap-5">
-            {/* Hero image */}
             <div>
               <p className="text-sm text-foreground mb-3 font-medium">Hero image</p>
               {data.hero_image ? (
@@ -428,7 +423,7 @@ function EditForm({ biz, onBack, onLogout }: {
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button
                       onClick={() => update("hero_image", "")}
-                      className="bg-red-600 hover:bg-red-500 text-foreground rounded-[4px] px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors"
+                      className="bg-red-600 hover:bg-red-500 text-white rounded-[4px] px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors"
                     >
                       <Trash2 size={12} /> Remove hero image
                     </button>
@@ -448,7 +443,6 @@ function EditForm({ biz, onBack, onLogout }: {
               />
             </div>
 
-            {/* Gallery */}
             <div>
               <p className="text-sm text-foreground mb-3 font-medium">
                 Gallery <span className="text-muted-foreground font-normal">({data.gallery.length} images)</span>
@@ -462,7 +456,7 @@ function EditForm({ biz, onBack, onLogout }: {
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <button
                           onClick={() => update("gallery", data.gallery.filter((_, idx) => idx !== i))}
-                          className="bg-red-600 hover:bg-red-500 rounded-[4px] p-1.5 transition-colors"
+                          className="bg-red-600 hover:bg-red-500 text-white rounded-[4px] p-1.5 transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -475,7 +469,6 @@ function EditForm({ biz, onBack, onLogout }: {
               )}
             </div>
 
-            {/* About image */}
             <div>
               <p className="text-sm text-foreground mb-3 font-medium">About Us image</p>
               {(() => {
@@ -511,7 +504,7 @@ function EditForm({ biz, onBack, onLogout }: {
                         <img src={data.about_image} alt="about" className="w-full h-full object-cover" />
                         <button
                           onClick={() => update("about_image", "")}
-                          className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 text-foreground rounded-[4px] px-2 py-1 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 text-white rounded-[4px] px-2 py-1 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           Remove
                         </button>
@@ -559,7 +552,7 @@ function EditForm({ biz, onBack, onLogout }: {
                 </motion.div>
               ))
             )}
-            <p className="text-xs text-muted-foreground mt-1">Reviews are imported from Google Maps at registration. Remove any you don&apos;t want shown.</p>
+            <p className="text-xs text-muted-foreground mt-1">Reviews and ratings are imported from Google Maps at registration and cannot be modified.</p>
           </div>
         </Section>
 
@@ -588,8 +581,20 @@ function EditForm({ biz, onBack, onLogout }: {
         <Section title="Stats (hero section)" id="stats" open={open} setOpen={setOpen}>
           <div className="grid sm:grid-cols-3 gap-4">
             <Field label="Years in business" value={data.stat_years} onChange={(v) => update("stat_years", v)} placeholder="e.g. 12+" />
-            <Field label="Clients / Reviews" value={data.stat_clients} onChange={(v) => update("stat_clients", v)} placeholder="e.g. 500+" />
-            <Field label="Rating / Projects" value={data.stat_projects} onChange={(v) => update("stat_projects", v)} placeholder="e.g. 4.8 ★" />
+            <div>
+              <label className="text-sm text-foreground block mb-1.5">Clients / Reviews</label>
+              <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">
+                {data.stat_clients || "—"}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">Auto-fetched from Google Places</p>
+            </div>
+            <div>
+              <label className="text-sm text-foreground block mb-1.5">Rating</label>
+              <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">
+                {data.stat_projects || "—"}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">Auto-fetched from Google Places</p>
+            </div>
           </div>
         </Section>
 
@@ -658,7 +663,7 @@ function EditForm({ biz, onBack, onLogout }: {
           </div>
           <button
             onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-foreground rounded-[4px] text-sm font-medium transition-colors"
+            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-[4px] text-sm font-medium transition-colors"
           >
             <Trash2 size={14} /> Delete account
           </button>
@@ -695,7 +700,7 @@ function EditForm({ biz, onBack, onLogout }: {
               <div className="flex gap-2">
                 <button
                   onClick={() => setDiscardModal(null)}
-                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:text-foreground hover:border-border/60 transition-colors"
+                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors"
                 >
                   Stay
                 </button>
@@ -707,7 +712,7 @@ function EditForm({ biz, onBack, onLogout }: {
                 </button>
                 <button
                   onClick={async () => { await save(); setDiscardModal(null); discardModal.onConfirm(); }}
-                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 text-sm font-medium text-foreground transition-colors"
+                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 text-sm font-medium text-white transition-colors"
                 >
                   Save & leave
                 </button>
@@ -736,12 +741,12 @@ function EditForm({ biz, onBack, onLogout }: {
             </div>
 
             <p className="text-sm text-muted-foreground mb-4">
-              This action <strong className="text-white">cannot be undone</strong>. All your business pages and account data will be permanently erased.
+              This action <strong className="text-foreground">cannot be undone</strong>. All your business pages and account data will be permanently erased.
             </p>
 
             <div className="mb-5">
               <label className="text-xs text-muted-foreground block mb-1.5">
-                Type <span className="text-white font-mono">DELETE</span> to confirm
+                Type <span className="font-mono font-semibold text-foreground">DELETE</span> to confirm
               </label>
               <input
                 value={deleteConfirm}
@@ -754,7 +759,7 @@ function EditForm({ biz, onBack, onLogout }: {
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:text-foreground hover:border-border/60 transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors"
               >
                 Cancel
               </button>
@@ -774,7 +779,7 @@ function EditForm({ biz, onBack, onLogout }: {
                   toast.success("Account deleted.");
                   onLogout();
                 }}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-[4px] bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-foreground text-sm font-medium transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-[4px] bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
               >
                 {deleteLoading ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14} /> Delete forever</>}
               </button>
@@ -808,7 +813,7 @@ function Section({ title, id, open, setOpen, children }: {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] }}
             style={{ overflow: "hidden" }}
           >
             <div className="px-5 pb-5 border-t border-border pt-4">{children}</div>
@@ -839,19 +844,20 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
         <div key={i} className="bg-secondary rounded-[6px] p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Service {i + 1}</span>
-            <button onClick={() => remove(i)} className="text-red-400 hover:text-red-300"><Trash2 size={14} /></button>
+            <button
+              onClick={() => remove(i)}
+              className="flex items-center gap-1.5 text-xs font-medium bg-red-600 hover:bg-red-500 text-white rounded-[4px] px-2.5 py-1 transition-colors"
+            >
+              <Trash2 size={11} /> Delete
+            </button>
           </div>
+          {/* Title — user writes, no AI, max 20 chars */}
           <Field
-            label="Title"
+            label="Service name"
             value={s.title}
             onChange={(v) => set(i, "title", v)}
             placeholder="e.g. Custom Cakes"
-            maxLength={50}
-            aiLoading={aiLoading[`svc_title_${i}`]}
-            onAI={async () => {
-              const v = await onFillAI(`svc_title_${i}`, "service_title", { name: bizName, category: bizCategory });
-              if (v) set(i, "title", v);
-            }}
+            maxLength={20}
           />
           <TextareaField
             label="Description"
@@ -868,7 +874,7 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
           />
         </div>
       ))}
-      <button onClick={add} className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 border border-indigo-900 rounded-[4px] px-3 py-2 w-fit">
+      <button onClick={add} className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 border border-indigo-900 rounded-[4px] px-3 py-2 w-fit transition-colors">
         <Plus size={14} /> Add service
       </button>
     </div>
@@ -888,14 +894,18 @@ function Field({ label, value, onChange, placeholder, required, maxLength, minLe
         <label className="text-sm text-foreground">{label}</label>
         <div className="flex items-center gap-2">
           {onAI && (
-            <button type="button" onClick={onAI} disabled={aiLoading}
-              className="flex items-center gap-1 text-[10px] font-medium text-green-500 hover:text-green-600 border border-green-800 rounded px-1.5 py-0.5 transition-colors disabled:opacity-50">
-              {aiLoading ? <Loader2 size={9} className="animate-spin" /> : <Sparkles size={9} />}
+            <button
+              type="button"
+              onClick={onAI}
+              disabled={aiLoading}
+              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50"
+            >
+              {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
               AI fill
             </button>
           )}
           {maxLength && (
-            <span className={`text-[10px] ${belowMin ? "text-amber-400" : "text-muted-foreground"}`}>
+            <span className={`text-[10px] tabular-nums ${belowMin ? "text-amber-400" : "text-muted-foreground"}`}>
               {value.length}/{maxLength}{minLength && belowMin ? ` (min ${minLength})` : ""}
             </span>
           )}
@@ -925,14 +935,18 @@ function TextareaField({ label, value, onChange, placeholder, maxLength, minLeng
         <label className="text-sm text-foreground">{label}</label>
         <div className="flex items-center gap-2">
           {onAI && (
-            <button type="button" onClick={onAI} disabled={aiLoading}
-              className="flex items-center gap-1 text-[10px] font-medium text-green-500 hover:text-green-500 border border-green-800 rounded px-1.5 py-0.5 transition-colors disabled:opacity-50">
-              {aiLoading ? <Loader2 size={9} className="animate-spin" /> : <Sparkles size={9} />}
+            <button
+              type="button"
+              onClick={onAI}
+              disabled={aiLoading}
+              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50"
+            >
+              {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
               AI fill
             </button>
           )}
           {maxLength && (
-            <span className={`text-[10px] ${belowMin ? "text-amber-400" : "text-muted-foreground"}`}>
+            <span className={`text-[10px] tabular-nums ${belowMin ? "text-amber-400" : "text-muted-foreground"}`}>
               {value.length}/{maxLength}{minLength && belowMin ? ` (min ${minLength})` : ""}
             </span>
           )}
@@ -946,84 +960,6 @@ function TextareaField({ label, value, onChange, placeholder, maxLength, minLeng
         maxLength={maxLength}
         className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500 resize-none"
       />
-    </div>
-  );
-}
-
-// ─── CATEGORY SELECT ──────────────────────────────────────────────────────────
-function CategorySelect({ value, onChange, options }: {
-  value: string; onChange: (v: string) => void; options: string[];
-}) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
-
-  const filtered = options.filter((o) =>
-    o.toLowerCase().includes(search.toLowerCase())
-  );
-
-  useEffect(() => {
-    function onMouseDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-        setSearch("");
-      }
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") { setOpen(false); setSearch(""); }
-    }
-    document.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onMouseDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => { setOpen((o) => !o); setSearch(""); }}
-        className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground text-left flex items-center justify-between focus:outline-none focus:border-indigo-500 hover:border-border/60 transition-colors"
-      >
-        <span>{value || "Select category"}</span>
-        <ChevronRight size={14} className={`text-muted-foreground transition-transform duration-200 ${open ? "rotate-90" : ""}`} />
-      </button>
-
-      {open && (
-        <div className="absolute z-50 w-full bottom-full mb-1 bg-secondary border border-border rounded-[6px] overflow-hidden">
-          <div className="p-2 border-b border-border">
-            <input
-              autoFocus
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search categories…"
-              className="w-full bg-card border border-border rounded-[4px] px-2.5 py-1.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500"
-            />
-          </div>
-          <div className="max-h-56 overflow-y-auto">
-            {filtered.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No results</p>
-            ) : (
-              filtered.map((o) => (
-                <button
-                  key={o}
-                  type="button"
-                  onClick={() => { onChange(o); setOpen(false); setSearch(""); }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                    o === value
-                      ? "bg-indigo-600 text-foreground"
-                      : "text-foreground hover:bg-accent"
-                  }`}
-                >
-                  {o}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
