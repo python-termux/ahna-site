@@ -496,7 +496,7 @@ export default function RegisterPage() {
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <>
-      <Script src="https://connect.facebook.net/en_US/sdk.js" strategy="lazyOnload" onLoad={initFBSDK} />
+      <Script src="https://connect.facebook.net/en_US/sdk.js" strategy="afterInteractive" onLoad={initFBSDK} />
 
       <div className="min-h-screen bg-background text-foreground flex flex-col">
 
@@ -644,11 +644,11 @@ export default function RegisterPage() {
                       {fbSubStep === "connect" && (
                         <button
                           onClick={handleFBLogin}
-                          disabled={!sdkReady || fbLoadingPages}
+                          disabled={fbLoadingPages}
                           className="flex items-center justify-center gap-2.5 bg-[#1877F2] hover:bg-[#166FE5] disabled:opacity-50 text-white font-semibold py-3.5 rounded-[6px] transition-colors"
                         >
-                          {fbLoadingPages ? <Loader2 size={16} className="animate-spin" /> : <FBIcon size={16} />}
-                          {fbLoadingPages ? "Connecting…" : "Connect with Facebook"}
+                          {(fbLoadingPages || !sdkReady) ? <Loader2 size={16} className="animate-spin" /> : <FBIcon size={16} />}
+                          {fbLoadingPages ? "Connecting…" : !sdkReady ? "Loading…" : "Connect with Facebook"}
                         </button>
                       )}
 
