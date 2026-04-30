@@ -23,6 +23,16 @@ interface FBPage {
   picture?: { data: { url: string } };
 }
 
+interface FBPost {
+  id: string;
+  message?: string;
+  story?: string;
+  created_time: string;
+  full_picture?: string;
+  permalink_url?: string;
+  attachments?: { data: { title?: string; description?: string; url?: string; media?: { image?: { src: string } } }[] };
+}
+
 interface PageDetails {
   id: string;
   name: string;
@@ -40,6 +50,7 @@ interface PageDetails {
   cover?: { source: string };
   picture?: { data: { url: string } };
   photos?: { data: { images: { source: string; width: number }[] }[] };
+  posts?: { data: FBPost[] };
 }
 
 type Step = "login" | "pages" | "details";
@@ -149,6 +160,7 @@ export default function TestFBPage() {
           "website", "fan_count", "overall_star_rating", "rating_count",
           "location", "cover", "picture.type(large)",
           "photos.limit(9){images}",
+          "posts.limit(20){message,story,created_time,full_picture,permalink_url,attachments{title,description,url,media}}",
         ].join(","),
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -398,6 +410,43 @@ export default function TestFBPage() {
                         </a>
                       ) : null;
                     })}
+                  </div>
+                </div>
+              )}
+
+              {/* Posts */}
+              {details.posts?.data && details.posts.data.length > 0 && (
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+                    Posts ({details.posts.data.length})
+                  </p>
+                  <div className="space-y-3">
+                    {details.posts.data.map((post) => (
+                      <div key={post.id} className="border border-gray-800 rounded-xl overflow-hidden">
+                        {post.full_picture && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={post.full_picture} alt="post" className="w-full max-h-56 object-cover" />
+                        )}
+                        <div className="p-3 space-y-1.5">
+                          {(post.message || post.story) && (
+                            <p className="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap">
+                              {post.message || post.story}
+                            </p>
+                          )}
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-gray-600">
+                              {new Date(post.created_time).toLocaleDateString("en-AE", { year: "numeric", month: "short", day: "numeric" })}
+                            </span>
+                            {post.permalink_url && (
+                              <a href={post.permalink_url} target="_blank" rel="noopener noreferrer"
+                                className="text-[10px] text-blue-400 hover:underline">
+                                View on Facebook →
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
