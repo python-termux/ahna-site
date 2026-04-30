@@ -52,6 +52,7 @@ export default function TestFBPage() {
   const [pages, setPages] = useState<FBPage[]>([]);
   const [details, setDetails] = useState<PageDetails | null>(null);
   const [rawToken, setRawToken] = useState<string | null>(null);
+  const [debugRaw, setDebugRaw] = useState<string | null>(null);
 
   function initSDK() {
     window.FB.init({ appId: FB_APP_ID, cookie: true, xfbml: false, version: "v22.0" });
@@ -82,6 +83,7 @@ export default function TestFBPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (res: any) => {
         setLoading(false);
+        setDebugRaw(JSON.stringify(res, null, 2));
         if (res.error) { setError(res.error.message); return; }
         setPages(res.data ?? []);
         setStep("pages");
@@ -189,6 +191,24 @@ export default function TestFBPage() {
               <p className="text-sm text-gray-400 mb-4">
                 Found <strong className="text-white">{pages.length}</strong> page{pages.length !== 1 ? "s" : ""}. Click one to pull its data.
               </p>
+
+              {pages.length === 0 && (
+                <div className="bg-yellow-950 border border-yellow-800 rounded-xl p-4 text-sm text-yellow-300 space-y-2">
+                  <p className="font-semibold">Why am I seeing 0 pages?</p>
+                  <ul className="text-xs space-y-1 text-yellow-400 list-disc list-inside">
+                    <li>The Facebook account you logged in with doesn&apos;t manage any Pages</li>
+                    <li>You need to log in with the account that is Admin of your Facebook Page</li>
+                    <li>Make sure your Facebook Page exists and you are its Admin</li>
+                  </ul>
+                </div>
+              )}
+
+              {debugRaw && (
+                <details className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+                  <summary className="px-4 py-3 text-xs text-gray-500 cursor-pointer hover:text-gray-300">Raw /me/accounts response</summary>
+                  <pre className="px-4 pb-4 text-[10px] text-green-400 overflow-auto max-h-60">{debugRaw}</pre>
+                </details>
+              )}
               {pages.map((page) => (
                 <button
                   key={page.id}
