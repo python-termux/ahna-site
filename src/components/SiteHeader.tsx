@@ -2,28 +2,36 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { ThemeToggle } from "./ThemeProvider";
+import { useLanguage } from "@/lib/language";
 
-const NAV = [
-  { label: "Pricing", href: "/pricing" },
-  { label: "Contact", href: "/contact" },
-  {
-    label: "Legal",
-    children: [
-      { label: "Terms of Service", href: "/terms" },
-      { label: "Privacy Policy", href: "/privacy-policy" },
-      { label: "Refund Policy", href: "/refund" },
-    ],
-  },
-];
+type NavItem = {
+  label: string;
+  href?: string;
+  children?: Array<{ label: string; href: string }>;
+};
 
-function DropdownItem({ item }: { item: typeof NAV[number] }) {
+function LangToggle() {
+  const { lang, setLang } = useLanguage();
+  return (
+    <button
+      onClick={() => setLang(lang === "en" ? "ar" : "en")}
+      className="px-2.5 py-1 text-xs font-semibold border border-border rounded-[6px] text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+    >
+      {lang === "en" ? "AR" : "EN"}
+    </button>
+  );
+}
+
+function DropdownItem({ item }: { item: NavItem }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const { lang } = useLanguage();
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -66,6 +74,7 @@ function DropdownItem({ item }: { item: typeof NAV[number] }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
+            dir={lang === "ar" ? "rtl" : "ltr"}
             className="absolute top-full right-0 mt-1.5 w-48 bg-background border border-border rounded-[6px] shadow-2xl overflow-hidden z-50"
           >
             <div className="p-1.5 flex flex-col gap-0.5">
@@ -95,11 +104,29 @@ export default function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [legalOpen, setLegalOpen] = useState(false);
   const pathname = usePathname();
+  const { lang, t } = useLanguage();
+
+  const NAV: NavItem[] = [
+    { label: t.nav.pricing, href: "/pricing" },
+    { label: t.nav.contact, href: "/contact" },
+    {
+      label: t.nav.legal,
+      children: [
+        { label: t.nav.terms,   href: "/terms" },
+        { label: t.nav.privacy, href: "/privacy-policy" },
+        { label: t.nav.refund,  href: "/refund" },
+      ],
+    },
+  ];
 
   useEffect(() => {
     setMobileOpen(false);
     setLegalOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (mobileOpen) setLegalOpen(true);
+  }, [mobileOpen]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -112,11 +139,14 @@ export default function SiteHeader() {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
+        dir="ltr"
         className="flex items-center justify-between px-4 sm:px-6 py-5 max-w-6xl mx-auto w-full relative z-40"
       >
         {/* Logo */}
-        <Link href="/" className="text-xl font-bold tracking-tight hover:opacity-70 transition-opacity" style={{ color: "#0066cc" }}>
-          ahna.ae
+        <Link href="/" className="flex items-center hover:opacity-70 transition-opacity">
+          <span className="text-xl font-bold tracking-tight" style={{ color: "#0066cc" }}>Syrfl</span>
+          <Image src="/favicon-32x32.png" alt="o" width={18} height={18} className="rounded-full mx-px" style={{ marginBottom: "1px" }} />
+          <span className="text-xl font-bold tracking-tight" style={{ color: "#0066cc" }}>w</span>
         </Link>
 
         {/* Desktop nav */}
@@ -125,21 +155,23 @@ export default function SiteHeader() {
             <DropdownItem key={item.label} item={item} />
           ))}
           <div className="w-px h-4 bg-accent mx-2" />
+          <LangToggle />
           <ThemeToggle />
           <Link href="/auth/login" className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            Log in
+            {t.nav.login}
           </Link>
           <Link
             href="/register"
             className="px-4 py-2 text-sm text-white font-medium transition-opacity hover:opacity-90 active:scale-95"
             style={{ backgroundColor: "#0066cc", borderRadius: 9999 }}
           >
-            Get started
+            {t.nav.getStarted}
           </Link>
         </div>
 
-        {/* Mobile: theme toggle + hamburger */}
+        {/* Mobile: lang toggle + theme toggle + hamburger */}
         <div className="sm:hidden flex items-center gap-1 relative z-50">
+          <LangToggle />
           <ThemeToggle />
           <button
             onClick={() => setMobileOpen((v) => !v)}
@@ -170,6 +202,7 @@ export default function SiteHeader() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
+            dir={lang === "ar" ? "rtl" : "ltr"}
             className="fixed inset-0 z-30 bg-background flex flex-col sm:hidden"
           >
             <div className="h-[72px] shrink-0" />
@@ -213,7 +246,7 @@ export default function SiteHeader() {
                             transition={{ duration: 0.2 }}
                             className="overflow-hidden"
                           >
-                            <div className="ml-4 mt-1 flex flex-col gap-0.5 border-l border-border pl-4">
+                            <div className="ms-4 mt-1 flex flex-col gap-0.5 border-s border-border ps-4">
                               {item.children.map((child) => (
                                 <Link
                                   key={child.href}
@@ -238,21 +271,23 @@ export default function SiteHeader() {
 
               <div className="h-px bg-accent my-6" />
 
-              <div className="flex flex-col gap-3">
+              <div className="flex items-center border border-input rounded-[9999px] overflow-hidden">
                 <Link
                   href="/auth/login"
-                  className="w-full text-center px-4 py-3.5 rounded-[6px] border border-input text-sm font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+                  className="flex-1 text-center px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Log in
+                  {t.nav.login}
                 </Link>
+                <span className="w-px h-5 bg-border shrink-0" />
                 <Link
                   href="/register"
-                  className="w-full text-center px-4 py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-95"
-                  style={{ backgroundColor: "#0066cc", borderRadius: 9999 }}
+                  className="flex-1 text-center px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: "#0066cc" }}
                 >
-                  Get started
+                  {t.nav.getStarted}
                 </Link>
               </div>
+
             </div>
           </motion.div>
         )}

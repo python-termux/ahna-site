@@ -2,6 +2,16 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* ── Beiruti Arabic font ──────────────────────────────────────────────────── */
+@font-face { font-family: 'Beiruti'; src: url('/fonts/Beiruti-ExtraLight.ttf') format('truetype'); font-weight: 200; font-display: swap; }
+@font-face { font-family: 'Beiruti'; src: url('/fonts/Beiruti-Light.ttf')      format('truetype'); font-weight: 300; font-display: swap; }
+@font-face { font-family: 'Beiruti'; src: url('/fonts/Beiruti-Regular.ttf')    format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Beiruti'; src: url('/fonts/Beiruti-Medium.ttf')     format('truetype'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Beiruti'; src: url('/fonts/Beiruti-SemiBold.ttf')   format('truetype'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Beiruti'; src: url('/fonts/Beiruti-Bold.ttf')       format('truetype'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Beiruti'; src: url('/fonts/Beiruti-ExtraBold.ttf')  format('truetype'); font-weight: 800; font-display: swap; }
+@font-face { font-family: 'Beiruti'; src: url('/fonts/Beiruti-Black.ttf')      format('truetype'); font-weight: 900; font-display: swap; }
+
 @custom-variant dark (&:is(.dark *));
 
 /* Carousel */
@@ -63,6 +73,29 @@ html.dark ::-webkit-scrollbar-thumb {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #0071e3;
+}
+
+/* ── RTL: Beiruti font ────────────────────────────────────────────────────── */
+/* !important overrides next/font Inter class injected on <body>              */
+html[dir="rtl"],
+html[dir="rtl"] body,
+html[dir="rtl"] input,
+html[dir="rtl"] button,
+html[dir="rtl"] select,
+html[dir="rtl"] textarea {
+  font-family: 'Beiruti', sans-serif !important;
+  letter-spacing: 0 !important;
+}
+html[dir="rtl"] body {
+  line-height: 1.65 !important;
+}
+html[dir="rtl"] .text-sm {
+  font-size: 17px !important;
+  line-height: 1.7 !important;
+}
+html[dir="rtl"] .text-xs {
+  font-size: 15px !important;
+  line-height: 1.65 !important;
 }
 
 /* ── Marquee keyframes ────────────────────────────────────────────────────── */

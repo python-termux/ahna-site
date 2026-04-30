@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -7,10 +7,12 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/lib/language";
 
 export default function LoginPage() {
   const supabase = createClient();
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +24,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const id = toast.loading("Logging in…");
+    const id = toast.loading(t.login.loggingIn);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error(error.message, { id });
@@ -47,14 +49,14 @@ export default function LoginPage() {
         >
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-foreground transition-colors mb-8"
+            className="flex justify-center items-center gap-1.5 text-xs text-gray-500 hover:text-foreground transition-colors mb-8"
           >
-            Return to home
+            {t.login.returnHome}
           </Link>
 
           <div className="bg-card border border-border rounded-[6px] p-8">
-            <h2 className="text-xl font-semibold mb-1 text-center">Welcome back</h2>
-            <p className="text-sm text-muted-foreground mb-6 text-center">Log in to manage your business page.</p>
+            <h2 className="text-xl font-semibold mb-1 text-center">{t.login.welcome}</h2>
+            <p className="text-sm text-muted-foreground mb-6 text-center">{t.login.sub}</p>
 
             {error && (
               <div className="mb-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-[6px] px-3 py-2">
@@ -64,40 +66,40 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="relative">
-                <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <Mail size={15} className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <input
                   type="email"
-                  placeholder="Email"
+                  placeholder={t.login.email}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-background border border-input rounded-[6px] pl-9 pr-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
+                  className="w-full bg-background border border-input rounded-[6px] pl-9 rtl:pl-3 rtl:pr-9 pr-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
                 />
               </div>
 
               <div className="relative">
-                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <Lock size={15} className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <input
                   type={showPw ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder={t.login.password}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full bg-background border border-input rounded-[6px] pl-9 pr-10 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
+                  className="w-full bg-background border border-input rounded-[6px] pl-9 rtl:pl-10 rtl:pr-9 pr-10 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
                   {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
 
-              <div className="flex justify-end -mt-1">
+              <div className="flex justify-end rtl:justify-start -mt-1">
                 <Link href="/auth/forgot-password" className="text-xs text-muted-foreground hover:text-[#0066cc] dark:hover:text-[#2997ff] transition-colors">
-                  Forgot password?
+                  {t.login.forgot}
                 </Link>
               </div>
 
@@ -106,14 +108,14 @@ export default function LoginPage() {
                 disabled={loading}
                 className="flex items-center justify-center gap-2 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-60 text-white font-medium py-2.5 rounded-[4px] text-sm transition-colors"
               >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : <><span>Log in</span><ArrowRight size={15} /></>}
+                {loading ? <Loader2 size={16} className="animate-spin" /> : <><span>{t.login.submit}</span><ArrowRight size={15} /></>}
               </button>
             </form>
 
             <p className="mt-5 text-center text-sm text-muted-foreground">
-              Dont have an account?{" "}
-              <Link href="/register" className="text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] dark:hover:text-[#2997ff] transition-colors">
-                Register now
+              {t.login.noAccount}{" "}
+              <Link href="/register" className="text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] transition-colors">
+                {t.login.register}
               </Link>
             </p>
           </div>

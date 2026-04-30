@@ -81,7 +81,7 @@ export default function DashboardClient({ user, businesses }: {
         transition={{ duration: 0.35 }}
         className="border-b border-border px-6 py-4 flex items-center justify-between max-w-6xl mx-auto"
       >
-        <span className="font-bold text-lg">ahna.ae</span>
+        <span className="font-bold text-lg">syrflow.com</span>
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
           <button onClick={logout} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -371,7 +371,7 @@ function EditForm({ biz, onBack, onLogout }: {
                 <X size={18} />
               </button>
             ) : (
-              <span className="font-bold text-sm">ahna</span>
+              <span className="font-bold text-sm">syrflow</span>
             )}
             <span className="text-sm font-semibold truncate max-w-[180px] text-foreground">{data.name}</span>
           </div>

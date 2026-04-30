@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { PlaceResult } from "@/lib/places";
+import { useLanguage } from "@/lib/language";
 
 const FB_APP_ID = "1463790922054350";
 
@@ -19,7 +20,6 @@ declare global {
   interface Window { FB: any; fbAsyncInit: () => void; }
 }
 
-// ── Facebook types ────────────────────────────────────────────────────────────
 interface FBPage {
   id: string; name: string; access_token: string; category: string;
   picture?: { data: { url: string } };
@@ -41,7 +41,6 @@ function mapFBToPlace(details: FBPageDetails, page: FBPage): PlaceResult {
   function addImg(src: string | undefined) {
     if (src && !seen.has(src)) { seen.add(src); images.push(src); }
   }
-
   if (details.cover?.source) addImg(details.cover.source);
   if (details.photos?.data) {
     for (const photo of details.photos.data) {
@@ -49,9 +48,7 @@ function mapFBToPlace(details: FBPageDetails, page: FBPage): PlaceResult {
     }
   }
   if (details.posts?.data) {
-    for (const post of details.posts.data) {
-      addImg(post.full_picture);
-    }
+    for (const post of details.posts.data) { addImg(post.full_picture); }
   }
   const loc = details.location;
   const address = loc ? [loc.street, loc.city, loc.country].filter(Boolean).join(", ") : "";
@@ -71,7 +68,6 @@ function mapFBToPlace(details: FBPageDetails, page: FBPage): PlaceResult {
   };
 }
 
-// ── Password strength ─────────────────────────────────────────────────────────
 function strength(pw: string) {
   let s = 0;
   if (pw.length >= 8) s++;
@@ -80,7 +76,6 @@ function strength(pw: string) {
   if (/[^A-Za-z0-9]/.test(pw)) s++;
   return s;
 }
-const strengthLabel = ["Too short", "Weak", "Fair", "Good", "Strong"];
 const strengthColor = ["bg-red-500", "bg-red-500", "bg-yellow-500", "bg-blue-500", "bg-green-500"];
 
 const mapsReasoningPool = [
@@ -102,7 +97,6 @@ const fbReasoningPool = [
   "Fetching follower stats...", "Almost there...",
 ];
 
-// ── Validate Google Maps URL ──────────────────────────────────────────────────
 function isValidGoogleMapsUrl(url: string): boolean {
   if (!url || !url.trim()) return false;
   const patterns = [
@@ -114,7 +108,6 @@ function isValidGoogleMapsUrl(url: string): boolean {
   return patterns.some((p) => p.test(url.trim()));
 }
 
-// ── Image Strip ───────────────────────────────────────────────────────────────
 function ImageSlider({ images }: { images: string[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
@@ -151,7 +144,6 @@ function ImageSlider({ images }: { images: string[] }) {
   );
 }
 
-// ── Reviews Slider ────────────────────────────────────────────────────────────
 function ReviewsSlider({ reviews }: { reviews: { author: string; text: string; rating: number }[] }) {
   const [idx, setIdx] = useState(0);
   const paused = useRef(false);
@@ -180,7 +172,6 @@ function ReviewsSlider({ reviews }: { reviews: { author: string; text: string; r
   );
 }
 
-// ── Testimonials Marquee ──────────────────────────────────────────────────────
 const TESTIMONIALS = [
   { author: "Sarah Mitchell",   business: "The Golden Fork",       quote: "Our booking calls dropped 80% — customers book online now. Best decision we made.",                rating: 5 },
   { author: "James Al-Rashid", business: "Elite Auto Garage",      quote: "Clients find us on Google, see our page, and just show up. It runs itself.",                       rating: 5 },
@@ -195,6 +186,7 @@ const TESTIMONIALS = [
   { author: "Zara Williams",   business: "Zara Law Group",         quote: "Professional, fast, and clients actually read it. Finally a site I'm proud of.",                   rating: 5 },
   { author: "David Kim",       business: "Kim's Sushi Bar",        quote: "Reservations up 60% since launch. The auto-import from Google Maps is magic.",                     rating: 5 },
 ];
+
 function TestimonialCard({ t }: { t: typeof TESTIMONIALS[0] }) {
   return (
     <div className="flex-shrink-0 w-64 bg-card border border-border rounded-[6px] p-4 mx-2">
@@ -210,10 +202,12 @@ function TestimonialCard({ t }: { t: typeof TESTIMONIALS[0] }) {
     </div>
   );
 }
+
 function TestimonialsMarquee() {
   const row1 = TESTIMONIALS.slice(0, 6); const row2 = TESTIMONIALS.slice(6, 12);
   return (
-    <div className="flex flex-col gap-4">
+    /* dir="ltr" locks the marquee to LTR regardless of page language */
+    <div className="flex flex-col gap-4" dir="ltr">
       <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <div className="flex" style={{ animation: "marquee-l 35s linear infinite", width: "max-content" }}>
           {[...row1, ...row1].map((t, i) => <TestimonialCard key={i} t={t} />)}
@@ -228,7 +222,6 @@ function TestimonialsMarquee() {
   );
 }
 
-// ── FB icon SVG ───────────────────────────────────────────────────────────────
 function FBIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" width={size} height={size} className={className}>
@@ -237,15 +230,14 @@ function FBIcon({ size = 16, className = "" }: { size?: number; className?: stri
   );
 }
 
-// ── AI loading block ──────────────────────────────────────────────────────────
-function AILoadingBlock({ step, steps }: { step: number; steps: string[] }) {
+function AILoadingBlock({ step, steps, isAr }: { step: number; steps: string[]; isAr: boolean }) {
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden mt-2">
       <div className="border border-[#0066cc]/30 rounded-[6px] bg-[#0066cc]/8 dark:bg-[#0066cc]/10 overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-2 border-b border-[#0066cc]/30 bg-[#0066cc]/10 dark:bg-[#0066cc]/15">
           <Brain size={16} className="text-[#2997ff]/30" />
           <motion.span className="text-xs font-medium text-[#0066cc] dark:text-[#2997ff]" animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }}>
-            AI is thinking
+            {isAr ? "الذكاء الاصطناعي يفكر" : "AI is thinking"}
           </motion.span>
           <div className="flex gap-1 ml-auto">
             {[0, 0.2, 0.4].map((d, i) => (
@@ -263,17 +255,20 @@ function AILoadingBlock({ step, steps }: { step: number; steps: string[] }) {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
 export default function RegisterPage() {
   const router = useRouter();
   const supabase = createClient();
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
 
-  // Wizard state
+  const strengthLabel = isAr
+    ? ["قصير جداً", "ضعيفة", "مقبولة", "جيدة", "قوية"]
+    : ["Too short", "Weak", "Fair", "Good", "Strong"];
+
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [source, setSource] = useState<"maps" | "facebook" | null>(null);
   const [place, setPlace] = useState<PlaceResult | null>(null);
 
-  // Google Maps state
   const [mapsUrl, setMapsUrl] = useState("");
   const [fetchError, setFetchError] = useState("");
   const [urlError, setUrlError] = useState("");
@@ -281,14 +276,12 @@ export default function RegisterPage() {
   const [reasoningStep, setReasoningStep] = useState(0);
   const [currentSteps, setCurrentSteps] = useState<string[]>([]);
 
-  // Facebook state
   const [sdkReady, setSdkReady] = useState(false);
   const [fbSubStep, setFbSubStep] = useState<"connect" | "pages" | "fetching">("connect");
   const [fbPages, setFbPages] = useState<FBPage[]>([]);
   const [fbError, setFbError] = useState("");
   const [fbLoadingPages, setFbLoadingPages] = useState(false);
 
-  // Account state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
@@ -297,7 +290,6 @@ export default function RegisterPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
   function getRandomSteps(pool: string[]) {
     const shuffled = [...pool];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -318,7 +310,6 @@ export default function RegisterPage() {
     return steps;
   }
 
-  // ── Google Maps flow ──────────────────────────────────────────────────────────
   const isUrlValid = isValidGoogleMapsUrl(mapsUrl);
   const canFind = !isLoading && mapsUrl.trim().length > 0 && isUrlValid;
 
@@ -326,7 +317,9 @@ export default function RegisterPage() {
     const v = e.target.value;
     setMapsUrl(v);
     setFetchError("");
-    setUrlError(v.trim().length > 0 && !isValidGoogleMapsUrl(v) ? "Please enter a valid Google Maps link only" : "");
+    setUrlError(v.trim().length > 0 && !isValidGoogleMapsUrl(v)
+      ? (isAr ? "أدخل رابط Google Maps صحيح فقط" : "Please enter a valid Google Maps link only")
+      : "");
   }
 
   async function findBusiness() {
@@ -353,7 +346,6 @@ export default function RegisterPage() {
     }
   }
 
-  // ── Facebook flow ─────────────────────────────────────────────────────────────
   function initFBSDK() {
     window.FB.init({ appId: FB_APP_ID, cookie: true, xfbml: false, version: "v22.0" });
     setSdkReady(true);
@@ -365,12 +357,8 @@ export default function RegisterPage() {
     window.FB.login(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (res: any) => {
-        if (res.authResponse) {
-          fetchFBPages();
-        } else {
-          setFbLoadingPages(false);
-          setFbError("Login cancelled or permission denied.");
-        }
+        if (res.authResponse) { fetchFBPages(); }
+        else { setFbLoadingPages(false); setFbError("Login cancelled or permission denied."); }
       },
       { scope: "pages_show_list,business_management,pages_read_engagement,pages_read_user_content" }
     );
@@ -383,18 +371,14 @@ export default function RegisterPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (res: any) => {
         if (!res.error && res.data?.length > 0) {
-          setFbPages(res.data);
-          setFbLoadingPages(false);
-          setFbSubStep("pages");
-          return;
+          setFbPages(res.data); setFbLoadingPages(false); setFbSubStep("pages"); return;
         }
-        // Fallback: Business Manager
         window.FB.api("/me/businesses", { fields: "id,name" },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (bizRes: any) => {
             if (bizRes.error || !bizRes.data?.length) {
               setFbLoadingPages(false);
-              setFbError("No Facebook Pages found. Make sure you are the Admin of a Page.");
+              setFbError(isAr ? "لم يتم العثور على صفحات Facebook. تأكد من أنك مسؤول الصفحة." : "No Facebook Pages found. Make sure you are the Admin of a Page.");
               return;
             }
             const allPages: FBPage[] = [];
@@ -408,11 +392,8 @@ export default function RegisterPage() {
                   if (--pending === 0) {
                     setFbLoadingPages(false);
                     if (allPages.length === 0) {
-                      setFbError("No Facebook Pages found. Make sure you are the Admin of a Page.");
-                    } else {
-                      setFbPages(allPages);
-                      setFbSubStep("pages");
-                    }
+                      setFbError(isAr ? "لم يتم العثور على صفحات Facebook. تأكد من أنك مسؤول الصفحة." : "No Facebook Pages found. Make sure you are the Admin of a Page.");
+                    } else { setFbPages(allPages); setFbSubStep("pages"); }
                   }
                 }
               );
@@ -424,37 +405,24 @@ export default function RegisterPage() {
   }
 
   async function selectFBPage(page: FBPage) {
-    setFbSubStep("fetching");
-    setFbError("");
+    setFbSubStep("fetching"); setFbError("");
     const animPromise = runLoadingAnimation(fbReasoningPool);
     window.FB.api(
       `/${page.id}`,
       {
         access_token: page.access_token,
-        fields: [
-          "id", "name", "about", "description", "phone", "website",
-          "fan_count", "overall_star_rating", "rating_count",
-          "location", "cover", "picture.type(large)",
-          "photos.limit(30){images}",
-          "posts.limit(50){full_picture}",
-        ].join(","),
+        fields: ["id","name","about","description","phone","website","fan_count","overall_star_rating","rating_count","location","cover","picture.type(large)","photos.limit(30){images}","posts.limit(50){full_picture}"].join(","),
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async (res: any) => {
         await animPromise;
-        if (res.error) {
-          setFbSubStep("pages");
-          setFbError(res.error.message);
-          return;
-        }
+        if (res.error) { setFbSubStep("pages"); setFbError(res.error.message); return; }
         const mapped = mapFBToPlace(res as FBPageDetails, page);
-        setPlace(mapped);
-        setStep(2);
+        setPlace(mapped); setStep(2);
       }
     );
   }
 
-  // ── Account creation ──────────────────────────────────────────────────────────
   const pwStrength = strength(password);
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const pwMatch = password === confirmPw && confirmPw.length > 0;
@@ -463,48 +431,32 @@ export default function RegisterPage() {
   async function createAccount(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit || !place) return;
-    setAuthLoading(true);
-    setAuthError("");
-
+    setAuthLoading(true); setAuthError("");
     const { error: authErr } = await supabase.auth.signUp({ email, password });
     if (authErr) { setAuthError(authErr.message); setAuthLoading(false); return; }
-
     const bizRes = await fetch("/api/business", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: place.name,
-        tagline: "",
-        description: place.description,
-        category: place.category,
-        phone: place.phone,
-        email: "",
-        address: place.address,
-        maps_url: place.mapsUrl || "",
-        website: place.website,
-        hero_image: "",
-        gallery: place.images,
-        hours: place.hours,
-        services: [],
+        name: place.name, tagline: "", description: place.description,
+        category: place.category, phone: place.phone, email: "",
+        address: place.address, maps_url: place.mapsUrl || "",
+        website: place.website, hero_image: "", gallery: place.images,
+        hours: place.hours, services: [],
         testimonials: place.reviews.map((r) => ({ author: r.author, role: "", text: r.text, rating: r.rating })),
-        social: {},
-        theme_color: "indigo",
-        stat_years: "",
+        social: {}, theme_color: "indigo", stat_years: "",
         stat_clients: place.reviewCount ? `${place.reviewCount.toLocaleString()}+` : "",
         stat_projects: place.rating ? `${place.rating} ★` : "",
       }),
     });
-
     if (!bizRes.ok) {
       const d = await bizRes.json();
       setAuthError(d.error ?? "Account created but failed to save business");
-      setAuthLoading(false);
-      return;
+      setAuthLoading(false); return;
     }
     router.push("/dashboard");
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <>
       <Script src="https://connect.facebook.net/en_US/sdk.js" strategy="afterInteractive" onLoad={initFBSDK} />
@@ -529,13 +481,13 @@ export default function RegisterPage() {
           <div className="lg:w-[520px] lg:flex-shrink-0 px-4 sm:px-6 py-14 lg:border-r border-border">
           <div className="w-full max-w-lg">
 
-            <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-foreground transition-colors mb-8">
-              Return to home
+            <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-foreground transition-colors mb-8">
+              {isAr ? "العودة للرئيسية" : "Return to home"}
             </Link>
 
             <motion.p key={step} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="text-xs text-gray-500 mb-6 font-medium tracking-widest uppercase">
-              Step {step} of 3
+              {isAr ? `خطوة ${step} من 3` : `Step ${step} of 3`}
             </motion.p>
 
             <AnimatePresence mode="wait">
@@ -543,35 +495,28 @@ export default function RegisterPage() {
               {/* ── STEP 1 ── */}
               {step === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }}>
-                  <h1 className="text-3xl font-bold mb-2">Find your business</h1>
-                  <p className="text-muted-foreground mb-6">Choose how you want to import your business data.</p>
+                  <h1 className="text-3xl font-bold mb-2">{isAr ? "ابحث عن نشاطك التجاري" : "Find your business"}</h1>
+                  <p className="text-muted-foreground mb-6">{isAr ? "اختر طريقة استيراد بيانات نشاطك التجاري." : "Choose how you want to import your business data."}</p>
 
-                  {/* Source selector */}
                   {!source && (
                     <div className="grid grid-cols-2 gap-3 mb-6">
-                      <button
-                        onClick={() => setSource("maps")}
-                        className="flex flex-col items-center gap-3 p-5 bg-card border-2 border-border hover:border-[#0066cc] rounded-[8px] transition-all text-center group"
-                      >
+                      <button onClick={() => setSource("maps")} className="flex flex-col items-center gap-3 p-5 bg-card border-2 border-border hover:border-[#0066cc] rounded-[8px] transition-all text-center group">
                         <div className="w-11 h-11 rounded-[8px] bg-[#0066cc]/10 flex items-center justify-center group-hover:bg-[#0066cc]/15 transition-colors">
                           <MapPin size={20} style={{ color: "#0066cc" }} />
                         </div>
                         <div>
                           <p className="font-semibold text-sm text-foreground">Google Maps</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">Paste your Maps link</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">{isAr ? "الصق رابط Google Maps" : "Paste your Maps link"}</p>
                         </div>
                       </button>
 
-                      <button
-                        onClick={() => setSource("facebook")}
-                        className="flex flex-col items-center gap-3 p-5 bg-card border-2 border-border hover:border-[#1877F2] rounded-[8px] transition-all text-center group"
-                      >
+                      <button onClick={() => setSource("facebook")} className="flex flex-col items-center gap-3 p-5 bg-card border-2 border-border hover:border-[#1877F2] rounded-[8px] transition-all text-center group">
                         <div className="w-11 h-11 rounded-[8px] bg-[#1877F2]/10 flex items-center justify-center group-hover:bg-[#1877F2]/15 transition-colors">
                           <FBIcon size={20} className="text-[#1877F2]" />
                         </div>
                         <div>
                           <p className="font-semibold text-sm text-foreground">Facebook Page</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">Connect your Page</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">{isAr ? "ربط صفحتك" : "Connect your Page"}</p>
                         </div>
                       </button>
                     </div>
@@ -580,29 +525,28 @@ export default function RegisterPage() {
                   {/* ── Google Maps input ── */}
                   {source === "maps" && (
                     <div className="flex flex-col gap-3">
-                      <button onClick={() => setSource(null)} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-foreground transition-colors mb-1">
-                        ← Change source
+                      <button onClick={() => setSource(null)} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-foreground transition-colors mb-1">
+                        {isAr ? "تغيير المصدر" : "Change source"}
                       </button>
-
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-7 h-7 rounded-[6px] bg-[#0066cc]/10 flex items-center justify-center">
                           <MapPin size={13} style={{ color: "#0066cc" }} />
                         </div>
                         <span className="text-sm font-medium">Google Maps</span>
                       </div>
-
                       <p className="text-sm text-muted-foreground mb-2">
-                        Open Google Maps, search your business, click <strong className="text-foreground">Share → Copy link</strong> and paste below.
+                        {isAr
+                          ? <>افتح Google Maps، ابحث عن نشاطك، انقر <strong className="text-foreground">Share → Copy link</strong> والصق أدناه.</>
+                          : <>Open Google Maps, search your business, click <strong className="text-foreground">Share → Copy link</strong> and paste below.</>
+                        }
                       </p>
-
                       {fetchError && (
                         <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-[6px] px-4 py-3">
                           {fetchError}
                         </div>
                       )}
-
                       <div>
-                        <label className="block text-sm text-gray-300 mb-1.5">Google Maps link</label>
+                        <label className="block text-sm text-gray-300 mb-1.5">{isAr ? "رابط Google Maps" : "Google Maps link"}</label>
                         <div className="flex gap-2">
                           <input
                             value={mapsUrl}
@@ -611,22 +555,18 @@ export default function RegisterPage() {
                             placeholder="https://maps.app.goo.gl/your-business-link"
                             className={`flex-1 bg-background border rounded-[6px] px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors ${urlError ? "border-red-500" : "border-input"}`}
                           />
-                          <button
-                            onClick={findBusiness}
-                            disabled={!canFind}
-                            className={`px-5 py-3 rounded-[6px] text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${canFind ? "bg-[#0066cc] hover:bg-[#0071e3] text-white" : "bg-accent opacity-50 cursor-not-allowed"}`}
-                          >
-                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : "Find"}
+                          <button onClick={findBusiness} disabled={!canFind}
+                            className={`px-5 py-3 rounded-[6px] text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${canFind ? "bg-[#0066cc] hover:bg-[#0071e3] text-white" : "bg-accent opacity-50 cursor-not-allowed"}`}>
+                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : (isAr ? "بحث" : "Find")}
                           </button>
                         </div>
                         {urlError && <p className="text-xs text-red-400 mt-1">{urlError}</p>}
-                        <p className="text-xs text-gray-500 mt-2">Only Google Maps links accepted. Example: https://maps.app.goo.gl/...</p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {isAr ? "يُقبل روابط Google Maps فقط. مثال: https://maps.app.goo.gl/..." : "Only Google Maps links accepted. Example: https://maps.app.goo.gl/..."}
+                        </p>
                       </div>
-
                       <AnimatePresence mode="wait">
-                        {isLoading && currentSteps.length > 0 && (
-                          <AILoadingBlock step={reasoningStep} steps={currentSteps} />
-                        )}
+                        {isLoading && currentSteps.length > 0 && <AILoadingBlock step={reasoningStep} steps={currentSteps} isAr={isAr} />}
                       </AnimatePresence>
                     </div>
                   )}
@@ -634,45 +574,37 @@ export default function RegisterPage() {
                   {/* ── Facebook flow ── */}
                   {source === "facebook" && (
                     <div className="flex flex-col gap-3">
-                      <button onClick={() => { setSource(null); setFbSubStep("connect"); setFbPages([]); setFbError(""); }} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-foreground transition-colors mb-1">
-                        ← Change source
+                      <button onClick={() => { setSource(null); setFbSubStep("connect"); setFbPages([]); setFbError(""); }} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-foreground transition-colors mb-1">
+                        {isAr ? "تغيير المصدر" : "Change source"}
                       </button>
-
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-7 h-7 rounded-[6px] bg-[#1877F2]/10 flex items-center justify-center">
                           <FBIcon size={13} className="text-[#1877F2]" />
                         </div>
                         <span className="text-sm font-medium">Facebook Page</span>
                       </div>
-
                       {fbError && (
                         <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-[6px] px-4 py-3">
                           {fbError}
                         </div>
                       )}
-
-                      {/* Connect button */}
                       {fbSubStep === "connect" && (
-                        <button
-                          onClick={handleFBLogin}
-                          disabled={fbLoadingPages}
-                          className="flex items-center justify-center gap-2.5 bg-[#1877F2] hover:bg-[#166FE5] disabled:opacity-50 text-white font-semibold py-3.5 rounded-[6px] transition-colors"
-                        >
+                        <button onClick={handleFBLogin} disabled={fbLoadingPages}
+                          className="flex items-center justify-center gap-2.5 bg-[#1877F2] hover:bg-[#166FE5] disabled:opacity-50 text-white font-semibold py-3.5 rounded-[6px] transition-colors">
                           {(fbLoadingPages || !sdkReady) ? <Loader2 size={16} className="animate-spin" /> : <FBIcon size={16} />}
-                          {fbLoadingPages ? "Connecting…" : !sdkReady ? "Loading…" : "Connect with Facebook"}
+                          {fbLoadingPages
+                            ? (isAr ? "جارٍ الاتصال…" : "Connecting…")
+                            : !sdkReady
+                            ? (isAr ? "جارٍ التحميل…" : "Loading…")
+                            : (isAr ? "ربط بـ Facebook" : "Connect with Facebook")}
                         </button>
                       )}
-
-                      {/* Page list */}
                       {fbSubStep === "pages" && fbPages.length > 0 && (
                         <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground mb-1">Select your business page:</p>
+                          <p className="text-sm text-muted-foreground mb-1">{isAr ? "اختر صفحتك التجارية:" : "Select your business page:"}</p>
                           {fbPages.map((page) => (
-                            <button
-                              key={page.id}
-                              onClick={() => selectFBPage(page)}
-                              className="w-full flex items-center gap-3 bg-card hover:bg-accent border border-border hover:border-border/70 rounded-[8px] p-3.5 text-left transition-all"
-                            >
+                            <button key={page.id} onClick={() => selectFBPage(page)}
+                              className="w-full flex items-center gap-3 bg-card hover:bg-accent border border-border hover:border-border/70 rounded-[8px] p-3.5 text-left transition-all">
                               {page.picture?.data.url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={page.picture.data.url} alt={page.name} width={36} height={36} className="rounded-full shrink-0 object-cover" />
@@ -690,11 +622,9 @@ export default function RegisterPage() {
                           ))}
                         </div>
                       )}
-
-                      {/* Fetching page details animation */}
                       {fbSubStep === "fetching" && (
                         <AnimatePresence>
-                          <AILoadingBlock step={reasoningStep} steps={currentSteps} />
+                          <AILoadingBlock step={reasoningStep} steps={currentSteps} isAr={isAr} />
                         </AnimatePresence>
                       )}
                     </div>
@@ -705,18 +635,13 @@ export default function RegisterPage() {
               {/* ── STEP 2 ── */}
               {step === 2 && place && (
                 <motion.div key="step2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }}>
-                  <h1 className="text-3xl font-bold mb-2">Is this your business?</h1>
-                  <p className="text-muted-foreground mb-6">Confirm this is the correct listing before we set up your page.</p>
+                  <h1 className="text-3xl font-bold mb-2">{isAr ? "هل هذا نشاطك التجاري؟" : "Is this your business?"}</h1>
+                  <p className="text-muted-foreground mb-6">{isAr ? "تأكد من أن هذه القائمة الصحيحة قبل إعداد صفحتك." : "Confirm this is the correct listing before we set up your page."}</p>
 
                   <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                     className="bg-card border border-border rounded-[6px] overflow-hidden mb-6">
-
-                    <div className="pt-4 px-4">
-                      <ImageSlider images={place.images} />
-                    </div>
-
+                    <div className="pt-4 px-4"><ImageSlider images={place.images} /></div>
                     <div className="p-4 pt-3">
-                      {/* Source badge */}
                       <div className="flex items-center gap-1.5 mb-2">
                         {source === "facebook" ? (
                           <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#1877F2]/10 text-[#1877F2]">
@@ -728,9 +653,7 @@ export default function RegisterPage() {
                           </span>
                         )}
                       </div>
-
                       <h2 className="text-base font-bold text-foreground mb-0.5">{place.name}</h2>
-
                       {(place.rating > 0 || place.reviewCount > 0) && (
                         <div className="flex items-center gap-1.5 mb-3">
                           <Star size={13} className="fill-yellow-400 text-yellow-400" />
@@ -738,58 +661,38 @@ export default function RegisterPage() {
                           {place.reviewCount > 0 && (
                             <>
                               <span className="text-muted-foreground text-xs">•</span>
-                              <span className="text-xs text-muted-foreground">{place.reviewCount.toLocaleString()} {source === "facebook" ? "followers" : "reviews"}</span>
+                              <span className="text-xs text-muted-foreground">{place.reviewCount.toLocaleString()} {source === "facebook" ? (isAr ? "متابع" : "followers") : (isAr ? "تقييم" : "reviews")}</span>
                             </>
                           )}
                         </div>
                       )}
-
                       {place.reviews?.length > 0 && <ReviewsSlider reviews={place.reviews} />}
-
                       <div className="flex items-center gap-4 py-2.5 px-3 bg-accent/50 rounded-[6px] mb-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                           <Star size={11} className="text-yellow-400 fill-yellow-400" />
-                          <span><span className="text-foreground font-semibold">{place.reviewCount?.toLocaleString() ?? 0}</span> {source === "facebook" ? "followers" : "reviews"}</span>
+                          <span><span className="text-foreground font-semibold">{place.reviewCount?.toLocaleString() ?? 0}</span> {source === "facebook" ? (isAr ? "متابع" : "followers") : (isAr ? "تقييم" : "reviews")}</span>
                         </div>
                         <div className="w-px h-3 bg-border" />
                         <div className="flex items-center gap-1.5">
                           <Image size={11} className="text-[#0066cc] dark:text-[#2997ff]" />
-                          <span><span className="text-foreground font-semibold">{place.images?.length ?? 0}</span> photos</span>
+                          <span><span className="text-foreground font-semibold">{place.images?.length ?? 0}</span> {isAr ? "صورة" : "photos"}</span>
                         </div>
                       </div>
-
                       <div className="flex flex-col gap-1.5 text-xs text-muted-foreground border-t border-border pt-3 mt-1">
-                        {place.address && (
-                          <div className="flex items-start gap-2">
-                            <MapPin size={12} className="text-muted-foreground mt-0.5 shrink-0" />
-                            <span>{place.address}</span>
-                          </div>
-                        )}
-                        {place.phone && (
-                          <div className="flex items-center gap-2">
-                            <Phone size={12} className="text-muted-foreground shrink-0" />
-                            <span>{place.phone}</span>
-                          </div>
-                        )}
-                        {place.website && (
-                          <div className="flex items-center gap-2">
-                            <Globe size={12} className="text-muted-foreground shrink-0" />
-                            <span className="truncate">{place.website.replace(/^https?:\/\//, "")}</span>
-                          </div>
-                        )}
+                        {place.address && <div className="flex items-start gap-2"><MapPin size={12} className="text-muted-foreground mt-0.5 shrink-0" /><span>{place.address}</span></div>}
+                        {place.phone && <div className="flex items-center gap-2"><Phone size={12} className="text-muted-foreground shrink-0" /><span>{place.phone}</span></div>}
+                        {place.website && <div className="flex items-center gap-2"><Globe size={12} className="text-muted-foreground shrink-0" /><span className="truncate">{place.website.replace(/^https?:\/\//, "")}</span></div>}
                       </div>
                     </div>
                   </motion.div>
 
                   <div className="flex flex-col gap-3">
                     <button onClick={() => setStep(3)} className="bg-[#0066cc] hover:bg-[#0071e3] text-white py-3.5 rounded-[6px] font-medium transition-colors">
-                      Yes, this is my business
+                      {isAr ? "نعم، هذا نشاطي التجاري" : "Yes, this is my business"}
                     </button>
-                    <button
-                      onClick={() => { setStep(1); setPlace(null); setFetchError(""); setMapsUrl(""); setUrlError(""); setFbSubStep("connect"); setFbPages([]); setFbError(""); }}
-                      className="border border-input hover:border-border text-muted-foreground hover:text-foreground py-3.5 rounded-[6px] font-medium transition-colors"
-                    >
-                      Not my business, search again
+                    <button onClick={() => { setStep(1); setPlace(null); setFetchError(""); setMapsUrl(""); setUrlError(""); setFbSubStep("connect"); setFbPages([]); setFbError(""); }}
+                      className="border border-input hover:border-border text-muted-foreground hover:text-foreground py-3.5 rounded-[6px] font-medium transition-colors">
+                      {isAr ? "ليس نشاطي، البحث مجدداً" : "Not my business, search again"}
                     </button>
                   </div>
                 </motion.div>
@@ -798,8 +701,8 @@ export default function RegisterPage() {
               {/* ── STEP 3 ── */}
               {step === 3 && (
                 <motion.div key="step3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }}>
-                  <h1 className="text-3xl font-bold mb-2">Create your account</h1>
-                  <p className="text-muted-foreground mb-8">Almost done. Set up your login details.</p>
+                  <h1 className="text-3xl font-bold mb-2">{isAr ? "إنشاء حسابك" : "Create your account"}</h1>
+                  <p className="text-muted-foreground mb-8">{isAr ? "اكتمل تقريباً. أعدّ بيانات تسجيل الدخول." : "Almost done. Set up your login details."}</p>
 
                   {authError && (
                     <div className="mb-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-[6px] px-4 py-3">
@@ -809,23 +712,23 @@ export default function RegisterPage() {
 
                   <form onSubmit={createAccount} className="flex flex-col gap-5">
                     <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">Email address</label>
+                      <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "البريد الإلكتروني" : "Email address"}</label>
                       <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com" required
+                        placeholder={isAr ? "you@example.com" : "you@example.com"} required
                         className={`w-full bg-background border rounded-[6px] px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${email.length > 0 ? (emailValid ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
                       />
-                      {email.length > 0 && !emailValid && <p className="text-xs text-red-600 dark:text-red-400 mt-1">Enter a valid email address</p>}
+                      {email.length > 0 && !emailValid && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{isAr ? "أدخل بريداً إلكترونياً صحيحاً" : "Enter a valid email address"}</p>}
                     </div>
 
                     <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">Password</label>
+                      <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "كلمة المرور" : "Password"}</label>
                       <div className="relative">
                         <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
-                          placeholder="At least 8 characters" required
+                          placeholder={isAr ? "8 أحرف على الأقل" : "At least 8 characters"} required
                           className="w-full bg-background border border-input rounded-[6px] px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
                         />
                         <button type="button" onClick={() => setShowPw((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                          className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
                           {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
                         </button>
                       </div>
@@ -840,34 +743,36 @@ export default function RegisterPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">Confirm password</label>
+                      <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "تأكيد كلمة المرور" : "Confirm password"}</label>
                       <div className="relative">
                         <input type={showConfirmPw ? "text" : "password"} value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
-                          placeholder="Repeat your password" required
+                          placeholder={isAr ? "كرّر كلمة المرور" : "Repeat your password"} required
                           className={`w-full bg-background border rounded-[6px] px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${confirmPw.length > 0 ? (pwMatch ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
                         />
                         <button type="button" onClick={() => setShowConfirmPw((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                          className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
                           {showConfirmPw ? <EyeOff size={17} /> : <Eye size={17} />}
                         </button>
                       </div>
-                      {confirmPw.length > 0 && !pwMatch && <p className="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>}
+                      {confirmPw.length > 0 && !pwMatch && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{isAr ? "كلمتا المرور غير متطابقتين" : "Passwords do not match"}</p>}
                     </div>
 
                     <p className="text-xs text-muted-foreground text-center">
-                      By creating an account you agree to our{" "}
-                      <Link href="/terms" className="underline hover:text-foreground">Terms</Link> and{" "}
-                      <Link href="/privacy-policy" className="underline hover:text-foreground">Privacy Policy</Link>.
+                      {isAr ? (
+                        <>بإنشاء حساب، توافق على{" "}<Link href="/terms" className="underline hover:text-foreground">شروط الخدمة</Link> و<Link href="/privacy-policy" className="underline hover:text-foreground">سياسة الخصوصية</Link>.</>
+                      ) : (
+                        <>By creating an account you agree to our{" "}<Link href="/terms" className="underline hover:text-foreground">Terms</Link> and{" "}<Link href="/privacy-policy" className="underline hover:text-foreground">Privacy Policy</Link>.</>
+                      )}
                     </p>
 
                     <button type="submit" disabled={authLoading || !canSubmit}
                       className="flex items-center justify-center gap-2 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 py-3.5 rounded-[6px] font-medium transition-colors text-white">
-                      {authLoading ? <Loader2 size={16} className="animate-spin" /> : "Create account"}
+                      {authLoading ? <Loader2 size={16} className="animate-spin" /> : (isAr ? "إنشاء الحساب" : "Create account")}
                     </button>
                   </form>
 
                   <button onClick={() => setStep(2)} className="flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-400 mt-4 w-full transition-colors">
-                    Back to business preview
+                    {isAr ? "العودة لمعاينة النشاط" : "Back to business preview"}
                   </button>
                 </motion.div>
               )}
@@ -879,8 +784,12 @@ export default function RegisterPage() {
           {/* Marquee column */}
           <div className="flex-1 overflow-hidden px-4 sm:px-6 py-10 lg:py-14 flex flex-col justify-center gap-6 border-t border-border lg:border-t-0">
             <div className="text-center lg:text-left px-2">
-              <p className="text-xs text-gray-500 uppercase tracking-widest font-medium mb-1">Love our Solution</p>
-              <h3 className="text-lg font-semibold text-foreground">Businesses love ahna.ae</h3>
+              <p className="text-xs text-gray-500 uppercase tracking-widest font-medium mb-1">
+                {isAr ? "يحبون حلنا" : "Love our Solution"}
+              </p>
+              <h3 className="text-lg font-semibold text-foreground">
+                {isAr ? "الشركات تحب syrflow.com" : "Businesses love syrflow.com"}
+              </h3>
             </div>
             <TestimonialsMarquee />
           </div>

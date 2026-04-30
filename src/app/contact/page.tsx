@@ -1,12 +1,13 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Phone, ChevronDown } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
+import { useLanguage } from "@/lib/language";
 
-const faqs = [
+const faqsEn = [
   { question: "How long does it take to create a website?", answer: "It takes less than 5 minutes. Just paste your Google Maps link and your website is ready instantly." },
   { question: "Can I edit my website after it's created?", answer: "Yes! Basic plan includes 1 time edit. Pro plan includes unlimited edits anytime from your dashboard." },
   { question: "Do I need coding skills?", answer: "No coding required at all. Everything is done through our simple dashboard." },
@@ -15,8 +16,19 @@ const faqs = [
   { question: "What payment methods do you accept?", answer: "We accept credit cards, debit cards, and PayPal. All payments are secure." },
 ];
 
+const faqsAr = [
+  { question: "كم يستغرق إنشاء موقع إلكتروني؟", answer: "يستغرق أقل من 5 دقائق. الصق رابط Google Maps وسيكون موقعك جاهزاً فوراً." },
+  { question: "هل يمكنني تعديل موقعي بعد إنشائه؟", answer: "نعم! الخطة الأساسية تتيح تعديلاً واحداً. Pro تتيح تعديلات غير محدودة في أي وقت." },
+  { question: "هل أحتاج مهارات برمجية؟", answer: "لا برمجة مطلوبة على الإطلاق. كل شيء يتم من خلال لوحة التحكم البسيطة." },
+  { question: "هل يمكنني استخدام نطاقي الخاص؟", answer: "نعم، خطة Pro تتضمن دعم النطاقات المخصصة. يمكنك ربط نطاقك بسهولة." },
+  { question: "كيف يعمل إنشاء المحتوى بالذكاء الاصطناعي؟", answer: "يحلل الذكاء الاصطناعي نشاطك ويُنشئ عناوين وشعارات وأوصافاً احترافية بنقرة واحدة." },
+  { question: "ما طرق الدفع المقبولة؟", answer: "نقبل بطاقات الائتمان والخصم وPayPal. جميع المدفوعات آمنة." },
+];
+
 export default function ContactPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const { lang, t } = useLanguage();
+  const faqs = lang === "ar" ? faqsAr : faqsEn;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -29,15 +41,15 @@ export default function ContactPage() {
 
             {/* Left — Contact Cards */}
             <div className="space-y-4 sticky top-8">
-              <h2 className="text-lg font-semibold mb-4">Get in touch</h2>
+              <h2 className="text-lg font-semibold mb-4">{t.contact.title}</h2>
 
               <div className="bg-card rounded-[6px] p-5 border border-border">
                 <div className="flex items-center gap-3 mb-2">
                   <Mail size={20} className="text-[#0066cc] dark:text-[#2997ff]" />
-                  <h3 className="font-semibold">Email Us</h3>
+                  <h3 className="font-semibold">{t.contact.emailTitle}</h3>
                 </div>
-                <p className="text-sm text-muted-foreground mb-2">For general inquiries and support</p>
-                <a href="mailto:support@shirka.io" className="text-sm text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] dark:hover:text-[#2997ff] transition-colors">
+                <p className="text-sm text-muted-foreground mb-2">{t.contact.emailSub}</p>
+                <a href="mailto:support@shirka.io" className="text-sm text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] transition-colors">
                   support@shirka.io
                 </a>
               </div>
@@ -45,10 +57,10 @@ export default function ContactPage() {
               <div className="bg-card rounded-[6px] p-5 border border-border">
                 <div className="flex items-center gap-3 mb-2">
                   <Phone size={20} className="text-[#0066cc] dark:text-[#2997ff]" />
-                  <h3 className="font-semibold">Call Us</h3>
+                  <h3 className="font-semibold">{t.contact.phoneTitle}</h3>
                 </div>
-                <p className="text-sm text-muted-foreground mb-2">Monday to Friday, 9am - 6pm GST</p>
-                <a href="tel:+971123456789" className="text-sm text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] dark:hover:text-[#2997ff] transition-colors">
+                <p className="text-sm text-muted-foreground mb-2">{t.contact.phoneSub}</p>
+                <a href="tel:+971123456789" className="text-sm text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] transition-colors">
                   +971 2 123 4567
                 </a>
               </div>
@@ -56,7 +68,7 @@ export default function ContactPage() {
 
             {/* Right — FAQs */}
             <div>
-              <h2 className="text-lg font-semibold mb-4">Frequently Asked Questions</h2>
+              <h2 className="text-lg font-semibold mb-4">{t.contact.faqTitle}</h2>
               <div className="space-y-3">
                 {faqs.map((faq, index) => (
                   <div key={index} className="bg-card rounded-lg border border-border overflow-hidden">

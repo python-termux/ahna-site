@@ -509,7 +509,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
           </span>
           <span className={`text-xs ${T.faint}`}>
             Powered by{" "}
-            <Link href="/" className={`hover:underline ${T.accentText}`}>ahna.ae</Link>
+            <Link href="/" className={`hover:underline ${T.accentText}`}>syrflow.com</Link>
           </span>
         </div>
       </footer>

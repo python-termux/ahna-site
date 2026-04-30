@@ -33,11 +33,11 @@ export async function POST(request: Request) {
 
   // In production you would queue a background job here to delete
   // any stored data associated with this Facebook user ID.
-  // For ahna.ae: users connect pages but we don't store FB user IDs
+  // For syrflow.com: users connect pages but we don't store FB user IDs
   // long-term, so nothing extra is needed beyond revoking the token.
 
   return NextResponse.json({
-    url: `https://ahnav1.vercel.app/data-deletion?id=${userId}&code=${confirmationCode}`,
+    url: `https://syrflow.com/data-deletion?id=${userId}&code=${confirmationCode}`,
     confirmation_code: confirmationCode,
   });
 }
