@@ -72,21 +72,65 @@ export default function TestFBPage() {
           setError("Login cancelled or permission denied.");
         }
       },
-      { scope: "pages_show_list" }
+      { scope: "pages_show_list,business_management" }
     );
   }
 
   function fetchPages() {
+    // Try personal account pages first
     window.FB.api(
       "/me/accounts",
       { fields: "id,name,access_token,category,picture.type(small)" },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (res: any) => {
-        setLoading(false);
-        setDebugRaw(JSON.stringify(res, null, 2));
-        if (res.error) { setError(res.error.message); return; }
-        setPages(res.data ?? []);
-        setStep("pages");
+        if (!res.error && res.data?.length > 0) {
+          setLoading(false);
+          setDebugRaw(JSON.stringify({ source: "/me/accounts", data: res }, null, 2));
+          setPages(res.data);
+          setStep("pages");
+          return;
+        }
+
+        // Fallback: page is in Business Manager — fetch via /me/businesses
+        window.FB.api(
+          "/me/businesses",
+          { fields: "id,name" },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (bizRes: any) => {
+            if (bizRes.error || !bizRes.data?.length) {
+              setLoading(false);
+              setDebugRaw(JSON.stringify({ accounts: res, businesses: bizRes }, null, 2));
+              setPages([]);
+              setStep("pages");
+              return;
+            }
+
+            const businesses = bizRes.data;
+            const allPages: FBPage[] = [];
+            let pending = businesses.length;
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            businesses.forEach((biz: any) => {
+              window.FB.api(
+                `/${biz.id}/owned_pages`,
+                { fields: "id,name,access_token,category,picture.type(small)" },
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (pageRes: any) => {
+                  if (!pageRes.error && pageRes.data?.length) {
+                    allPages.push(...pageRes.data);
+                  }
+                  pending--;
+                  if (pending === 0) {
+                    setLoading(false);
+                    setDebugRaw(JSON.stringify({ source: "business_manager", businesses, pages: allPages }, null, 2));
+                    setPages(allPages);
+                    setStep("pages");
+                  }
+                }
+              );
+            });
+          }
+        );
       }
     );
   }
