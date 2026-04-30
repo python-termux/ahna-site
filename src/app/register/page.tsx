@@ -32,15 +32,25 @@ interface FBPageDetails {
   cover?: { source: string };
   picture?: { data: { url: string } };
   photos?: { data: { images: { source: string; width: number }[] }[] };
+  posts?: { data: { full_picture?: string }[] };
 }
 
 function mapFBToPlace(details: FBPageDetails, page: FBPage): PlaceResult {
+  const seen = new Set<string>();
   const images: string[] = [];
-  if (details.cover?.source) images.push(details.cover.source);
+  function addImg(src: string | undefined) {
+    if (src && !seen.has(src)) { seen.add(src); images.push(src); }
+  }
+
+  if (details.cover?.source) addImg(details.cover.source);
   if (details.photos?.data) {
     for (const photo of details.photos.data) {
-      const src = photo.images?.sort((a, b) => b.width - a.width)[0]?.source;
-      if (src) images.push(src);
+      addImg(photo.images?.sort((a, b) => b.width - a.width)[0]?.source);
+    }
+  }
+  if (details.posts?.data) {
+    for (const post of details.posts.data) {
+      addImg(post.full_picture);
     }
   }
   const loc = details.location;
@@ -52,7 +62,7 @@ function mapFBToPlace(details: FBPageDetails, page: FBPage): PlaceResult {
     phone: details.phone || "",
     address,
     website: details.website || "",
-    images: images.slice(0, 10),
+    images: images.slice(0, 30),
     reviews: [],
     hours: {},
     rating: details.overall_star_rating || 0,
@@ -425,7 +435,8 @@ export default function RegisterPage() {
           "id", "name", "about", "description", "phone", "website",
           "fan_count", "overall_star_rating", "rating_count",
           "location", "cover", "picture.type(large)",
-          "photos.limit(9){images}",
+          "photos.limit(30){images}",
+          "posts.limit(50){full_picture}",
         ].join(","),
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
