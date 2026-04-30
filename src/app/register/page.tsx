@@ -160,7 +160,7 @@ function ReviewsSlider({ reviews }: { reviews: { author: string; text: string; r
 
       {/* Author row */}
       <div className="flex items-center gap-2 mt-2.5">
-        <div className="w-7 h-7 rounded-[6px] bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
+        <div className="w-7 h-7 rounded-[6px] bg-[#0066cc] flex items-center justify-center text-xs font-bold text-white shrink-0">
           {initial}
         </div>
         <span className="text-xs text-muted-foreground font-medium">{r.author}</span>
@@ -196,7 +196,7 @@ function TestimonialCard({ t }: { t: typeof TESTIMONIALS[0] }) {
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-3">"{t.quote}"</p>
       <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-[6px] bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
+        <div className="w-7 h-7 rounded-[6px] bg-[#0066cc] flex items-center justify-center text-xs font-bold text-white shrink-0">
           {t.author[0]}
         </div>
         <div className="min-w-0">
@@ -377,7 +377,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-6xl px-4 sm:px-6">
           <div className="w-full h-0.5 bg-accent rounded-[6px]">
             <motion.div
-              className="h-full bg-indigo-500 rounded-[6px]"
+              className="h-full bg-[#0071e3] rounded-[6px]"
               animate={{ width: step === 1 ? "33%" : step === 2 ? "66%" : "100%" }}
               transition={{ duration: 0.4, ease: "easeInOut" }}
             />
@@ -439,7 +439,7 @@ export default function RegisterPage() {
                         onChange={handleUrlChange}
                         onKeyDown={(e) => e.key === "Enter" && canFind && findBusiness()}
                         placeholder="https://maps.app.goo.gl/your-business-link"
-                        className={`flex-1 bg-background border rounded-[6px] px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500 transition-colors ${
+                        className={`flex-1 bg-background border rounded-[6px] px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors ${
                           urlError ? "border-red-500 focus:border-red-500" : "border-input"
                         }`}
                       />
@@ -448,7 +448,7 @@ export default function RegisterPage() {
                         disabled={!canFind}
                         className={`px-5 py-3 rounded-[6px] text-sm font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-2 ${
                           canFind
-                            ? "bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer"
+                            ? "bg-[#0066cc] hover:bg-[#0071e3] text-white cursor-pointer"
                             : "bg-accent cursor-not-allowed opacity-50"
                         }`}
                       >
@@ -472,10 +472,10 @@ export default function RegisterPage() {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <div className="mt-2 border border-indigo-500/30 rounded-[6px] bg-indigo-50 dark:bg-indigo-950/20 overflow-hidden">
-                          <div className="flex items-center gap-2 px-4 py-2 border-b border-indigo-500/30 bg-indigo-100 dark:bg-indigo-950/40">
+                        <div className="mt-2 border border-[#0066cc]/30 rounded-[6px] bg-[#0066cc]/8 dark:bg-[#0066cc]/10 overflow-hidden">
+                          <div className="flex items-center gap-2 px-4 py-2 border-b border-[#0066cc]/30 bg-[#0066cc]/10 dark:bg-[#0066cc]/15">
                             <div className="relative">
-                              <Brain size={16} className="text-indigo-400/30" />
+                              <Brain size={16} className="text-[#2997ff]/30" />
                               <motion.div
                                 className="absolute inset-0"
                                 animate={{
@@ -496,16 +496,16 @@ export default function RegisterPage() {
                               />
                             </div>
                             <motion.span
-                              className="text-xs font-medium text-indigo-600 dark:text-indigo-300"
+                              className="text-xs font-medium text-[#0066cc] dark:text-[#2997ff]"
                               animate={{ opacity: [0.5, 1, 0.5] }}
                               transition={{ duration: 1.5, repeat: Infinity }}
                             >
                               AI is thinking
                             </motion.span>
                             <div className="flex gap-1 ml-auto">
-                              <motion.span className="w-1 h-1 bg-indigo-400 rounded-[6px]" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0 }} />
-                              <motion.span className="w-1 h-1 bg-indigo-400 rounded-[6px]" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} />
-                              <motion.span className="w-1 h-1 bg-indigo-400 rounded-[6px]" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} />
+                              <motion.span className="w-1 h-1 bg-[#2997ff] rounded-[6px]" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0 }} />
+                              <motion.span className="w-1 h-1 bg-[#2997ff] rounded-[6px]" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} />
+                              <motion.span className="w-1 h-1 bg-[#2997ff] rounded-[6px]" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} />
                             </div>
                           </div>
                           <div className="px-4 py-3">
@@ -587,7 +587,7 @@ export default function RegisterPage() {
                       </div>
                       <div className="w-px h-3 bg-border" />
                       <div className="flex items-center gap-1.5">
-                        <Image size={11} className="text-indigo-500 dark:text-indigo-400" />
+                        <Image size={11} className="text-[#0066cc] dark:text-[#2997ff]" />
                         <span><span className="text-foreground font-semibold">{place.images?.length ?? 0}</span> photos</span>
                       </div>
                     </div>
@@ -619,7 +619,7 @@ export default function RegisterPage() {
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={() => setStep(3)}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-[6px] font-medium transition-colors cursor-pointer"
+                    className="bg-[#0066cc] hover:bg-[#0071e3] text-white py-3.5 rounded-[6px] font-medium transition-colors cursor-pointer"
                   >
                     Yes, this is my business
                   </button>
@@ -662,7 +662,7 @@ export default function RegisterPage() {
                       placeholder="you@example.com"
                       required
                       className={`w-full bg-background border rounded-[6px] px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${
-                        email.length > 0 ? (emailValid ? "border-green-600 dark:border-green-700 focus:border-green-500" : "border-red-500 dark:border-red-800 focus:border-red-500") : "border-input focus:border-indigo-500"
+                        email.length > 0 ? (emailValid ? "border-green-600 dark:border-green-700 focus:border-green-500" : "border-red-500 dark:border-red-800 focus:border-red-500") : "border-input focus:border-[#0066cc]"
                       }`}
                     />
                     {email.length > 0 && !emailValid && (
@@ -679,7 +679,7 @@ export default function RegisterPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="At least 8 characters"
                         required
-                        className="w-full bg-background border border-input rounded-[6px] px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full bg-background border border-input rounded-[6px] px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
                       />
                       <button
                         type="button"
@@ -716,7 +716,7 @@ export default function RegisterPage() {
                         placeholder="Repeat your password"
                         required
                         className={`w-full bg-background border rounded-[6px] px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${
-                          confirmPw.length > 0 ? (pwMatch ? "border-green-600 dark:border-green-700 focus:border-green-500" : "border-red-500 dark:border-red-800 focus:border-red-500") : "border-input focus:border-indigo-500"
+                          confirmPw.length > 0 ? (pwMatch ? "border-green-600 dark:border-green-700 focus:border-green-500" : "border-red-500 dark:border-red-800 focus:border-red-500") : "border-input focus:border-[#0066cc]"
                         }`}
                       />
                       <button
@@ -741,7 +741,7 @@ export default function RegisterPage() {
                   <button
                     type="submit"
                     disabled={authLoading || !canSubmit}
-                    className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 py-3.5 rounded-[6px] font-medium transition-colors cursor-pointer"
+                    className="flex items-center justify-center gap-2 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 py-3.5 rounded-[6px] font-medium transition-colors cursor-pointer"
                   >
                     {authLoading ? <Loader2 size={16} className="animate-spin" /> : "Create account"}
                   </button>

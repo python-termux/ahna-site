@@ -19,41 +19,50 @@
   * {
     @apply border-border outline-ring/50; }
   body {
-    @apply bg-background text-foreground; }
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.47;
+    letter-spacing: -0.022em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
   html {
     @apply font-sans; }
   a, button, [role="button"], label[for], select, [tabindex]:not([tabindex="-1"]) {
     cursor: pointer;
   }
+  /* Apple-style active press micro-interaction */
+  .apple-btn:active { transform: scale(0.95); }
 }
 
 /* ── Custom scrollbar ─────────────────────────────────────────────────────── */
 html {
   scrollbar-width: thin;
-  scrollbar-color: oklch(0.5854 0.2041 277.1173) oklch(0.9670 0.0029 264.5419);
+  scrollbar-color: #0066cc #f0f0f0;
 }
 html.dark {
-  scrollbar-color: oklch(0.6801 0.1583 276.9349) oklch(0.2077 0.0398 265.7549);
+  scrollbar-color: #2997ff #1a1a1a;
 }
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: oklch(0.9670 0.0029 264.5419);
+  background: #f0f0f0;
 }
 html.dark ::-webkit-scrollbar-track {
-  background: oklch(0.2077 0.0398 265.7549);
+  background: #1a1a1a;
 }
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.5854 0.2041 277.1173);
+  background: #0066cc;
   border-radius: 999px;
 }
 html.dark ::-webkit-scrollbar-thumb {
-  background: oklch(0.6801 0.1583 276.9349);
+  background: #2997ff;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.4568 0.2146 277.0229);
+  background: #0071e3;
 }
 
 /* ── Marquee keyframes ────────────────────────────────────────────────────── */

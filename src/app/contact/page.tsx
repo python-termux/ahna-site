@@ -33,22 +33,22 @@ export default function ContactPage() {
 
               <div className="bg-card rounded-[6px] p-5 border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <Mail size={20} className="text-indigo-500 dark:text-indigo-400" />
+                  <Mail size={20} className="text-[#0066cc] dark:text-[#2997ff]" />
                   <h3 className="font-semibold">Email Us</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">For general inquiries and support</p>
-                <a href="mailto:support@shirka.io" className="text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+                <a href="mailto:support@shirka.io" className="text-sm text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] dark:hover:text-[#2997ff] transition-colors">
                   support@shirka.io
                 </a>
               </div>
 
               <div className="bg-card rounded-[6px] p-5 border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <Phone size={20} className="text-indigo-500 dark:text-indigo-400" />
+                  <Phone size={20} className="text-[#0066cc] dark:text-[#2997ff]" />
                   <h3 className="font-semibold">Call Us</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">Monday to Friday, 9am - 6pm GST</p>
-                <a href="tel:+971123456789" className="text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+                <a href="tel:+971123456789" className="text-sm text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] dark:hover:text-[#2997ff] transition-colors">
                   +971 2 123 4567
                 </a>
               </div>

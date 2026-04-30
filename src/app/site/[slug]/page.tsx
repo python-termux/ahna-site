@@ -21,7 +21,7 @@ interface Business {
   services: Service[]; testimonials: Testimonial[];
   why_us: { title: string; description: string }[];
   social: { instagram?: string; facebook?: string; twitter?: string; tiktok?: string; whatsapp?: string };
-  theme_color: string; stat_years: string; stat_clients: string; stat_projects: string;
+  theme_color: string; corner_radius: string; stat_years: string; stat_clients: string; stat_projects: string;
 }
 
 // ── Scrollbar accent colors (hex) ────────────────────────────────────────────
@@ -93,6 +93,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   const sb = SCROLLBAR[accentKey] ?? SCROLLBAR.indigo;
   const sbTrack = T.isLight ? "#f3f4f6" : "#111827";
 
+  const CORNER = { none: { btn: "0px", card: "0px", icon: "4px" }, md: { btn: "6px", card: "10px", icon: "8px" }, pill: { btn: "9999px", card: "16px", icon: "16px" } };
+  const cr = CORNER[(biz.corner_radius as keyof typeof CORNER) ?? "md"] ?? CORNER.md;
+
   const allImages = (biz.gallery ?? []).filter(Boolean);
   const sliderImages = allImages.slice(0, 6);
   const aboutImage = biz.about_image || allImages[1] || allImages[0] || "";
@@ -117,6 +120,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
         ::-webkit-scrollbar-track{background:${sbTrack}!important}
         ::-webkit-scrollbar-thumb{background:${sb.thumb}!important}
         ::-webkit-scrollbar-thumb:hover{background:${sb.hover}!important}
+        .site-btn{border-radius:${cr.btn}!important}
+        .site-card{border-radius:${cr.card}!important}
+        .site-icon{border-radius:${cr.icon}!important}
       `}</style>
 
       {/* ── HEADER ── */}
@@ -143,8 +149,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
               {biz.phone && (
                 <a
                   href={`tel:${biz.phone}`}
-                  className={`${T.btn} text-white px-3 py-1.5 text-xs font-medium transition-colors`}
-                  style={{ borderRadius: "5px" }}
+                  className={`site-btn ${T.btn} text-white px-3 py-1.5 text-xs font-medium transition-colors`}
                 >
                   Call us
                 </a>
@@ -163,7 +168,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
           {/* Left: text */}
           <div className="flex flex-col gap-4">
             {avgRating && (
-              <div className={`inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-[6px] text-xs font-medium ${T.iconBg}`}>
+              <div className={`site-card inline-flex items-center gap-2 w-fit px-3 py-1.5 text-xs font-medium ${T.iconBg}`}>
                 <Star size={11} className="fill-current" />
                 {avgRating} on Google
                 {biz.stat_clients && <span className="opacity-70">· {biz.stat_clients} reviews</span>}
@@ -171,7 +176,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             )}
 
             {biz.category !== "Other" && (
-              <span className={`inline-flex w-fit text-xs font-semibold px-2.5 py-1 rounded-[6px] ${T.badge}`}>
+              <span className={`site-card inline-flex w-fit text-xs font-semibold px-2.5 py-1 ${T.badge}`}>
                 {biz.category}
               </span>
             )}
@@ -190,7 +195,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             {stats.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-1">
                 {stats.map((s) => (
-                  <span key={s.label} className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-[6px] border ${T.divider} ${T.isLight ? "bg-white text-gray-700" : "bg-gray-900 text-gray-300"}`}>
+                  <span key={s.label} className={`site-card inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 border ${T.divider} ${T.isLight ? "bg-white text-gray-700" : "bg-gray-900 text-gray-300"}`}>
                     <span className={`font-bold ${T.accentText}`}>{s.value}</span>
                     {s.label}
                   </span>
@@ -203,8 +208,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
               {biz.phone && (
                 <a
                   href={`tel:${biz.phone}`}
-                  className={`inline-flex items-center gap-1.5 ${T.btn} text-white px-4 py-2.5 font-medium text-sm transition-colors`}
-                  style={{ borderRadius: "5px" }}
+                  className={`site-btn inline-flex items-center gap-1.5 ${T.btn} text-white px-4 py-2.5 font-medium text-sm transition-colors`}
                 >
                   <Phone size={14} /> Call now
                 </a>
@@ -214,8 +218,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                   href={biz.maps_url || `https://maps.google.com/?q=${encodeURIComponent(biz.address)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`inline-flex items-center gap-1.5 border px-4 py-2.5 font-medium text-sm transition-colors ${T.btnOutline}`}
-                  style={{ borderRadius: "5px" }}
+                  className={`site-btn inline-flex items-center gap-1.5 border px-4 py-2.5 font-medium text-sm transition-colors ${T.btnOutline}`}
                 >
                   <MapPin size={14} /> Directions
                 </a>
@@ -295,9 +298,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                 return (
                   <StaggerItem
                     key={i}
-                    className={`rounded-lg p-4 sm:p-5 border transition-all cursor-default ${T.card} ${T.cardHover}`}
+                    className={`site-card p-4 sm:p-5 border transition-all cursor-default ${T.card} ${T.cardHover}`}
                   >
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${T.iconBg}`}>
+                    <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                       <Icon size={18} />
                     </div>
                     <h3 className="font-semibold text-sm sm:text-base mb-1">{s.title}</h3>
@@ -323,8 +326,8 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             </FadeUp>
             <StaggerGrid className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {whyUs.map((p, i) => (
-                <StaggerItem key={i} className={`rounded-[6px] p-5 sm:p-6 border flex flex-col gap-3 ${T.card}`}>
-                  <div className={`w-9 h-9 rounded-[6px] flex items-center justify-center shrink-0 ${T.iconBg}`}>
+                <StaggerItem key={i} className={`site-card p-5 sm:p-6 border flex flex-col gap-3 ${T.card}`}>
+                  <div className={`site-icon w-9 h-9 flex items-center justify-center shrink-0 ${T.iconBg}`}>
                     <CheckCircle size={17} />
                   </div>
                   <p className={`text-sm sm:text-base font-semibold leading-snug ${T.text}`}>{p.title}</p>
@@ -364,7 +367,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
               <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {biz.testimonials.map((r, i) => (
-                  <StaggerItem key={i} className={`rounded-lg p-4 sm:p-5 border flex flex-col gap-3 ${T.card}`}>
+                  <StaggerItem key={i} className={`site-card p-4 sm:p-5 border flex flex-col gap-3 ${T.card}`}>
                     <div className="flex gap-0.5">
                       {[1,2,3,4,5].map((n) => (
                         <Star key={n} size={12} className={n <= r.rating ? "fill-yellow-400 text-yellow-400" : "fill-gray-700 text-gray-700"} />
@@ -399,9 +402,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             {biz.phone && (
               <a
                 href={`tel:${biz.phone}`}
-                className={`break-inside-avoid block rounded-lg p-4 sm:p-5 border transition-all ${T.card} ${T.cardHover}`}
+                className={`site-card break-inside-avoid block p-4 sm:p-5 border transition-all ${T.card} ${T.cardHover}`}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${T.iconBg}`}>
+                <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <Phone size={16} />
                 </div>
                 <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>Phone</p>
@@ -410,8 +413,8 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             )}
 
             {hours.length > 0 && (
-              <div className={`break-inside-avoid rounded-lg p-4 sm:p-5 border ${T.card}`}>
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${T.iconBg}`}>
+              <div className={`site-card break-inside-avoid p-4 sm:p-5 border ${T.card}`}>
+                <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <Clock size={16} />
                 </div>
                 <p className={`text-[10px] font-medium uppercase tracking-wider mb-3 ${T.faint}`}>Opening hours</p>
@@ -430,9 +433,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             {biz.email && (
               <a
                 href={`mailto:${biz.email}`}
-                className={`break-inside-avoid block rounded-lg p-4 sm:p-5 border transition-all ${T.card} ${T.cardHover}`}
+                className={`site-card break-inside-avoid block p-4 sm:p-5 border transition-all ${T.card} ${T.cardHover}`}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${T.iconBg}`}>
+                <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <Mail size={16} />
                 </div>
                 <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>Email</p>
@@ -445,9 +448,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                 href={biz.maps_url || `https://maps.google.com/?q=${encodeURIComponent(biz.address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`break-inside-avoid block rounded-lg p-4 sm:p-5 border transition-all ${T.card} ${T.cardHover}`}
+                className={`site-card break-inside-avoid block p-4 sm:p-5 border transition-all ${T.card} ${T.cardHover}`}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${T.iconBg}`}>
+                <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <MapPin size={16} />
                 </div>
                 <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>Address</p>
@@ -460,9 +463,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                 href={`https://wa.me/${biz.social.whatsapp.replace(/\D/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`break-inside-avoid block rounded-lg p-4 sm:p-5 border transition-all ${T.card} ${T.cardHover}`}
+                className={`site-card break-inside-avoid block p-4 sm:p-5 border transition-all ${T.card} ${T.cardHover}`}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${T.iconBg}`}>
+                <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <img src="/social-icons/whatsapp.png" alt="WhatsApp" width={18} height={18} className="object-contain" />
                 </div>
                 <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>WhatsApp</p>
@@ -471,7 +474,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             )}
 
             {Object.entries(biz.social ?? {}).filter(([k, v]) => k !== "whatsapp" && v).length > 0 && (
-              <div className={`break-inside-avoid rounded-lg p-4 sm:p-5 border ${T.card}`}>
+              <div className={`site-card break-inside-avoid p-4 sm:p-5 border ${T.card}`}>
                 <p className={`text-[10px] font-medium uppercase tracking-wider mb-3 ${T.faint}`}>Follow us</p>
                 <div className="flex flex-wrap gap-2">
                   {biz.social?.instagram && (

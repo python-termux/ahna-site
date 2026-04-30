@@ -71,7 +71,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-background border border-input rounded-[6px] pl-9 pr-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full bg-background border border-input rounded-[6px] pl-9 pr-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
                 />
               </div>
 
@@ -84,7 +84,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full bg-background border border-input rounded-[6px] pl-9 pr-10 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full bg-background border border-input rounded-[6px] pl-9 pr-10 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
                 />
                 <button
                   type="button"
@@ -96,7 +96,7 @@ export default function LoginPage() {
               </div>
 
               <div className="flex justify-end -mt-1">
-                <Link href="/auth/forgot-password" className="text-xs text-muted-foreground hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">
+                <Link href="/auth/forgot-password" className="text-xs text-muted-foreground hover:text-[#0066cc] dark:hover:text-[#2997ff] transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -104,7 +104,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-medium py-2.5 rounded-[4px] text-sm transition-colors"
+                className="flex items-center justify-center gap-2 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-60 text-white font-medium py-2.5 rounded-[4px] text-sm transition-colors"
               >
                 {loading ? <Loader2 size={16} className="animate-spin" /> : <><span>Log in</span><ArrowRight size={15} /></>}
               </button>
@@ -112,7 +112,7 @@ export default function LoginPage() {
 
             <p className="mt-5 text-center text-sm text-muted-foreground">
               Dont have an account?{" "}
-              <Link href="/register" className="text-indigo-500 dark:text-indigo-400 hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+              <Link href="/register" className="text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] dark:hover:text-[#2997ff] transition-colors">
                 Register now
               </Link>
             </p>

@@ -34,7 +34,7 @@ export default function TermsPage() {
 
           <Section title="3. Subscriptions and Billing">
             <p>The Service is offered on a recurring subscription basis. By subscribing, you authorise us to charge your payment method on a recurring basis at the frequency selected at checkout (monthly or annually).</p>
-            <p>Payments are processed by <strong className="text-foreground">Paddle.com Market Limited</strong> ("Paddle"), which acts as the Merchant of Record for all transactions. By completing a purchase you also agree to <a href="https://www.paddle.com/legal/checkout-buyer-terms" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">Paddle's Buyer Terms</a>. Paddle is responsible for collecting and remitting applicable taxes.</p>
+            <p>Payments are processed by <strong className="text-foreground">Paddle.com Market Limited</strong> ("Paddle"), which acts as the Merchant of Record for all transactions. By completing a purchase you also agree to <a href="https://www.paddle.com/legal/checkout-buyer-terms" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">Paddle's Buyer Terms</a>. Paddle is responsible for collecting and remitting applicable taxes.</p>
             <p>All prices are listed in USD unless otherwise stated. Subscription fees are charged at the start of each billing period.</p>
           </Section>
 
@@ -43,11 +43,11 @@ export default function TermsPage() {
           </Section>
 
           <Section title="5. Cancellation">
-            <p>You may cancel your subscription at any time from your account dashboard or by emailing <a href="mailto:support@ahna.ae" className="text-indigo-600 dark:text-indigo-400 hover:underline">support@ahna.ae</a>. Cancellation takes effect at the end of the current billing period. You retain access to the Service until then.</p>
+            <p>You may cancel your subscription at any time from your account dashboard or by emailing <a href="mailto:support@ahna.ae" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">support@ahna.ae</a>. Cancellation takes effect at the end of the current billing period. You retain access to the Service until then.</p>
           </Section>
 
           <Section title="6. Refunds">
-            <p>Please see our <Link href="/refund" className="text-indigo-600 dark:text-indigo-400 hover:underline">Refund Policy</Link> for full details. Customers in the European Union are entitled to a 14-day statutory cooling-off period from the date of first purchase, provided the Service has not been used.</p>
+            <p>Please see our <Link href="/refund" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">Refund Policy</Link> for full details. Customers in the European Union are entitled to a 14-day statutory cooling-off period from the date of first purchase, provided the Service has not been used.</p>
           </Section>
 
           <Section title="7. User Accounts">
@@ -95,7 +95,7 @@ export default function TermsPage() {
           </Section>
 
           <Section title="15. Contact">
-            <p>For questions about these Terms, contact us at <a href="mailto:support@ahna.ae" className="text-indigo-600 dark:text-indigo-400 hover:underline">support@ahna.ae</a>. The Platform is operated by <strong className="text-foreground">Osaad</strong> (also trading as <strong className="text-foreground">Osaad.tech</strong>), United Arab Emirates.</p>
+            <p>For questions about these Terms, contact us at <a href="mailto:support@ahna.ae" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">support@ahna.ae</a>. The Platform is operated by <strong className="text-foreground">Osaad</strong> (also trading as <strong className="text-foreground">Osaad.tech</strong>), United Arab Emirates.</p>
           </Section>
 
         </div>

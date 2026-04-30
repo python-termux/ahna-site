@@ -29,13 +29,13 @@ const plans = [
     price: 8.25,
     period: "monthly",
     yearlyPrice: 99,
-    description: "Perfect for new small businesses (cafes, salons, etc.)",
+    description: "Perfect for new small businesses (cafes, salons, Tourism Agencies, etc.)",
     icon: "/pricing/star-94.png",
     buttonText: "Limited - 10 Slots left",
     popular: false,
     features: [
       { name: "Ai Content Generation", included: true, value: "one time use" },
-      { name: "Max Reviews Exported", included: true, value: "10" },
+      { name: "Google Reviews Export", included: true, value: "Yes" },
       { name: "Website Edits", included: true, value: "Unlimited" },
       { name: "Multiple Theme Changes", included: true, value: "yes" },
       { name: "Multi-language Support", included: true, value: "Only English" },
@@ -60,7 +60,7 @@ const plans = [
     popular: true,
     features: [
       { name: "Ai Content Generation", included: true, value: "Limited" },
-      { name: "Max Reviews Exported", included: true, value: "Upto 20" },
+      { name: "Google Reviews Export", included: true, value: "Yes" },
       { name: "Website Edits", included: true, value: "Unlimited" },
       { name: "Multiple Theme Changes", included: true, value: "yes" },
       { name: "Multi-language Support", included: true, value: "Arabic English" },
@@ -85,7 +85,7 @@ const plans = [
     popular: false,
     features: [
       { name: "Ai Content Generation", included: true, value: "Unlimited" },
-      { name: "Max Reviews Exported", included: true, value: "Unlimited" },
+      { name: "Google Reviews Export", included: true, value: "Yes" },
       { name: "Website Edits", included: true, value: "Unlimited" },
       { name: "Multiple Theme Changes", included: true, value: "yes" },
       { name: "Multi-language Support", included: true, value: "Arabic English" },
@@ -179,7 +179,8 @@ export default function PricingPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 text-xs font-medium px-3 py-1.5 rounded-[6px] mb-6"
+          className="inline-flex items-center gap-2 border text-xs font-medium px-3 py-1.5 rounded-[6px] mb-6"
+          style={{ backgroundColor: "rgba(0,102,204,0.08)", borderColor: "rgba(0,102,204,0.2)", color: "#0066cc" }}
         >
           <Zap size={12} />
           Simple pricing cheaper than 1 meter Pizza
@@ -193,7 +194,7 @@ export default function PricingPage() {
         >
           Save Web Hosting Costs
           <br />
-          <span className="text-indigo-500 dark:text-indigo-400">Save development time</span>
+          <span style={{ color: "#0066cc" }}>Save development time</span>
         </motion.h1>
 
         <motion.p
@@ -219,15 +220,12 @@ export default function PricingPage() {
             <motion.div
               key={plan.name}
               variants={fadeUp}
-              className={`relative rounded-[6px] transition-all duration-300 ${
-                plan.popular
-                  ? "bg-gradient-to-b from-indigo-50 dark:from-indigo-950/50 to-gray-50 dark:to-gray-900 border-2 border-indigo-500 shadow-sm shadow-indigo-500/10"
-                  : "bg-card border border-border hover:border-border/70"
-              }`}
+              className="relative rounded-[6px] transition-all duration-300 bg-card border hover:border-border/70"
+              style={{ borderColor: plan.popular ? "#0066cc" : undefined, borderWidth: plan.popular ? 2 : 1 }}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-indigo-600 text-white text-xs font-semibold px-3 py-1 rounded-[3px]">
+                  <span className="text-white text-xs font-semibold px-3 py-1 rounded-[3px]" style={{ backgroundColor: "#0066cc" }}>
                     Most Popular
                   </span>
                 </div>
@@ -268,11 +266,11 @@ export default function PricingPage() {
                 ) : (
                   <Link
                     href={plan.name === "Enterprise" ? "/contact" : "/register"}
-                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-[6px] font-medium transition-all mb-6 ${
-                      plan.popular
-                        ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/25"
-                        : "border border-input hover:border-indigo-500 text-muted-foreground hover:text-indigo-600 dark:hover:text-white"
-                    }`}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 font-medium transition-opacity hover:opacity-90 active:scale-95 mb-6"
+                    style={plan.popular
+                      ? { backgroundColor: "#0066cc", color: "#fff", borderRadius: 9999 }
+                      : { border: "1px solid #0066cc", color: "#0066cc", borderRadius: 9999 }
+                    }
                   >
                     {plan.name === "Basic" ? (
                       slotsLeft === null ? (

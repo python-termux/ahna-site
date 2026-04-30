@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
@@ -115,7 +115,7 @@ export default function SiteHeader() {
         className="flex items-center justify-between px-4 sm:px-6 py-5 max-w-6xl mx-auto w-full relative z-40"
       >
         {/* Logo */}
-        <Link href="/" className="text-xl font-bold tracking-tight hover:text-indigo-400 transition-colors">
+        <Link href="/" className="text-xl font-bold tracking-tight hover:opacity-70 transition-opacity" style={{ color: "#0066cc" }}>
           ahna.ae
         </Link>
 
@@ -131,7 +131,8 @@ export default function SiteHeader() {
           </Link>
           <Link
             href="/register"
-            className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-[6px] font-medium transition-colors"
+            className="px-4 py-2 text-sm text-white font-medium transition-opacity hover:opacity-90 active:scale-95"
+            style={{ backgroundColor: "#0066cc", borderRadius: 9999 }}
           >
             Get started
           </Link>
@@ -246,7 +247,8 @@ export default function SiteHeader() {
                 </Link>
                 <Link
                   href="/register"
-                  className="w-full text-center px-4 py-3.5 rounded-[6px] bg-indigo-600 hover:bg-indigo-500 text-sm font-semibold text-white transition-colors"
+                  className="w-full text-center px-4 py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-95"
+                  style={{ backgroundColor: "#0066cc", borderRadius: 9999 }}
                 >
                   Get started
                 </Link>

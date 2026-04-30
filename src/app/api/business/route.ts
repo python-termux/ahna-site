@@ -17,7 +17,7 @@ const ALLOWED_PATCH_FIELDS = new Set([
   "name", "tagline", "description", "phone", "email",
   "website", "hero_image", "gallery", "about_image",
   "hours", "services", "testimonials", "social",
-  "theme_color", "stat_years", "stat_clients", "stat_projects",
+  "theme_color", "corner_radius", "stat_years", "stat_clients", "stat_projects",
 ]);
 
 // POST /api/business — create

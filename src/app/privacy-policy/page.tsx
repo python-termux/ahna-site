@@ -39,7 +39,7 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="3. Payment Processing by Paddle">
-            <p>All subscription payments are processed by <strong className="text-foreground">Paddle.com Market Limited</strong>, which acts as the Merchant of Record. When you make a purchase, Paddle collects and processes your payment details, billing address, and transaction information in accordance with <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">Paddle's Privacy Policy</a>. We share your email address with Paddle for the purpose of payment processing and fraud prevention.</p>
+            <p>All subscription payments are processed by <strong className="text-foreground">Paddle.com Market Limited</strong>, which acts as the Merchant of Record. When you make a purchase, Paddle collects and processes your payment details, billing address, and transaction information in accordance with <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">Paddle's Privacy Policy</a>. We share your email address with Paddle for the purpose of payment processing and fraud prevention.</p>
           </Section>
 
           <Section title="4. How We Use Your Data">
@@ -82,7 +82,7 @@ export default function PrivacyPage() {
               <li><strong className="text-foreground">Portability</strong> — request your data in a machine-readable format.</li>
               <li><strong className="text-foreground">Objection</strong> — object to processing based on legitimate interests.</li>
             </ul>
-            <p className="mt-2">To exercise any of these rights, email us at <a href="mailto:privacy@ahna.ae" className="text-indigo-600 dark:text-indigo-400 hover:underline">privacy@ahna.ae</a>. We will respond within 30 days.</p>
+            <p className="mt-2">To exercise any of these rights, email us at <a href="mailto:privacy@ahna.ae" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">privacy@ahna.ae</a>. We will respond within 30 days.</p>
           </Section>
 
           <Section title="10. International Data Transfers">
@@ -98,7 +98,7 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="13. Contact">
-            <p>For privacy-related questions or requests, contact our Data Controller at <a href="mailto:privacy@ahna.ae" className="text-indigo-600 dark:text-indigo-400 hover:underline">privacy@ahna.ae</a>. The Platform is operated by <strong className="text-foreground">Osaad</strong> (also trading as <strong className="text-foreground">Osaad.tech</strong>), United Arab Emirates.</p>
+            <p>For privacy-related questions or requests, contact our Data Controller at <a href="mailto:privacy@ahna.ae" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">privacy@ahna.ae</a>. The Platform is operated by <strong className="text-foreground">Osaad</strong> (also trading as <strong className="text-foreground">Osaad.tech</strong>), United Arab Emirates.</p>
           </Section>
 
         </div>

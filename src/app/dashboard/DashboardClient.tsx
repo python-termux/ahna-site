@@ -23,7 +23,7 @@ interface Business {
   id: string; slug: string; name: string; tagline: string; description: string;
   category: string; phone: string; email: string; address: string; website: string;
   hero_image: string; gallery: string[]; about_image: string; hours: Hours; services: { title: string; description: string }[];
-  testimonials: Testimonial[]; social: Social; theme_color: string;
+  testimonials: Testimonial[]; social: Social; theme_color: string; corner_radius: string;
   stat_years: string; stat_clients: string; stat_projects: string;
 }
 
@@ -122,7 +122,7 @@ export default function DashboardClient({ user, businesses }: {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setActiveBiz(b)}
-                    className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 border border-indigo-900 rounded-[4px] px-3 py-1.5 transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-[#0066cc] hover:opacity-70 border border-[#0066cc]/30 rounded-[4px] px-3 py-1.5 transition-colors"
                   >
                     <Pencil size={12} /> Edit
                   </button>
@@ -184,12 +184,12 @@ function NoPagesState() {
           onChange={(e) => setMapsUrl(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && importBusiness()}
           placeholder="https://maps.app.goo.gl/..."
-          className="flex-1 bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500"
+          className="flex-1 bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc]"
         />
         <button
           onClick={importBusiness}
           disabled={loading || !mapsUrl.trim()}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-[6px] transition-colors whitespace-nowrap"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#0066cc] hover:opacity-90 disabled:opacity-50 text-white text-sm font-medium rounded-[6px] transition-colors whitespace-nowrap"
         >
           {loading ? <Loader2 size={14} className="animate-spin" /> : "Import"}
         </button>
@@ -386,7 +386,7 @@ function EditForm({ biz, onBack, onLogout }: {
                   transition={{ duration: 0.2, ease: "easeOut" }}
                   onClick={save}
                   disabled={saving}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-[#0066cc] hover:opacity-90 disabled:opacity-60 text-white text-sm font-medium transition-colors"
                 >
                   {saving && <Loader2 size={13} className="animate-spin" />}
                   {saving ? "Saving…" : "Save"}
@@ -535,6 +535,33 @@ function EditForm({ biz, onBack, onLogout }: {
                   ))}
                 </div>
               </div>
+              <div>
+                <p className="text-sm text-foreground mb-2 font-medium">Corner roundness</p>
+                <div className="flex gap-2">
+                  {([
+                    { value: "none", label: "Sharp",   radius: "0px" },
+                    { value: "md",   label: "Rounded", radius: "8px" },
+                    { value: "pill", label: "Pill",    radius: "9999px" },
+                  ] as const).map(({ value, label, radius }) => {
+                    const selected = (data.corner_radius || "md") === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => update("corner_radius", value)}
+                        className={`flex flex-col items-center gap-1.5 px-4 py-2.5 border transition-all ${selected ? "border-[#0066cc] bg-[#0066cc]/5 text-[#0066cc]" : "border-border text-muted-foreground hover:border-border/70"}`}
+                        style={{ borderRadius: "8px" }}
+                      >
+                        <div
+                          className={`w-10 h-6 border-2 ${selected ? "border-[#0066cc]" : "border-current"}`}
+                          style={{ borderRadius: radius === "9999px" ? "9999px" : radius }}
+                        />
+                        <span className="text-xs font-medium">{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </>}
 
             {/* IMAGES */}
@@ -569,7 +596,7 @@ function EditForm({ biz, onBack, onLogout }: {
                       <div className="grid grid-cols-4 gap-2 mb-3">
                         {allImgs.map((url, i) => (
                           <button key={i} type="button" onClick={() => update("about_image", url)}
-                            className={`relative aspect-square rounded-[6px] overflow-hidden border-2 transition-all ${data.about_image === url ? "border-indigo-500 ring-2 ring-indigo-500/40" : "border-transparent"}`}>
+                            className={`relative aspect-square rounded-[6px] overflow-hidden border-2 transition-all ${data.about_image === url ? "border-[#0066cc] ring-2 ring-[#0066cc]/40" : "border-transparent"}`}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={url} alt={`img ${i + 1}`} className="w-full h-full object-cover" />
                           </button>
@@ -578,7 +605,7 @@ function EditForm({ biz, onBack, onLogout }: {
                     )}
                     <input value={data.about_image ?? ""} onChange={(e) => update("about_image", e.target.value)}
                       placeholder="Or paste any image URL…"
-                      className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2 text-xs text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500" />
+                      className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2 text-xs text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc]" />
                     {data.about_image && (
                       <div className="mt-2 relative w-full h-32 rounded-[6px] overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -652,7 +679,7 @@ function EditForm({ biz, onBack, onLogout }: {
                       value={(data.hours as Record<string, string>)[day] ?? ""}
                       onChange={(e) => update("hours", { ...data.hours, [day]: e.target.value })}
                       placeholder="9am – 6pm or Closed"
-                      className="flex-1 bg-secondary border border-border rounded-[6px] px-3 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500"
+                      className="flex-1 bg-secondary border border-border rounded-[6px] px-3 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc]"
                     />
                   </div>
                 ))}
@@ -741,7 +768,7 @@ function EditForm({ biz, onBack, onLogout }: {
                 <button onClick={() => { setDiscardModal(null); discardModal.onConfirm(); }}
                   className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-muted-foreground hover:text-foreground transition-colors">Discard</button>
                 <button onClick={async () => { await save(); setDiscardModal(null); discardModal.onConfirm(); }}
-                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 text-sm font-medium text-white transition-colors">Save & leave</button>
+                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-[#0066cc] hover:opacity-90 text-sm font-medium text-white transition-colors">Save & leave</button>
               </div>
             </motion.div>
           </motion.div>
@@ -881,7 +908,7 @@ function Field({ label, value, onChange, placeholder, required, maxLength, minLe
         <div className="flex items-center gap-2">
           {onAI && (
             <button type="button" onClick={onAI} disabled={aiLoading}
-              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50">
+              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#0066cc] hover:opacity-90 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50">
               {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
               AI fill
             </button>
@@ -899,7 +926,7 @@ function Field({ label, value, onChange, placeholder, required, maxLength, minLe
         placeholder={placeholder}
         required={required}
         maxLength={maxLength}
-        className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500"
+        className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc]"
       />
     </div>
   );
@@ -927,7 +954,7 @@ function TextareaField({ label, value, onChange, placeholder, maxLength, minLeng
         <div className="flex items-center gap-2">
           {onAI && (
             <button type="button" onClick={onAI} disabled={aiLoading}
-              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50">
+              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#0066cc] hover:opacity-90 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50">
               {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
               AI fill
             </button>
@@ -946,7 +973,7 @@ function TextareaField({ label, value, onChange, placeholder, maxLength, minLeng
         placeholder={placeholder}
         maxLength={maxLength}
         rows={3}
-        className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-indigo-500 resize-none overflow-hidden"
+        className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] resize-none overflow-hidden"
       />
     </div>
   );
