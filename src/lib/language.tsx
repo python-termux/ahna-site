@@ -104,8 +104,8 @@ const T: Record<Lang, Translations> = {
     },
     home: {
       badge: "No coding. No Hosting. No Fuss.",
-      h1a: "Get Your Business Online",
-      h1b: "Less Than 1 Meter Pizza Cost",
+      h1a: "Facebook or Google Maps",
+      h1b: "Turn them into a stunning website",
       hero: "Your customers have already told you why they pick you on your Google Business Profile, now turn that feedback into a high converting website starting from just 8.25 AED/month. Zero coding. Zero hosting hassle.",
       cta: "Get started Now",
       features: [
@@ -228,8 +228,8 @@ const T: Record<Lang, Translations> = {
     },
     home: {
       badge: "بدون برمجة. بدون استضافة. بدون تعقيد.",
-      h1a: "أطلق أعمالك على الإنترنت",
-      h1b: "بأقل من تكلفة متر بيتزا",
+      h1a: "فيسبوك أو خرائط جوجل",
+      h1b: "حوّلهم إلى موقع ويب مذهل",
       hero: "لقد أخبرك عملاؤك بالفعل عبر ملفك التجاري على Google لماذا يختارونك، حوّل تلك التقييمات إلى موقع احترافي يحوّل الزوار إلى عملاء بدءاً من 8.25 درهم فقط شهرياً. بدون برمجة. بدون متاعب الاستضافة.",
       cta: "ابدأ الآن",
       features: [
