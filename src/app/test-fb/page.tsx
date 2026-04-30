@@ -72,7 +72,7 @@ export default function TestFBPage() {
           setError("Login cancelled or permission denied.");
         }
       },
-      { scope: "pages_show_list,business_management" }
+      { scope: "pages_show_list,business_management,pages_read_engagement,pages_read_user_content" }
     );
   }
 
