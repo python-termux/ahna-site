@@ -100,18 +100,30 @@ export default function Home() {
         viewport={VIEWPORT}
         className="max-w-6xl mx-auto px-4 sm:px-6 pb-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
       >
-        {t.home.features.map((f, i) => (
-          <motion.div
-            key={i}
-            variants={fadeUp}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="bg-card border border-border hover:border-border/70 rounded-[8px] p-6 transition-colors cursor-default"
-          >
-            <div className="mb-3">{ICONS[i]}</div>
-            <h3 className="font-semibold text-foreground mb-1">{f.title}</h3>
-            <p className="text-sm text-muted-foreground">{f.desc}</p>
-          </motion.div>
-        ))}
+        {t.home.features.map((f, i) => {
+          const isSoon = i === 9;
+          return (
+            <motion.div
+              key={i}
+              variants={fadeUp}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className={isSoon
+                ? "rounded-[8px] p-6 transition-colors cursor-default"
+                : "bg-card border border-border hover:border-border/70 rounded-[8px] p-6 transition-colors cursor-default"
+              }
+              style={isSoon ? {
+                backgroundColor: "rgba(16,185,129,0.05)",
+                border: "1px solid rgba(16,185,129,0.28)",
+              } : undefined}
+            >
+              <div className="mb-3">
+                {isSoon ? <Share2 size={20} style={{ color: "#10b981" }} /> : ICONS[i]}
+              </div>
+              <h3 className="font-semibold mb-1" style={isSoon ? { color: "#10b981" } : undefined}>{f.title}</h3>
+              <p className="text-sm text-muted-foreground">{f.desc}</p>
+            </motion.div>
+          );
+        })}
       </motion.section>
 
       {/* Why Us */}

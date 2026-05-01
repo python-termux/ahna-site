@@ -24,129 +24,77 @@ const stagger = (delay: number) => ({
 
 const VIEWPORT = { once: true, amount: 0.2 };
 
+const sharedFeaturesEn = [
+  { name: "Ai Content Generation", included: true,  value: "one time use" },
+  { name: "Google Reviews Export", included: true,  value: "Yes" },
+  { name: "Website Edits",         included: true,  value: "Unlimited" },
+  { name: "Multiple Theme Changes",included: true,  value: "yes" },
+  { name: "Multi-language Support",included: true,  value: "yes" },
+  { name: "Syrflow Badge",         included: true,  value: "Footer" },
+  { name: "Syrflow Popup",         included: true,  value: "5 min Inactivity" },
+  { name: "Online Support",        included: true,  value: "Email" },
+  { name: "Auto update Google reviews", included: true, value: "Yes" },
+  { name: "Auto update Google Photos",  included: true, value: "Yes" },
+  { name: "Custom domain",         included: true, value: "Yes" },
+  { name: "Ai Auto Fill",          included: true,  value: "yes" },
+  { name: "Website Views Counter", included: false, value: "no" },
+];
+
 const plansEn = [
   {
-    name: "Basic", price: 8.25, period: "monthly", yearlyPrice: 99,
-    description: "Perfect for new small businesses (cafes, salons, Tourism Agencies, etc.)",
-    icon: "/pricing/star-94.png", buttonText: "Limited - 10 Slots left", popular: false,
-    features: [
-      { name: "Ai Content Generation", included: true, value: "one time use" },
-      { name: "Google Reviews Export", included: true, value: "Yes" },
-      { name: "Website Edits", included: true, value: "Unlimited" },
-      { name: "Multiple Theme Changes", included: true, value: "yes" },
-      { name: "Multi-language Support", included: true, value: "Only English" },
-      { name: "Syrflow Badge", included: true, value: "Footer" },
-      { name: "Syrflow Popup", included: true, value: "5 min Inactivity" },
-      { name: "Online Support - Assistant", included: true, value: "Email" },
-      { name: "Auto update Google reviews", included: false, value: "No" },
-      { name: "Auto update Google Photos", included: false, value: "No" },
-      { name: "Custom domain", included: false, value: "No" },
-      { name: "Ai Auto Fill", included: false, value: "No" },
-      { name: "Website Views Counter", included: false, value: "no" },
-    ],
+    name: "Basic", price: 1, period: "monthly", yearlyPrice: 12,
+    description: "Perfect for small businesses in Syria. Get online instantly with Google Maps.",
+    icon: "/pricing/star-94.png", buttonText: "Get started", popular: false, comingSoon: false,
+    features: sharedFeaturesEn,
   },
   {
-    name: "Pro", price: 15, period: "monthly", yearlyPrice: 180,
-    description: "Best for established businesses (consulting firms, restaurants, clinics, etc.)",
-    icon: "/pricing/fire-94.png", buttonText: "Get started", popular: true,
-    features: [
-      { name: "Ai Content Generation", included: true, value: "Limited" },
-      { name: "Google Reviews Export", included: true, value: "Yes" },
-      { name: "Website Edits", included: true, value: "Unlimited" },
-      { name: "Multiple Theme Changes", included: true, value: "yes" },
-      { name: "Multi-language Support", included: true, value: "Arabic English" },
-      { name: "Syrflow Badge", included: true, value: "Footer" },
-      { name: "Syrflow Popup", included: true, value: "10 min Inactivity" },
-      { name: "Online Support - Assistant", included: true, value: "yes" },
-      { name: "Auto update Google reviews", included: true, value: "Max 20" },
-      { name: "Auto update Google Photos", included: true, value: "Max 20" },
-      { name: "Custom domain", included: true, value: "Yes" },
-      { name: "Ai Auto Fill", included: true, value: "Limited usage" },
-      { name: "Website Views Counter", included: false, value: "no" },
-    ],
+    name: "Facebook Import", price: 1, period: "monthly", yearlyPrice: 12,
+    description: "Import your business directly from your Facebook Page. Coming soon.",
+    icon: "/pricing/fire-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
+    features: sharedFeaturesEn,
   },
   {
-    name: "Enterprise", price: 18, period: "monthly", yearlyPrice: 216,
-    description: "Best for Arabic established businesses (consulting firms, restaurants, clinics, etc.)",
-    icon: "/pricing/crown-94.png", buttonText: "Get started", popular: false,
-    features: [
-      { name: "Ai Content Generation", included: true, value: "Unlimited" },
-      { name: "Google Reviews Export", included: true, value: "Yes" },
-      { name: "Website Edits", included: true, value: "Unlimited" },
-      { name: "Multiple Theme Changes", included: true, value: "yes" },
-      { name: "Multi-language Support", included: true, value: "Arabic English" },
-      { name: "Syrflow Badge", included: true, value: "Badge Removed" },
-      { name: "Syrflow Popup", included: true, value: "Never" },
-      { name: "Online Support - Assistant", included: true, value: "yes" },
-      { name: "Auto update Google reviews", included: true, value: "Unlimited" },
-      { name: "Auto update Google Photos", included: true, value: "Unlimited" },
-      { name: "Custom domain", included: true, value: "Yes" },
-      { name: "Ai Auto Fill", included: true, value: "Unlimited" },
-      { name: "Website Views Counter", included: true, value: "yes" },
-    ],
+    name: "Telegram Import", price: 1, period: "monthly", yearlyPrice: 12,
+    description: "Import your business from your Telegram channel or group. Coming soon.",
+    icon: "/pricing/crown-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
+    features: sharedFeaturesEn,
   },
+];
+
+const sharedFeaturesAr = [
+  { name: "إنشاء محتوى بالذكاء الاصطناعي",        included: true,  value: "مرة واحدة" },
+  { name: "تصدير تقييمات Google",                  included: true,  value: "نعم" },
+  { name: "تعديلات الموقع",                        included: true,  value: "غير محدودة" },
+  { name: "تغيير الثيمات المتعددة",                 included: true,  value: "نعم" },
+  { name: "دعم متعدد اللغات",                       included: true,  value: "نعم" },
+  { name: "شارة Syrflow",                          included: true,  value: "تذييل الصفحة" },
+  { name: "نافذة Syrflow المنبثقة",                 included: true,  value: "5 دقائق خمول" },
+  { name: "الدعم الإلكتروني",                       included: true,  value: "البريد الإلكتروني" },
+  { name: "تحديث تلقائي لتقييمات Google",          included: true, value: "نعم" },
+  { name: "تحديث تلقائي لصور Google",              included: true, value: "نعم" },
+  { name: "نطاق مخصص",                             included: true, value: "نعم" },
+  { name: "التعبئة التلقائية بالذكاء الاصطناعي",   included: true,  value: "نعم" },
+  { name: "عداد مشاهدات الموقع",                   included: false, value: "لا" },
 ];
 
 const plansAr = [
   {
-    name: "أساسي", price: 8.25, period: "شهرياً", yearlyPrice: 99,
-    description: "مثالي للشركات الصغيرة الجديدة (المقاهي، الصالونات، وكالات السياحة، إلخ)",
-    icon: "/pricing/star-94.png", buttonText: "محدود - 10 مقاعد متبقية", popular: false,
-    features: [
-      { name: "إنشاء محتوى بالذكاء الاصطناعي", included: true,  value: "مرة واحدة" },
-      { name: "تصدير تقييمات Google",            included: true,  value: "نعم" },
-      { name: "تعديلات الموقع",                  included: true,  value: "غير محدودة" },
-      { name: "تغيير الثيمات المتعددة",           included: true,  value: "نعم" },
-      { name: "دعم متعدد اللغات",                 included: true,  value: "الإنجليزية فقط" },
-      { name: "شارة Syrflow",                    included: true,  value: "تذييل الصفحة" },
-      { name: "نافذة Syrflow المنبثقة",           included: true,  value: "5 دقائق خمول" },
-      { name: "الدعم الإلكتروني",                 included: true,  value: "البريد الإلكتروني" },
-      { name: "تحديث تلقائي لتقييمات Google",    included: false, value: "لا" },
-      { name: "تحديث تلقائي لصور Google",        included: false, value: "لا" },
-      { name: "نطاق مخصص",                       included: false, value: "لا" },
-      { name: "التعبئة التلقائية بالذكاء الاصطناعي", included: false, value: "لا" },
-      { name: "عداد مشاهدات الموقع",             included: false, value: "لا" },
-    ],
+    name: "أساسي", price: 1, period: "شهرياً", yearlyPrice: 12,
+    description: "مثالي للشركات الصغيرة في سوريا. انطلق فوراً عبر Google Maps.",
+    icon: "/pricing/star-94.png", buttonText: "ابدأ الآن", popular: false, comingSoon: false,
+    features: sharedFeaturesAr,
   },
   {
-    name: "Pro", price: 15, period: "شهرياً", yearlyPrice: 180,
-    description: "الأفضل للشركات الراسخة (شركات الاستشارات، المطاعم، العيادات، إلخ)",
-    icon: "/pricing/fire-94.png", buttonText: "ابدأ الآن", popular: true,
-    features: [
-      { name: "إنشاء محتوى بالذكاء الاصطناعي", included: true,  value: "محدود" },
-      { name: "تصدير تقييمات Google",            included: true,  value: "نعم" },
-      { name: "تعديلات الموقع",                  included: true,  value: "غير محدودة" },
-      { name: "تغيير الثيمات المتعددة",           included: true,  value: "نعم" },
-      { name: "دعم متعدد اللغات",                 included: true,  value: "عربي وإنجليزي" },
-      { name: "شارة Syrflow",                    included: true,  value: "تذييل الصفحة" },
-      { name: "نافذة Syrflow المنبثقة",           included: true,  value: "10 دقائق خمول" },
-      { name: "الدعم الإلكتروني",                 included: true,  value: "نعم" },
-      { name: "تحديث تلقائي لتقييمات Google",    included: true,  value: "حتى 20" },
-      { name: "تحديث تلقائي لصور Google",        included: true,  value: "حتى 20" },
-      { name: "نطاق مخصص",                       included: true,  value: "نعم" },
-      { name: "التعبئة التلقائية بالذكاء الاصطناعي", included: true, value: "استخدام محدود" },
-      { name: "عداد مشاهدات الموقع",             included: false, value: "لا" },
-    ],
+    name: "Facebook Import", price: 1, period: "شهرياً", yearlyPrice: 12,
+    description: "استورد نشاطك التجاري مباشرة من صفحة Facebook الخاصة بك. قريباً.",
+    icon: "/pricing/fire-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
+    features: sharedFeaturesAr,
   },
   {
-    name: "Enterprise", price: 18, period: "شهرياً", yearlyPrice: 216,
-    description: "الأفضل للشركات العربية الراسخة (شركات الاستشارات، المطاعم، العيادات، إلخ)",
-    icon: "/pricing/crown-94.png", buttonText: "ابدأ الآن", popular: false,
-    features: [
-      { name: "إنشاء محتوى بالذكاء الاصطناعي", included: true, value: "غير محدود" },
-      { name: "تصدير تقييمات Google",            included: true, value: "نعم" },
-      { name: "تعديلات الموقع",                  included: true, value: "غير محدودة" },
-      { name: "تغيير الثيمات المتعددة",           included: true, value: "نعم" },
-      { name: "دعم متعدد اللغات",                 included: true, value: "عربي وإنجليزي" },
-      { name: "شارة Syrflow",                    included: true, value: "بدون شارة" },
-      { name: "نافذة Syrflow المنبثقة",           included: true, value: "أبداً" },
-      { name: "الدعم الإلكتروني",                 included: true, value: "نعم" },
-      { name: "تحديث تلقائي لتقييمات Google",    included: true, value: "غير محدود" },
-      { name: "تحديث تلقائي لصور Google",        included: true, value: "غير محدود" },
-      { name: "نطاق مخصص",                       included: true, value: "نعم" },
-      { name: "التعبئة التلقائية بالذكاء الاصطناعي", included: true, value: "غير محدود" },
-      { name: "عداد مشاهدات الموقع",             included: true, value: "نعم" },
-    ],
+    name: "Telegram Import", price: 1, period: "شهرياً", yearlyPrice: 12,
+    description: "استورد نشاطك التجاري من قناة أو مجموعة Telegram. قريباً.",
+    icon: "/pricing/crown-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
+    features: sharedFeaturesAr,
   },
 ];
 
@@ -250,18 +198,22 @@ export default function PricingPage() {
             <motion.div
               key={plan.name}
               variants={fadeUp}
-              className="relative rounded-[6px] transition-all duration-300 bg-card border hover:border-border/70"
-              style={{ borderColor: plan.popular ? "#0066cc" : undefined, borderWidth: plan.popular ? 2 : 1 }}
+              className="relative rounded-[6px] transition-all duration-300 bg-card border"
+              style={plan.comingSoon
+                ? { borderColor: "rgba(16,185,129,0.28)" }
+                : { borderColor: undefined }
+              }
             >
-              {plan.popular && (
+              {plan.comingSoon && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="text-white text-xs font-semibold px-3 py-1 rounded-[3px]" style={{ backgroundColor: "#0066cc" }}>
-                    {t.pricing.mostPopular}
+                  <span className="text-xs font-semibold px-3 py-1 rounded-[4px]"
+                    style={{ backgroundColor: "#064e3b", color: "#34d399", border: "1px solid #10b981" }}>
+                    {lang === "ar" ? "قريباً" : "Coming Soon"}
                   </span>
                 </div>
               )}
 
-              <div className="p-6">
+              <div className="p-6" style={plan.comingSoon ? { opacity: 0.65 } : undefined}>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-[6px] bg-accent flex items-center justify-center overflow-hidden">
                     <Image src={plan.icon} alt={`${plan.name} icon`} width={20} height={20} className="object-contain" />
@@ -271,38 +223,38 @@ export default function PricingPage() {
 
                 <div className="mb-3">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">{plan.price} AED</span>
+                    <span className="text-4xl font-bold">${plan.price}</span>
                     <span className="text-muted-foreground">/{plan.period}</span>
                   </div>
                   <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                    {plan.yearlyPrice} {t.pricing.billedAnnually}
+                    ${plan.yearlyPrice} {t.pricing.billedAnnually}
                   </p>
                   <p className="text-xs text-gray-500 mt-2">{plan.description}</p>
                 </div>
 
-                {plan.name === (lang === "ar" ? "أساسي" : "Basic") && slotsLeft === 0 ? (
-                  <button disabled className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[6px] font-medium mb-6 border border-border bg-secondary text-muted-foreground opacity-50 cursor-not-allowed">
+                {plan.comingSoon ? (
+                  <div className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[9999px] font-medium mb-6 cursor-not-allowed select-none"
+                    style={{ border: "1px solid rgba(16,185,129,0.4)", color: "#10b981" }}>
+                    {plan.buttonText}
+                  </div>
+                ) : slotsLeft === 0 ? (
+                  <button disabled className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[9999px] font-medium mb-6 border border-border bg-secondary text-muted-foreground opacity-50 cursor-not-allowed">
                     {t.pricing.fullyBooked}
                   </button>
                 ) : (
                   <Link
-                    href={plan.name === "Enterprise" ? "/contact" : "/register"}
+                    href="/register"
                     className="w-full flex items-center justify-center gap-2 py-2.5 font-medium transition-opacity hover:opacity-90 active:scale-95 mb-6"
-                    style={plan.popular
-                      ? { backgroundColor: "#0066cc", color: "#fff", borderRadius: 9999 }
-                      : { border: "1px solid #0066cc", color: "#0066cc", borderRadius: 9999 }
-                    }
+                    style={{ border: "1px solid #0066cc", color: "#0066cc", borderRadius: 9999 }}
                   >
-                    {plan.name === (lang === "ar" ? "أساسي" : "Basic") ? (
-                      slotsLeft === null ? (
-                        <span className="opacity-60">{t.pricing.loading}</span>
-                      ) : (
-                        <>
-                          <Flame size={14} className="text-orange-400 shrink-0" />
-                          {t.pricing.slotsLeft(slotsLeft)}
-                        </>
-                      )
-                    ) : plan.buttonText}
+                    {slotsLeft === null ? (
+                      <span className="opacity-60">{t.pricing.loading}</span>
+                    ) : (
+                      <>
+                        <Flame size={14} className="text-orange-400 shrink-0" />
+                        {t.pricing.slotsLeft(slotsLeft)}
+                      </>
+                    )}
                   </Link>
                 )}
 

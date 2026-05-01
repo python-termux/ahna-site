@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
   MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
-  BarChart2, Clock, Share2, Star, Upload,
+  BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
@@ -46,6 +46,7 @@ const NAV = [
   { id: "hours",     icon: Clock     },
   { id: "social",    icon: Share2    },
   { id: "reviews",   icon: Star      },
+  { id: "account",   icon: User      },
 ] as const;
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -58,6 +59,20 @@ const NAV_LABELS: Record<string, { en: string; ar: string }> = {
   hours:    { en: "Hours",     ar: "أوقات العمل"      },
   social:   { en: "Social",    ar: "التواصل الاجتماعي"},
   reviews:  { en: "Reviews",   ar: "التقييمات"        },
+  account:  { en: "Account",   ar: "الحساب"           },
+};
+
+const NAV_DESCS: Record<string, { en: string; ar: string }> = {
+  branding: { en: "Name, tagline & description",  ar: "الاسم والشعار والوصف"           },
+  theme:    { en: "Colors and corner style",       ar: "الألوان وشكل الزوايا"          },
+  images:   { en: "Gallery & about photo",         ar: "المعرض وصورة من نحن"           },
+  services: { en: "What you offer",               ar: "الخدمات التي تقدمها"            },
+  contact:  { en: "Phone, email & address",       ar: "الهاتف والبريد والعنوان"        },
+  stats:    { en: "Years, reviews & rating",      ar: "السنوات والتقييمات والتصنيف"    },
+  hours:    { en: "Opening times",                ar: "أوقات العمل"                    },
+  social:   { en: "Instagram, Facebook & more",   ar: "إنستغرام وفيسبوك وغيره"        },
+  reviews:  { en: "Google reviews",              ar: "تقييمات غوغل"                   },
+  account:  { en: "Password & danger zone",       ar: "كلمة المرور والإعدادات الحساسة"},
 };
 
 function LangToggle() {
@@ -108,6 +123,7 @@ export default function DashboardClient({ user, businesses }: {
     return (
       <EditForm
         biz={activeBiz}
+        userEmail={user.email ?? ""}
         onBack={businesses.length > 1 ? () => setActiveBiz(null) : undefined}
         onLogout={logout}
       />
@@ -309,8 +325,9 @@ function NoPagesState() {
 }
 
 // ─── EDIT FORM ────────────────────────────────────────────────────────────────
-function EditForm({ biz, onBack, onLogout }: {
+function EditForm({ biz, userEmail, onBack, onLogout }: {
   biz: Business;
+  userEmail: string;
   onBack?: () => void;
   onLogout: () => void;
 }) {
@@ -321,10 +338,12 @@ function EditForm({ biz, onBack, onLogout }: {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [active, setActive] = useState<string>("branding");
+  const [mobileView, setMobileView] = useState<"list" | "section">("list");
   const [aiLoading, setAiLoading] = useState<Record<string, boolean>>({});
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
   const [discardModal, setDiscardModal] = useState<{ onConfirm: () => void } | null>(null);
 
   const isDirty = JSON.stringify(data) !== savedSnapshot.current;

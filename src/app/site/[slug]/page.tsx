@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -11,6 +12,74 @@ import ReviewMarquee from "@/components/site/ReviewMarquee";
 import { FadeUp, StaggerGrid, StaggerItem, SlideDownHeader } from "@/components/site/AnimatedSection";
 import { matchServiceIcon } from "@/lib/service-icons";
 import OpenStatus from "@/components/site/OpenStatus";
+import SiteLangToggle from "@/components/site/SiteLangToggle";
+
+type SiteLang = "en" | "ar";
+
+const SITE_I18N = {
+  en: {
+    navServices:    "Services",
+    navReviews:     "Reviews",
+    navContact:     "Contact",
+    callUs:         "Call us",
+    onGoogle:       "on Google",
+    reviews:        "reviews",
+    callNow:        "Call now",
+    directions:     "Directions",
+    aboutLabel:     "About us",
+    aboutTitle:     "Who we are",
+    getInTouch:     "Get in touch",
+    servicesLabel:  "What we offer",
+    servicesTitle:  "Our services",
+    whyLabel:       "Why choose us",
+    whyTitle:       "Why people choose",
+    reviewsLabel:   "Testimonials",
+    reviewsTitle:   "Our Google Reviews",
+    contactLabel:   "Contact",
+    contactTitle:   "Get in touch",
+    phone:          "Phone",
+    openingHours:   "Opening hours",
+    email:          "Email",
+    address:        "Address",
+    whatsapp:       "WhatsApp",
+    followUs:       "Follow us",
+    statYears:      "Years",
+    statReviews:    "Reviews",
+    statRating:     "Rating",
+    poweredBy:      "Powered by",
+  },
+  ar: {
+    navServices:    "خدماتنا",
+    navReviews:     "التقييمات",
+    navContact:     "تواصل",
+    callUs:         "اتصل بنا",
+    onGoogle:       "على غوغل",
+    reviews:        "تقييم",
+    callNow:        "اتصل الآن",
+    directions:     "الاتجاهات",
+    aboutLabel:     "من نحن",
+    aboutTitle:     "من نحن",
+    getInTouch:     "تواصل معنا",
+    servicesLabel:  "ما نقدمه",
+    servicesTitle:  "خدماتنا",
+    whyLabel:       "لماذا تختارنا",
+    whyTitle:       "لماذا يختار الناس",
+    reviewsLabel:   "آراء العملاء",
+    reviewsTitle:   "تقييماتنا على غوغل",
+    contactLabel:   "تواصل",
+    contactTitle:   "ابق على تواصل",
+    phone:          "هاتف",
+    openingHours:   "أوقات العمل",
+    email:          "البريد الإلكتروني",
+    address:        "العنوان",
+    whatsapp:       "واتساب",
+    followUs:       "تابعنا",
+    statYears:      "سنوات",
+    statReviews:    "تقييمات",
+    statRating:     "التقييم",
+    poweredBy:      "مدعوم بـ",
+  },
+};
 
 interface Service { title: string; description: string }
 interface Testimonial { author: string; role: string; text: string; rating: number }
@@ -84,6 +153,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function SitePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
+  const cookieStore = await cookies();
+  const siteLang: SiteLang = cookieStore.get("syrflow_lang")?.value === "ar" ? "ar" : "en";
+  const i18n = SITE_I18N[siteLang];
+  const isRtl = siteLang === "ar";
+
   const supabase = await createClient();
   const { data: biz } = await supabase.from("businesses").select("*").eq("slug", slug).single<Business>();
   if (!biz) notFound();
@@ -101,9 +175,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   const aboutImage = biz.about_image || allImages[1] || allImages[0] || "";
 
   const stats = [
-    biz.stat_years    && { label: "Years",   value: biz.stat_years },
-    biz.stat_clients  && { label: "Reviews", value: biz.stat_clients },
-    biz.stat_projects && { label: "Rating",  value: biz.stat_projects },
+    biz.stat_years    && { label: i18n.statYears,   value: biz.stat_years },
+    biz.stat_clients  && { label: i18n.statReviews, value: biz.stat_clients },
+    biz.stat_projects && { label: i18n.statRating,  value: biz.stat_projects },
   ].filter(Boolean) as { label: string; value: string }[];
 
   const hours = Object.entries(biz.hours ?? {});
@@ -114,7 +188,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   const whyUs = (biz.why_us ?? []).filter((p) => p.title && p.description);
 
   return (
-    <div className={`min-h-screen ${T.page} ${T.text}`}>
+    <div className={`min-h-screen ${T.page} ${T.text}`} dir={isRtl ? "rtl" : "ltr"}>
       <style>{`
         html{scrollbar-color:${sb.thumb} ${sbTrack}!important}
         ::-webkit-scrollbar-track{background:${sbTrack}!important}
@@ -140,18 +214,22 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             <a href="#hero" className={`text-sm font-bold tracking-tight ${T.accentText}`}>{biz.name}</a>
             <nav className="flex items-center gap-4 sm:gap-5 text-xs sm:text-sm">
               {biz.services.length > 0 && (
-                <a href="#services" className={`hidden sm:block ${T.navLink} transition-colors`}>Services</a>
+                <a href="#services" className={`hidden sm:block ${T.navLink} transition-colors`}>{i18n.navServices}</a>
               )}
               {biz.testimonials.length > 0 && (
-                <a href="#reviews" className={`hidden sm:block ${T.navLink} transition-colors`}>Reviews</a>
+                <a href="#reviews" className={`hidden sm:block ${T.navLink} transition-colors`}>{i18n.navReviews}</a>
               )}
-              <a href="#contact" className={`${T.navLink} transition-colors`}>Contact</a>
+              <a href="#contact" className={`${T.navLink} transition-colors`}>{i18n.navContact}</a>
+              <SiteLangToggle
+                initialLang={siteLang}
+                className={T.isLight ? "border-gray-300 text-gray-600 hover:text-gray-900" : "border-gray-700 text-gray-400 hover:text-white"}
+              />
               {biz.phone && (
                 <a
                   href={`tel:${biz.phone}`}
                   className={`site-btn ${T.btn} text-white px-3 py-1.5 text-xs font-medium transition-colors`}
                 >
-                  Call us
+                  {i18n.callUs}
                 </a>
               )}
             </nav>
@@ -170,8 +248,8 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             {avgRating && (
               <div className={`site-card inline-flex items-center gap-2 w-fit px-3 py-1.5 text-xs font-medium ${T.iconBg}`}>
                 <Star size={11} className="fill-current" />
-                {avgRating} on Google
-                {biz.stat_clients && <span className="opacity-70">· {biz.stat_clients} reviews</span>}
+                {avgRating} {i18n.onGoogle}
+                {biz.stat_clients && <span className="opacity-70">· {biz.stat_clients} {i18n.reviews}</span>}
               </div>
             )}
 
@@ -210,7 +288,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                   href={`tel:${biz.phone}`}
                   className={`site-btn inline-flex items-center gap-1.5 ${T.btn} text-white px-4 py-2.5 font-medium text-sm transition-colors`}
                 >
-                  <Phone size={14} /> Call now
+                  <Phone size={14} /> {i18n.callNow}
                 </a>
               )}
               {(biz.maps_url || biz.address) && (
@@ -220,7 +298,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                   rel="noopener noreferrer"
                   className={`site-btn inline-flex items-center gap-1.5 border px-4 py-2.5 font-medium text-sm transition-colors ${T.btnOutline}`}
                 >
-                  <MapPin size={14} /> Directions
+                  <MapPin size={14} /> {i18n.directions}
                 </a>
               )}
             </div>
@@ -244,10 +322,10 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
               {/* Text — left on desktop, top on mobile */}
               <div>
                 <p className={`text-xs font-semibold uppercase tracking-widest mb-3 ${T.accentText}`}>
-                  About us
+                  {i18n.aboutLabel}
                 </p>
                 <h2 className="text-xl sm:text-2xl font-bold mb-4 leading-snug">
-                  Who we are
+                  {i18n.aboutTitle}
                 </h2>
                 <p className={`${T.muted} text-sm sm:text-base leading-relaxed`}>
                   {biz.description}
@@ -257,7 +335,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                     href="#contact"
                     className={`inline-flex items-center gap-1.5 mt-6 font-semibold text-sm ${T.accentText} group`}
                   >
-                    Get in touch
+                    {i18n.getInTouch}
                     <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                   </a>
                 )}
@@ -287,9 +365,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             <div className={`h-px mb-10 sm:mb-14 bg-gradient-to-r from-transparent ${T.isLight ? "via-gray-300" : "via-gray-800"} to-transparent`} />
             <FadeUp className="mb-8">
               <p className={`text-xs font-semibold uppercase tracking-widest mb-2 ${T.accentText}`}>
-                What we offer
+                {i18n.servicesLabel}
               </p>
-              <h2 className="text-xl sm:text-2xl font-bold">Our services</h2>
+              <h2 className="text-xl sm:text-2xl font-bold">{i18n.servicesTitle}</h2>
             </FadeUp>
 
             <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -321,8 +399,8 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className={`h-px mb-10 sm:mb-14 bg-gradient-to-r from-transparent ${T.isLight ? "via-gray-300" : "via-gray-800"} to-transparent`} />
             <FadeUp className="mb-8">
-              <p className={`text-xs font-semibold uppercase tracking-widest mb-2 ${T.accentText}`}>Why choose us</p>
-              <h2 className="text-xl sm:text-2xl font-bold">Why people choose {biz.name}</h2>
+              <p className={`text-xs font-semibold uppercase tracking-widest mb-2 ${T.accentText}`}>{i18n.whyLabel}</p>
+              <h2 className="text-xl sm:text-2xl font-bold">{i18n.whyTitle} {biz.name}</h2>
             </FadeUp>
             <StaggerGrid className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {whyUs.map((p, i) => (
@@ -346,10 +424,10 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             <div className={`h-px mb-10 sm:mb-14 bg-gradient-to-r from-transparent ${T.isLight ? "via-gray-300" : "via-gray-800"} to-transparent`} />
             <FadeUp className="mb-8">
               <p className={`text-xs font-semibold uppercase tracking-widest mb-2 ${T.accentText}`}>
-                Testimonials
+                {i18n.reviewsLabel}
               </p>
               <div className="flex flex-wrap items-end gap-3">
-                <h2 className="text-xl sm:text-2xl font-bold">Our Google Reviews</h2>
+                <h2 className="text-xl sm:text-2xl font-bold">{i18n.reviewsTitle}</h2>
                 {avgRating && (
                   <div className="flex items-center gap-1 mb-0.5">
                     <Star size={14} className="fill-yellow-400 text-yellow-400" />
@@ -362,7 +440,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
           </div>
 
           {biz.testimonials.length > 3 ? (
-            <ReviewMarquee reviews={biz.testimonials} isLight={T.isLight} />
+            <div dir="ltr"><ReviewMarquee reviews={biz.testimonials} isLight={T.isLight} /></div>
           ) : (
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
               <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -392,9 +470,9 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
           <div className={`h-px mb-10 sm:mb-14 bg-gradient-to-r from-transparent ${T.isLight ? "via-gray-300" : "via-gray-800"} to-transparent`} />
           <FadeUp className="mb-8">
             <p className={`text-xs font-semibold uppercase tracking-widest mb-2 ${T.accentText}`}>
-              Contact
+              {i18n.contactLabel}
             </p>
-            <h2 className="text-xl sm:text-2xl font-bold">Get in touch</h2>
+            <h2 className="text-xl sm:text-2xl font-bold">{i18n.contactTitle}</h2>
           </FadeUp>
 
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
@@ -407,7 +485,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                 <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <Phone size={16} />
                 </div>
-                <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>Phone</p>
+                <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>{i18n.phone}</p>
                 <p className={`font-semibold text-sm ${T.text}`}>{biz.phone}</p>
               </a>
             )}
@@ -417,7 +495,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                 <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <Clock size={16} />
                 </div>
-                <p className={`text-[10px] font-medium uppercase tracking-wider mb-3 ${T.faint}`}>Opening hours</p>
+                <p className={`text-[10px] font-medium uppercase tracking-wider mb-3 ${T.faint}`}>{i18n.openingHours}</p>
                 <div className="flex flex-col gap-1.5">
                   {hours.map(([day, time]) => (
                     <div key={day} className={`flex justify-between text-xs py-1 border-b last:border-0 ${T.divider}`}>
@@ -438,7 +516,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                 <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <Mail size={16} />
                 </div>
-                <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>Email</p>
+                <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>{i18n.email}</p>
                 <p className={`font-semibold text-sm break-all ${T.text}`}>{biz.email}</p>
               </a>
             )}
@@ -453,7 +531,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                 <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <MapPin size={16} />
                 </div>
-                <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>Address</p>
+                <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>{i18n.address}</p>
                 <p className={`font-semibold text-sm ${T.text} leading-snug`}>{biz.address}</p>
               </a>
             )}
@@ -468,14 +546,14 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                 <div className={`site-icon w-9 h-9 flex items-center justify-center mb-3 ${T.iconBg}`}>
                   <img src="/social-icons/whatsapp.png" alt="WhatsApp" width={18} height={18} className="object-contain" />
                 </div>
-                <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>WhatsApp</p>
+                <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>{i18n.whatsapp}</p>
                 <p className={`font-semibold text-sm ${T.text}`}>{biz.social.whatsapp}</p>
               </a>
             )}
 
             {Object.entries(biz.social ?? {}).filter(([k, v]) => k !== "whatsapp" && v).length > 0 && (
               <div className={`site-card break-inside-avoid p-4 sm:p-5 border ${T.card}`}>
-                <p className={`text-[10px] font-medium uppercase tracking-wider mb-3 ${T.faint}`}>Follow us</p>
+                <p className={`text-[10px] font-medium uppercase tracking-wider mb-3 ${T.faint}`}>{i18n.followUs}</p>
                 <div className="flex flex-wrap gap-2">
                   {biz.social?.instagram && (
                     <SocialLink href={biz.social.instagram} name="Instagram" icon="/social-icons/instagram.png" />
@@ -508,7 +586,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
             {" "}© {new Date().getFullYear()}
           </span>
           <span className={`text-xs ${T.faint}`}>
-            Powered by{" "}
+            {i18n.poweredBy}{" "}
             <Link href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`} className={`hover:underline ${T.accentText}`}>syrflow.com</Link>
           </span>
         </div>

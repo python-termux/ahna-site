@@ -538,15 +538,20 @@ export default function RegisterPage() {
                         </div>
                       </button>
 
-                      <button onClick={() => setSource("facebook")} className="flex flex-col items-center gap-3 p-5 bg-card border-2 border-border hover:border-[#1877F2] rounded-[8px] transition-all text-center group">
-                        <div className="w-11 h-11 rounded-[8px] bg-[#1877F2]/10 flex items-center justify-center group-hover:bg-[#1877F2]/15 transition-colors">
-                          <FBIcon size={20} className="text-[#1877F2]" />
+                      <div
+                        className="flex flex-col items-center gap-3 p-5 rounded-[8px] text-center cursor-default select-none relative"
+                        style={{ backgroundColor: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.28)" }}
+                      >
+                        <div className="w-11 h-11 rounded-[8px] flex items-center justify-center" style={{ backgroundColor: "rgba(16,185,129,0.12)" }}>
+                          <FBIcon size={20} className="text-[#10b981]" />
                         </div>
                         <div>
-                          <p className="font-semibold text-sm text-foreground">Facebook Page</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">{isAr ? "ربط صفحتك" : "Connect your Page"}</p>
+                          <p className="font-semibold text-sm" style={{ color: "#10b981" }}>Facebook Page</p>
+                          <p className="text-[11px] mt-0.5 font-medium" style={{ color: "#10b981" }}>
+                            {isAr ? "قريباً" : "Coming Soon"}
+                          </p>
                         </div>
-                      </button>
+                      </div>
                     </div>
                   )}
 
