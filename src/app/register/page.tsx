@@ -7,7 +7,7 @@ import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Loader2, Star, Phone, Globe, Eye, EyeOff, Brain, Image,
-  ChevronRight,
+  ChevronRight, Upload, X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { PlaceResult } from "@/lib/places";
@@ -423,6 +423,33 @@ export default function RegisterPage() {
     );
   }
 
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleImageUpload(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    const uploaded: string[] = [];
+    for (const file of Array.from(files)) {
+      if (uploaded.length + uploadedImages.length >= 10) break;
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name, contentType: file.type, size: file.size }),
+        });
+        if (!res.ok) continue;
+        const { presignedUrl, publicUrl } = await res.json();
+        const putRes = await fetch(presignedUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+        if (!putRes.ok) continue;
+        uploaded.push(publicUrl);
+      } catch { /* skip failed uploads */ }
+    }
+    setUploadedImages((prev) => [...prev, ...uploaded]);
+    setUploading(false);
+  }
+
   const pwStrength = strength(password);
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const pwMatch = password === confirmPw && confirmPw.length > 0;
@@ -481,7 +508,7 @@ export default function RegisterPage() {
           <div className="lg:w-[520px] lg:flex-shrink-0 px-4 sm:px-6 py-14 lg:border-r border-border">
           <div className="w-full max-w-lg">
 
-            <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-foreground transition-colors mb-8">
+            <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-foreground transition-colors mb-8">
               {isAr ? "العودة للرئيسية" : "Return to home"}
             </Link>
 
@@ -686,11 +713,58 @@ export default function RegisterPage() {
                     </div>
                   </motion.div>
 
+                  {/* ── Upload extra photos ── */}
+                  <div className="mb-6">
+                    <p className="text-sm font-medium mb-2">{isAr ? "أضف صورك الخاصة (اختياري)" : "Add your own photos (optional)"}</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleImageUpload(e.target.files)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading || uploadedImages.length >= 10}
+                      className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-border hover:border-[#0066cc] rounded-[6px] py-4 text-sm text-muted-foreground hover:text-[#0066cc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                      {uploading
+                        ? (isAr ? "جارٍ الرفع…" : "Uploading…")
+                        : (isAr ? "اختر صوراً (حتى 10، بحد أقصى 5 ميغا للصورة)" : "Choose photos (up to 10, max 5 MB each)")}
+                    </button>
+                    {uploadedImages.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {uploadedImages.map((url, i) => (
+                          <div key={i} className="relative w-16 h-16 shrink-0">
+                            <img src={url} alt="" className="w-full h-full object-cover rounded-[6px]" />
+                            <button
+                              type="button"
+                              onClick={() => setUploadedImages((prev) => prev.filter((_, idx) => idx !== i))}
+                              className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center"
+                            >
+                              <X size={10} className="text-white" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex flex-col gap-3">
-                    <button onClick={() => setStep(3)} className="bg-[#0066cc] hover:bg-[#0071e3] text-white py-3.5 rounded-[6px] font-medium transition-colors">
+                    <button
+                      onClick={() => {
+                        if (uploadedImages.length > 0) {
+                          setPlace((p) => p ? { ...p, images: [...uploadedImages, ...p.images] } : p);
+                        }
+                        setStep(3);
+                      }}
+                      className="bg-[#0066cc] hover:bg-[#0071e3] text-white py-3.5 rounded-[6px] font-medium transition-colors">
                       {isAr ? "نعم، هذا نشاطي التجاري" : "Yes, this is my business"}
                     </button>
-                    <button onClick={() => { setStep(1); setPlace(null); setFetchError(""); setMapsUrl(""); setUrlError(""); setFbSubStep("connect"); setFbPages([]); setFbError(""); }}
+                    <button onClick={() => { setStep(1); setPlace(null); setFetchError(""); setMapsUrl(""); setUrlError(""); setFbSubStep("connect"); setFbPages([]); setFbError(""); setUploadedImages([]); }}
                       className="border border-input hover:border-border text-muted-foreground hover:text-foreground py-3.5 rounded-[6px] font-medium transition-colors">
                       {isAr ? "ليس نشاطي، البحث مجدداً" : "Not my business, search again"}
                     </button>

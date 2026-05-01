@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "ahna.ae";
+const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
 
 export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
@@ -9,11 +9,24 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Subdomain routing ──────────────────────────────────────────────────────
-  // mybiz.ahna.ae  →  rewrite to /site/mybiz
+  // app.syrflow.com  →  main app (dashboard, login, register, etc.)
+  // mybiz.syrflow.com  →  rewrite to /site/mybiz
   const isApex = hostWithoutPort === ROOT_DOMAIN || hostWithoutPort === `www.${ROOT_DOMAIN}`;
+  const isApp  = hostWithoutPort === `app.${ROOT_DOMAIN}`;
   const isLocal = hostWithoutPort === "localhost" || hostWithoutPort === "127.0.0.1";
 
-  if (!isApex && !isLocal && hostWithoutPort.endsWith(`.${ROOT_DOMAIN}`)) {
+  // app.syrflow.com → serve the Next.js app normally; redirect root to /dashboard
+  if (isApp) {
+    if (pathname === "/") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+    // fall through to auth guard below
+  }
+
+  // any other subdomain → user business site
+  if (!isApex && !isApp && !isLocal && hostWithoutPort.endsWith(`.${ROOT_DOMAIN}`)) {
     const slug = hostWithoutPort.slice(0, -(ROOT_DOMAIN.length + 1));
     if (slug && !pathname.startsWith("/site/")) {
       const url = request.nextUrl.clone();

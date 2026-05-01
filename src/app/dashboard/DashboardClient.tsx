@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
   MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
-  BarChart2, Clock, Share2, Star,
+  BarChart2, Clock, Share2, Star, Upload,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
@@ -289,6 +289,71 @@ function EditForm({ biz, onBack, onLogout }: {
 
   function update(k: keyof Business, v: unknown) { setData((d) => ({ ...d, [k]: v })); }
 
+  async function deleteR2Image(url: string) {
+    if (!url.startsWith(process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? "https://pub-90d3e7f40c0c4f5d8a8289b088e8d7f7.r2.dev")) return;
+    await fetch("/api/delete-image", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+  }
+
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const aboutInputRef = useRef<HTMLInputElement>(null);
+  const [aboutUploading, setAboutUploading] = useState(false);
+
+  async function handleAboutUpload(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    setAboutUploading(true);
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name, contentType: file.type, size: file.size }),
+      });
+      if (!res.ok) { const err = await res.json(); toast.error(err.error ?? "Upload failed"); return; }
+      const { presignedUrl, publicUrl } = await res.json();
+      const putRes = await fetch(presignedUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!putRes.ok) { toast.error(`Upload failed (${putRes.status})`); return; }
+      if (data.about_image) deleteR2Image(data.about_image);
+      update("about_image", publicUrl);
+    } catch (e) {
+      toast.error(`Upload error: ${e instanceof Error ? e.message : "unknown"}`);
+    } finally {
+      setAboutUploading(false);
+    }
+  }
+
+  async function handleGalleryUpload(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setGalleryUploading(true);
+    const uploaded: string[] = [];
+    for (const file of Array.from(files)) {
+      if (data.gallery.length + uploaded.length >= 30) break;
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name, contentType: file.type, size: file.size }),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          toast.error(err.error ?? "Upload failed");
+          continue;
+        }
+        const { presignedUrl, publicUrl } = await res.json();
+        const putRes = await fetch(presignedUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+        if (!putRes.ok) {
+          toast.error(`Failed to upload ${file.name} (${putRes.status})`);
+          continue;
+        }
+        uploaded.push(publicUrl);
+      } catch (e) {
+        toast.error(`Upload error: ${e instanceof Error ? e.message : "unknown"}`);
+      }
+    }
+    if (uploaded.length > 0) update("gallery", [...data.gallery, ...uploaded]);
+    setGalleryUploading(false);
+  }
+
   async function fillWithAI(key: string, field: string, context: Record<string, string>) {
     setAiLoading((s) => ({ ...s, [key]: true }));
     try {
@@ -566,58 +631,76 @@ function EditForm({ biz, onBack, onLogout }: {
 
             {/* IMAGES */}
             {active === "images" && <>
+              {/* Gallery */}
               <div>
-                <p className="text-sm text-foreground mb-3 font-medium">
-                  Gallery <span className="text-muted-foreground font-normal">({data.gallery.length} images)</span>
-                </p>
-                {data.gallery.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-foreground font-medium">
+                    Gallery <span className="text-muted-foreground font-normal">({data.gallery.length} images)</span>
+                  </p>
+                  <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={(e) => handleGalleryUpload(e.target.files)} />
+                  <button
+                    onClick={() => galleryInputRef.current?.click()}
+                    disabled={galleryUploading || data.gallery.length >= 30}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
+                  >
+                    {galleryUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                    {galleryUploading ? "Uploading…" : "Upload"}
+                  </button>
+                </div>
+                {data.gallery.length === 0 && !galleryUploading ? (
+                  <p className="text-sm text-muted-foreground">No gallery images.</p>
+                ) : (
+                  <div className="grid grid-cols-5 gap-1.5">
                     {data.gallery.map((url, i) => (
-                      <div key={i} className="relative aspect-square rounded-[6px] overflow-hidden">
+                      <div key={i} className="relative w-full aspect-square rounded-[6px] overflow-hidden bg-accent flex flex-col">
+                        <button
+                          onClick={() => update("about_image", url)}
+                          className="absolute inset-x-0 top-0 py-1 bg-[#0066cc]/90 text-white text-[9px] font-semibold z-10"
+                        >
+                          About Us
+                        </button>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={url} alt={`gallery ${i + 1}`} className="w-full h-full object-cover" />
                         <button
-                          onClick={() => update("gallery", data.gallery.filter((_, idx) => idx !== i))}
-                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-[4px] bg-black/50 hover:bg-red-500 text-white flex items-center justify-center transition-colors"
+                          onClick={() => { deleteR2Image(url); update("gallery", data.gallery.filter((_, idx) => idx !== i)); }}
+                          className="absolute inset-x-0 bottom-0 py-1 bg-red-600/90 text-white text-[9px] font-semibold z-10"
                         >
-                          <X size={11} />
+                          Delete
                         </button>
                       </div>
                     ))}
                   </div>
-                ) : <p className="text-sm text-muted-foreground">No gallery images.</p>}
+                )}
               </div>
+
+              {/* About Us image */}
               <div>
-                <p className="text-sm text-foreground mb-3 font-medium">About Us image</p>
-                {(() => {
-                  const allImgs = (data.gallery ?? []).filter(Boolean);
-                  return (<>
-                    {allImgs.length > 0 && (
-                      <div className="grid grid-cols-4 gap-2 mb-3">
-                        {allImgs.map((url, i) => (
-                          <button key={i} type="button" onClick={() => update("about_image", url)}
-                            className={`relative aspect-square rounded-[6px] overflow-hidden border-2 transition-all ${data.about_image === url ? "border-[#0066cc] ring-2 ring-[#0066cc]/40" : "border-transparent"}`}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={url} alt={`img ${i + 1}`} className="w-full h-full object-cover" />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    <input value={data.about_image ?? ""} onChange={(e) => update("about_image", e.target.value)}
-                      placeholder="Or paste any image URL…"
-                      className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2 text-xs text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc]" />
-                    {data.about_image && (
-                      <div className="mt-2 relative w-full h-32 rounded-[6px] overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={data.about_image} alt="about" className="w-full h-full object-cover" />
-                        <button onClick={() => update("about_image", "")}
-                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-[4px] bg-black/50 hover:bg-red-500 text-white flex items-center justify-center transition-colors">
-                          <X size={11} />
-                        </button>
-                      </div>
-                    )}
-                  </>);
-                })()}
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-foreground font-medium">About Us image</p>
+                  <input ref={aboutInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => handleAboutUpload(e.target.files)} />
+                  <button
+                    onClick={() => aboutInputRef.current?.click()}
+                    disabled={aboutUploading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
+                  >
+                    {aboutUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                    {aboutUploading ? "Uploading…" : "Upload image"}
+                  </button>
+                </div>
+                {data.about_image ? (
+                  <div className="relative w-full h-36 rounded-[6px] overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={data.about_image} alt="about" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => { deleteR2Image(data.about_image); update("about_image", ""); }}
+                      className="absolute inset-x-0 bottom-0 py-1.5 bg-red-600/90 text-white text-xs font-semibold"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No about image. Upload one above.</p>
+                )}
               </div>
             </>}
 

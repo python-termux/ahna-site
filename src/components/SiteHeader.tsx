@@ -46,7 +46,7 @@ function DropdownItem({ item }: { item: NavItem }) {
     return (
       <Link
         href={item.href!}
-        className={`px-3 py-2 text-sm transition-colors ${active ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+        className={`px-3 py-2 text-sm font-semibold transition-colors ${active ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
       >
         {item.label}
       </Link>
@@ -59,7 +59,7 @@ function DropdownItem({ item }: { item: NavItem }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1 px-3 py-2 text-sm transition-colors ${anyActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+        className={`flex items-center gap-1 px-3 py-2 text-sm font-semibold transition-colors ${anyActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
       >
         {item.label}
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -83,7 +83,7 @@ function DropdownItem({ item }: { item: NavItem }) {
                   key={child.href}
                   href={child.href}
                   onClick={() => setOpen(false)}
-                  className={`px-3 py-2.5 rounded-[6px] text-sm transition-colors ${
+                  className={`px-3 py-2.5 rounded-[6px] text-sm font-semibold transition-colors ${
                     pathname === child.href
                       ? "text-foreground bg-accent"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -157,12 +157,12 @@ export default function SiteHeader() {
           <div className="w-px h-4 bg-accent mx-2" />
           <LangToggle />
           <ThemeToggle />
-          <Link href="/auth/login" className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/auth/login" className="px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
             {t.nav.login}
           </Link>
           <Link
             href="/register"
-            className="px-4 py-2 text-sm text-white font-medium transition-opacity hover:opacity-90 active:scale-95"
+            className="px-4 py-2 text-sm text-white font-semibold transition-opacity hover:opacity-90 active:scale-95"
             style={{ backgroundColor: "#0066cc", borderRadius: 9999 }}
           >
             {t.nav.getStarted}

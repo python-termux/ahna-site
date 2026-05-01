@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/lib/language";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "syrflow.com — Your Business, One Page",
@@ -30,12 +26,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={cn("dark font-sans scroll-smooth", geist.variable)} suppressHydrationWarning>
+    <html lang="en" className={cn("dark font-sans scroll-smooth")} suppressHydrationWarning>
       <head>
         {/* Anti-flash: apply stored theme + language direction before first paint */}
         <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme');document.documentElement.classList.toggle('dark',(t??'dark')==='dark');var l=localStorage.getItem('lang');if(l==='ar'){document.documentElement.dir='rtl';document.documentElement.lang='ar';}}catch(e){}` }} />
       </head>
-      <body className={cn(inter.className, "antialiased")}>
+      <body className="antialiased">
         <ThemeProvider>
           <LanguageProvider>
             {children}

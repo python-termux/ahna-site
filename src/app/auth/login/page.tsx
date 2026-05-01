@@ -49,7 +49,7 @@ export default function LoginPage() {
         >
           <Link
             href="/"
-            className="flex justify-center items-center gap-1.5 text-xs text-gray-500 hover:text-foreground transition-colors mb-8"
+            className="flex justify-center items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-foreground transition-colors mb-8"
           >
             {t.login.returnHome}
           </Link>
