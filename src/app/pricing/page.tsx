@@ -42,19 +42,19 @@ const sharedFeaturesEn = [
 
 const plansEn = [
   {
-    name: "Basic", price: 1, period: "monthly", yearlyPrice: 12,
+    name: "With Google Link", price: 1, period: "monthly", yearlyPrice: 12,
     description: "Perfect for small businesses in Syria. Get online instantly with Google Maps.",
     icon: "/pricing/star-94.png", buttonText: "Get started", popular: false, comingSoon: false,
     features: sharedFeaturesEn,
   },
   {
-    name: "Facebook Import", price: 1, period: "monthly", yearlyPrice: 12,
+    name: "With Facebook", price: 1, period: "monthly", yearlyPrice: 12,
     description: "Import your business directly from your Facebook Page. Coming soon.",
     icon: "/pricing/fire-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
     features: sharedFeaturesEn,
   },
   {
-    name: "Telegram Import", price: 1, period: "monthly", yearlyPrice: 12,
+    name: "With Telegram", price: 1, period: "monthly", yearlyPrice: 12,
     description: "Import your business from your Telegram channel or group. Coming soon.",
     icon: "/pricing/crown-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
     features: sharedFeaturesEn,
@@ -79,19 +79,19 @@ const sharedFeaturesAr = [
 
 const plansAr = [
   {
-    name: "أساسي", price: 1, period: "شهرياً", yearlyPrice: 12,
+    name: "مع رابط جوجل", price: 1, period: "شهرياً", yearlyPrice: 12,
     description: "مثالي للشركات الصغيرة في سوريا. انطلق فوراً عبر Google Maps.",
     icon: "/pricing/star-94.png", buttonText: "ابدأ الآن", popular: false, comingSoon: false,
     features: sharedFeaturesAr,
   },
   {
-    name: "Facebook Import", price: 1, period: "شهرياً", yearlyPrice: 12,
+    name: "مع فيسبوك", price: 1, period: "شهرياً", yearlyPrice: 12,
     description: "استورد نشاطك التجاري مباشرة من صفحة Facebook الخاصة بك. قريباً.",
     icon: "/pricing/fire-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
     features: sharedFeaturesAr,
   },
   {
-    name: "Telegram Import", price: 1, period: "شهرياً", yearlyPrice: 12,
+    name: "مع تيليجرام", price: 1, period: "شهرياً", yearlyPrice: 12,
     description: "استورد نشاطك التجاري من قناة أو مجموعة Telegram. قريباً.",
     icon: "/pricing/crown-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
     features: sharedFeaturesAr,
