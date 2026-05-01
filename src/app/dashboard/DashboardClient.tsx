@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
   MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
-  BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User,
+  BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
