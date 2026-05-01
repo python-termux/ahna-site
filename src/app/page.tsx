@@ -2,22 +2,30 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Pencil, Globe, ArrowRight, Zap, Image, Star, Database, Pizza, Search, Link2, Sparkles, Bot, Wand2 } from "lucide-react";
+import { Zap, Link2, Globe, Code, Bot, DollarSign, Search, Gauge, AtSign, Share2, Shield, Gem, Sparkles, Star, Pizza } from "lucide-react";
 import { fadeUp, stagger, VIEWPORT } from "@/lib/motion";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { useLanguage } from "@/lib/language";
 
 const ICONS = [
-  <Zap size={20} style={{ color: "#0066cc" }} />,
-  <Database size={20} style={{ color: "#0066cc" }} />,
-  <Pencil size={20} style={{ color: "#0066cc" }} />,
-  <Star size={20} style={{ color: "#0066cc" }} />,
-  <Bot size={20} style={{ color: "#0066cc" }} />,
-  <Pizza size={20} style={{ color: "#0066cc" }} />,
-  <Search size={20} style={{ color: "#0066cc" }} />,
-  <Link2 size={20} style={{ color: "#0066cc" }} />,
-  <Sparkles size={20} style={{ color: "#0066cc" }} />,
+  <Zap key="zap" size={20} style={{ color: "#0066cc" }} />,
+  <Link2 key="link2" size={20} style={{ color: "#0066cc" }} />,
+  <Globe key="globe" size={20} style={{ color: "#0066cc" }} />,
+  <Code key="code" size={20} style={{ color: "#0066cc" }} />,
+  <Bot key="bot" size={20} style={{ color: "#0066cc" }} />,
+  <DollarSign key="dollar" size={20} style={{ color: "#0066cc" }} />,
+  <Search key="search" size={20} style={{ color: "#0066cc" }} />,
+  <Gauge key="gauge" size={20} style={{ color: "#0066cc" }} />,
+  <AtSign key="at" size={20} style={{ color: "#0066cc" }} />,
+  <Share2 key="share" size={20} style={{ color: "#0066cc" }} />,
+];
+
+const WHY_US_ICONS = [
+  <Shield key="shield" size={22} style={{ color: "#0066cc" }} />,
+  <Gem key="gem" size={22} style={{ color: "#0066cc" }} />,
+  <Sparkles key="sparkles" size={22} style={{ color: "#0066cc" }} />,
+  <Zap key="zap2" size={22} style={{ color: "#0066cc" }} />,
 ];
 
 export default function Home() {
@@ -90,7 +98,7 @@ export default function Home() {
         initial="hidden"
         whileInView="show"
         viewport={VIEWPORT}
-        className="max-w-6xl mx-auto px-4 sm:px-6 pb-24 grid sm:grid-cols-3 gap-5"
+        className="max-w-6xl mx-auto px-4 sm:px-6 pb-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
       >
         {t.home.features.map((f, i) => (
           <motion.div
@@ -105,6 +113,41 @@ export default function Home() {
           </motion.div>
         ))}
       </motion.section>
+
+      {/* Why Us */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-28 w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={VIEWPORT}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">{t.home.whyUsTitle}</h2>
+          <p className="text-sm text-muted-foreground">{t.home.whyUsSub}</p>
+        </motion.div>
+
+        <motion.div
+          variants={stagger(0.08)}
+          initial="hidden"
+          whileInView="show"
+          viewport={VIEWPORT}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+        >
+          {t.home.whyUs.map((item, i) => (
+            <motion.div
+              key={i}
+              variants={fadeUp}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className="bg-card border border-border hover:border-border/70 rounded-[8px] p-6 transition-colors cursor-default"
+            >
+              <div className="mb-3">{WHY_US_ICONS[i]}</div>
+              <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
+              <p className="text-sm text-muted-foreground">{item.desc}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
 
       <Footer />
     </main>

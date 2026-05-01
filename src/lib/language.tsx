@@ -18,6 +18,8 @@ interface Translations {
   home: {
     badge: string; h1a: string; h1b: string; hero: string; cta: string;
     features: Array<{ title: string; desc: string }>;
+    whyUsTitle: string; whyUsSub: string;
+    whyUs: Array<{ title: string; desc: string }>;
   };
   pricing: {
     badge: string; h1a: string; h1b: string; sub: string;
@@ -90,6 +92,24 @@ interface Translations {
   };
 }
 
+function getLangCookie(): Lang | null {
+  if (typeof document === "undefined") return null;
+  try {
+    const match = document.cookie.match(/(?:^|;\s*)syrflow_lang=([^;]+)/);
+    const val = match?.[1];
+    return val === "ar" || val === "en" ? val : null;
+  } catch { return null; }
+}
+
+function setLangCookie(l: Lang) {
+  if (typeof document === "undefined") return;
+  try {
+    const parts = window.location.hostname.split(".");
+    const domain = parts.length >= 2 ? `.${parts.slice(-2).join(".")}` : window.location.hostname;
+    document.cookie = `syrflow_lang=${l};path=/;domain=${domain};max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
+  } catch {}
+}
+
 const T: Record<Lang, Translations> = {
   en: {
     nav: {
@@ -104,28 +124,37 @@ const T: Record<Lang, Translations> = {
     },
     home: {
       badge: "No coding. No Hosting. No Fuss.",
-      h1a: "Facebook or Google Maps",
-      h1b: "Turn them into a stunning website",
-      hero: "Your customers have already told you why they pick you on your Google Business Profile, now turn that feedback into a high converting website starting from just 8.25 AED/month. Zero coding. Zero hosting hassle.",
+      h1a: "Turn Google Maps Links",
+      h1b: "into a stunning website",
+      hero: "Build your website in minutes. No coding, no complexity, a fast professional presence starting at $1/month, cheaper than a pizza, with Arabic support so you can grow in Syria.",
       cta: "Get started Now",
       features: [
-        { title: "Ready in 60 seconds", desc: "Paste your Google Maps link and your website is live instantly. No developers to fight with." },
-        { title: "Fetch All Your Data", desc: "We turn real feedback into clear messaging that fits your business automatically." },
-        { title: "No Coding Required", desc: "Change any text, image, service, testimonial, or contact detail from your dashboard anytime." },
-        { title: "Add or Edit Anything", desc: "Showcase real customer feedback with star ratings. Add or edit as many as you like." },
-        { title: "AI Powered Content", desc: "Generate professional headings, taglines, and descriptions instantly with one click. Let Ai write your website content." },
-        { title: "Less than 1 Meter Pizza", desc: "You get a proper functional business website for a fraction of the cost. Just 10 AED monthly." },
-        { title: "Proper Auto SEO", desc: "Any website created with syrflow.com gets optimized for search engines automatically." },
-        { title: "Support Custom Domains", desc: "If you wish to add a custom domain to your website, please contact our support team." },
-        { title: "Still in Beta", desc: "We are still in beta. Some great features will be available soon. Stay tuned!" },
+        { title: "Ready in Minutes", desc: "Paste your Google Maps link and your website is live instantly. No developers needed." },
+        { title: "Website with Link", desc: "We turn your Google Maps link into a complete professional website automatically." },
+        { title: "Arabic Interface", desc: "Full Arabic support with RTL layout so you can grow your business in Syria." },
+        { title: "No Coding Required", desc: "Change any text, image, service, or contact detail from your dashboard anytime." },
+        { title: "AI Powered Content", desc: "Generate professional headings, taglines, and descriptions instantly with one click." },
+        { title: "Affordable Pricing", desc: "Get a proper business website starting at just $1/month. Cheaper than a pizza." },
+        { title: "Auto SEO Optimization", desc: "Every website created with SyrFlow gets optimized for search engines automatically." },
+        { title: "Fast & Lightweight", desc: "Pages load in under a second. Built for speed on any connection." },
+        { title: "Free Subdomain", desc: "Your business gets a free subdomain (yourbiz.syrflow.com) to start immediately." },
+        { title: "Social Import (Soon)", desc: "Import your Facebook page and Instagram profile data with one click. Coming soon." },
+      ],
+      whyUsTitle: "Why Choose SyrFlow?",
+      whyUsSub: "Everything you need, nothing you don't.",
+      whyUs: [
+        { title: "No Hidden Domain Costs", desc: "Your subdomain is free forever. No surprise domain renewal bills. What you see is what you pay." },
+        { title: "Unbeatable Pricing", desc: "Starting at $1/month, SyrFlow is the most affordable business website solution in Syria." },
+        { title: "AI Built-In", desc: "AI writes your content, optimizes your SEO, and fills your website — all automatically." },
+        { title: "Super Easy", desc: "If you have a Google Maps link, you're 3 minutes away from a live professional website." },
       ],
     },
     pricing: {
-      badge: "Simple pricing cheaper than 1 meter Pizza",
+      badge: "Simple pricing cheaper than a pizza",
       h1a: "Save Web Hosting Costs", h1b: "Save development time",
       sub: "With syrflow.com no need a website developer.",
       mostPopular: "Most Popular", fullyBooked: "Fully Booked", loading: "Loading…",
-      monthly: "monthly", billedAnnually: "AED/year - Billed Annually",
+      monthly: "monthly", billedAnnually: "USD/year - Billed Annually",
       faqTitle: "Frequently Asked Questions",
       faqSub: "Everything you need to know about our plans and features",
       slotsLeft: (n) => `Limited · ${n} Slot${n !== 1 ? "s" : ""} Left`,
@@ -133,7 +162,7 @@ const T: Record<Lang, Translations> = {
     contact: {
       title: "Get in touch",
       emailTitle: "Email Us", emailSub: "For general inquiries and support",
-      phoneTitle: "Call Us", phoneSub: "Monday to Friday, 9am - 6pm GST",
+      phoneTitle: "Call Us", phoneSub: "Monday to Friday, 9am - 6pm Syria Time",
       faqTitle: "Frequently Asked Questions",
     },
     login: {
@@ -149,9 +178,9 @@ const T: Record<Lang, Translations> = {
       email: "Email", submit: "Send reset link", backToLogin: "Back to login",
       checkEmail: "Check your email", sentTo: "We sent a password reset link to",
     },
-    terms:   { title: "Terms of Service",   updated: "Last updated: April 28, 2026" },
-    privacy: { title: "Privacy Policy",     updated: "Last updated: April 28, 2026" },
-    refund:  { title: "Refund Policy",      updated: "Last updated: April 28, 2026" },
+    terms:   { title: "Terms of Service",   updated: "Last updated: May 1, 2026" },
+    privacy: { title: "Privacy Policy",     updated: "Last updated: May 1, 2026" },
+    refund:  { title: "Refund Policy",      updated: "Last updated: May 1, 2026" },
     dataDeletion: {
       title: "Data Deletion Request",
       whatTitle: "What data we store",
@@ -161,7 +190,7 @@ const T: Record<Lang, Translations> = {
       opt1Title: "From your dashboard:",
       opt1Body: "Log in to syrflow.com, go to your dashboard, open the menu and click \"Delete account\". This removes all your business data and account immediately.",
       opt2Title: "Via email:",
-      opt2Body: "Send a deletion request to support@syrflow.com with the subject \"Data Deletion Request\" and your registered email address. We will process it within 30 days.",
+      opt2Body: "Send a deletion request to team@syrflow.com with the subject \"Data Deletion Request\" and your registered email address. We will process it within 30 days.",
       fbTitle: "Facebook-specific removal",
       fbPre: "To remove syrflow.com's access to your Facebook pages at any time, go to your",
       fbLink: "Facebook App Settings",
@@ -228,28 +257,37 @@ const T: Record<Lang, Translations> = {
     },
     home: {
       badge: "بدون برمجة. بدون استضافة. بدون تعقيد.",
-      h1a: "فيسبوك أو خرائط جوجل",
-      h1b: "حوّلهم إلى موقع ويب مذهل",
-      hero: "لقد أخبرك عملاؤك بالفعل عبر ملفك التجاري على Google لماذا يختارونك، حوّل تلك التقييمات إلى موقع احترافي يحوّل الزوار إلى عملاء بدءاً من 8.25 درهم فقط شهرياً. بدون برمجة. بدون متاعب الاستضافة.",
+      h1a: "حوّل رابط خرائط جوجل",
+      h1b: "إلى موقع ويب مذهل",
+      hero: "أنشئ موقعك في دقائق. بدون برمجة، بدون تعقيد، حضور احترافي سريع بدءاً من دولار واحد شهرياً، أرخص من بيتزا، مع دعم عربي لتنمو أعمالك في سوريا.",
       cta: "ابدأ الآن",
       features: [
-        { title: "جاهز في 60 ثانية", desc: "الصق رابط Google Maps وسيكون موقعك حياً فوراً. بدون الحاجة لمطورين." },
-        { title: "جلب جميع بياناتك", desc: "نحوّل التقييمات الحقيقية إلى رسائل واضحة تناسب نشاطك التجاري تلقائياً." },
-        { title: "لا برمجة مطلوبة", desc: "غيّر أي نص أو صورة أو خدمة أو شهادة أو معلومات اتصال من لوحة التحكم في أي وقت." },
-        { title: "أضف أو عدّل أي شيء", desc: "اعرض آراء العملاء الحقيقية بتقييمات النجوم. أضف أو عدّل ما تشاء." },
-        { title: "محتوى بالذكاء الاصطناعي", desc: "أنشئ عناوين وشعارات وأوصافاً احترافية بنقرة واحدة. دع الذكاء الاصطناعي يكتب محتوى موقعك." },
-        { title: "أرخص من متر بيتزا", desc: "تحصل على موقع تجاري احترافي بتكلفة زهيدة. 10 درهم فقط شهرياً." },
-        { title: "تحسين آلي لمحركات البحث", desc: "أي موقع يُنشأ عبر syrflow.com يُحسَّن لمحركات البحث تلقائياً." },
-        { title: "دعم النطاقات المخصصة", desc: "إذا رغبت في إضافة نطاق مخصص لموقعك، تواصل مع فريق الدعم." },
-        { title: "لا يزال في مرحلة بيتا", desc: "لا نزال في مرحلة بيتا. ميزات رائعة ستكون متاحة قريباً. ترقّب!" },
+        { title: "جاهز في دقائق", desc: "الصق رابط Google Maps وسيكون موقعك حياً فوراً. بدون الحاجة لمطورين." },
+        { title: "موقع من رابط", desc: "نحوّل رابط Google Maps إلى موقع احترافي كامل تلقائياً." },
+        { title: "واجهة عربية", desc: "دعم عربي كامل مع تخطيط RTL لتنمو أعمالك في سوريا." },
+        { title: "لا برمجة مطلوبة", desc: "غيّر أي نص أو صورة أو خدمة أو معلومات اتصال من لوحة التحكم في أي وقت." },
+        { title: "محتوى بالذكاء الاصطناعي", desc: "أنشئ عناوين وشعارات وأوصافاً احترافية بنقرة واحدة." },
+        { title: "أسعار في متناول الجميع", desc: "احصل على موقع تجاري احترافي بأقل من دولار شهرياً. أرخص من بيتزا." },
+        { title: "تحسين آلي لمحركات البحث", desc: "أي موقع يُنشأ عبر سوريا فلو يُحسَّن لمحركات البحث تلقائياً." },
+        { title: "سريع وخفيف الحجم", desc: "تحميل الصفحات في أقل من ثانية. مصمم للسرعة على أي اتصال." },
+        { title: "نطاق فرعي مجاني", desc: "يحصل نشاطك على نطاق فرعي مجاني (yourbiz.syrflow.com) للبدء فوراً." },
+        { title: "استيراد اجتماعي (قريباً)", desc: "استورد بيانات صفحة Facebook وحساب Instagram بنقرة واحدة. قريباً." },
+      ],
+      whyUsTitle: "لماذا تختار سوريا فلو؟",
+      whyUsSub: "كل ما تحتاجه، لا شيء زائد.",
+      whyUs: [
+        { title: "لا تكاليف نطاق خفية", desc: "نطاقك الفرعي مجاني للأبد. لا فواتير مفاجئة لتجديد النطاق. ما تراه هو ما تدفعه." },
+        { title: "أسعار لا تُضاهى", desc: "بدءاً من دولار واحد شهرياً، سوريا فلو هو أكثر حلول مواقع الأعمال توفراً في سوريا." },
+        { title: "ذكاء اصطناعي مدمج", desc: "يكتب الذكاء الاصطناعي محتواك ويحسّن SEO الخاص بك ويملأ موقعك — كل ذلك تلقائياً." },
+        { title: "سهل للغاية", desc: "إذا كان لديك رابط Google Maps، فأنت على بُعد 3 دقائق من موقع احترافي حي." },
       ],
     },
     pricing: {
-      badge: "أسعار بسيطة أرخص من متر بيتزا",
+      badge: "أسعار بسيطة أرخص من بيتزا",
       h1a: "وفّر تكاليف الاستضافة", h1b: "وفّر وقت التطوير",
-      sub: "مع syrflow.com لا تحتاج إلى مطوّر موقع.",
+      sub: "مع سوريا فلو لا تحتاج إلى مطوّر موقع.",
       mostPopular: "الأكثر شعبية", fullyBooked: "المقاعد ممتلئة", loading: "جارٍ التحميل…",
-      monthly: "شهرياً", billedAnnually: "درهم/سنة - يُحسب سنوياً",
+      monthly: "شهرياً", billedAnnually: "دولار/سنة - يُحسب سنوياً",
       faqTitle: "الأسئلة الشائعة",
       faqSub: "كل ما تحتاج معرفته عن خططنا وميزاتنا",
       slotsLeft: (n) => `محدود · ${n} مقعد متبقٍ`,
@@ -257,7 +295,7 @@ const T: Record<Lang, Translations> = {
     contact: {
       title: "تواصل معنا",
       emailTitle: "راسلنا", emailSub: "للاستفسارات العامة والدعم",
-      phoneTitle: "اتصل بنا", phoneSub: "الاثنين إلى الجمعة، 9 صباحاً - 6 مساءً بتوقيت الخليج",
+      phoneTitle: "اتصل بنا", phoneSub: "الاثنين إلى الجمعة، 9 صباحاً - 6 مساءً بتوقيت سوريا",
       faqTitle: "الأسئلة الشائعة",
     },
     login: {
@@ -273,9 +311,9 @@ const T: Record<Lang, Translations> = {
       email: "البريد الإلكتروني", submit: "إرسال رابط الاستعادة", backToLogin: "العودة لتسجيل الدخول",
       checkEmail: "تحقق من بريدك الإلكتروني", sentTo: "أرسلنا رابط استعادة كلمة المرور إلى",
     },
-    terms:   { title: "شروط الخدمة",       updated: "آخر تحديث: 28 أبريل 2026" },
-    privacy: { title: "سياسة الخصوصية",   updated: "آخر تحديث: 28 أبريل 2026" },
-    refund:  { title: "سياسة الاسترداد",  updated: "آخر تحديث: 28 أبريل 2026" },
+    terms:   { title: "شروط الخدمة",       updated: "آخر تحديث: 1 مايو 2026" },
+    privacy: { title: "سياسة الخصوصية",   updated: "آخر تحديث: 1 مايو 2026" },
+    refund:  { title: "سياسة الاسترداد",  updated: "آخر تحديث: 1 مايو 2026" },
     dataDeletion: {
       title: "طلب حذف البيانات",
       whatTitle: "البيانات التي نخزّنها",
@@ -285,7 +323,7 @@ const T: Record<Lang, Translations> = {
       opt1Title: "من لوحة التحكم:",
       opt1Body: "سجّل دخولك إلى syrflow.com، اذهب إلى لوحة التحكم، افتح القائمة وانقر على «حذف الحساب». سيؤدي ذلك إلى إزالة جميع بيانات أعمالك وحسابك فوراً.",
       opt2Title: "عبر البريد الإلكتروني:",
-      opt2Body: "أرسل طلب حذف إلى support@syrflow.com بعنوان «طلب حذف البيانات» وعنوان بريدك الإلكتروني المسجّل. سنعالجه خلال 30 يوماً.",
+      opt2Body: "أرسل طلب حذف إلى team@syrflow.com بعنوان «طلب حذف البيانات» وعنوان بريدك الإلكتروني المسجّل. سنعالجه خلال 30 يوماً.",
       fbTitle: "إزالة الوصول من Facebook",
       fbPre: "لإزالة وصول syrflow.com إلى صفحات Facebook في أي وقت، اذهب إلى",
       fbLink: "إعدادات تطبيقات Facebook",
@@ -359,7 +397,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("lang") as Lang | null;
+      const cookieLang = getLangCookie();
+      const stored = cookieLang ?? (localStorage.getItem("lang") as Lang | null);
       if (stored === "ar") {
         setLangState("ar");
         document.documentElement.dir = "rtl";
@@ -370,7 +409,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   function setLang(l: Lang) {
     setLangState(l);
-    try { localStorage.setItem("lang", l); } catch {}
+    try {
+      localStorage.setItem("lang", l);
+      setLangCookie(l);
+    } catch {}
     document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
     document.documentElement.lang = l;
   }

@@ -31,91 +31,83 @@ export default function RefundPage() {
           {isAr ? (
             <>
               <Section title="نظرة عامة">
-                <p>تنطبق سياسة الاسترداد هذه على اشتراكات منصة <strong className="text-foreground">syrflow.com</strong>، التي تديرها <strong className="text-foreground">Osaad</strong> (المعروفة أيضاً باسم <strong className="text-foreground">Osaad.tech</strong>). تتم معالجة جميع المدفوعات بواسطة <strong className="text-foreground">Paddle.com Market Limited</strong>، التي تعمل بوصفها تاجر السجل. تخضع طلبات الاسترداد للشروط الواردة أدناه ولـ <a href="https://www.paddle.com/legal/checkout-buyer-terms" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">شروط المشتري من Paddle</a>.</p>
+                <p>تنطبق سياسة الاسترداد هذه على اشتراكات منصة <strong className="text-foreground">syrflow.com</strong>. نؤمن بتقديم خدمة تستحق كل ريال تدفعه، لذلك وضعنا سياسة استرداد واضحة وعادلة.</p>
               </Section>
-              <Section title="فترة التهدئة (14 يوماً) — عملاء الاتحاد الأوروبي والمنطقة الاقتصادية الأوروبية">
-                <p>إذا كنت مقيماً في الاتحاد الأوروبي أو المنطقة الاقتصادية الأوروبية، يحق لك سحب اشتراكك خلال <strong className="text-foreground">14 يوماً</strong> من تاريخ أول دفعة دون إبداء أي سبب، بشرط عدم استخدام الخدمة خلال هذه الفترة.</p>
-                <p>لممارسة هذا الحق، تواصل معنا على <a href="mailto:support@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">support@syrflow.com</a> خلال 14 يوماً من الشراء بعنوان "طلب استرداد". سنعالج طلبك خلال 14 يوم عمل.</p>
-                <p>ملاحظة: إذا استخدمت الخدمة (مثل نشر صفحة أعمالك) خلال فترة التهدئة، فإنك تتنازل صراحةً عن حق السحب القانوني.</p>
-              </Section>
-              <Section title="سياسة الاسترداد العامة">
-                <p>خارج نطاق فترة التهدئة القانونية في الاتحاد الأوروبي، ندرس طلبات الاسترداد كلاً على حدة. قد نصدر استرداداً وفقاً لتقديرنا المنفرد في الحالات التالية:</p>
+              <Section title="متى يحق لك الاسترداد؟">
+                <p>يحق لك طلب استرداد كامل إذا تحققت الشروط التالية:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
-                  <li>خطأ تقني من جانبنا منعك من استخدام الخدمة.</li>
-                  <li>تم تحصيل رسوم مضاعفة لنفس فترة الاشتراك.</li>
-                  <li>كانت الخدمة غير متاحة تماماً لفترة مطوّلة بسبب خطأ من جانبنا.</li>
+                  <li>حصل موقعك على <strong className="text-foreground">أقل من 100 زيارة</strong> خلال أول 7 أيام من تفعيل اشتراكك.</li>
+                  <li>قدّمت طلب الاسترداد <strong className="text-foreground">خلال 7 أيام</strong> من تاريخ بدء الاشتراك.</li>
                 </ul>
+                <p className="mt-2">هذا يعني أننا نضمن لك حداً أدنى من الظهور — فإذا لم يصلك عملاء، نردّ لك المال.</p>
               </Section>
               <Section title="حالات لا يُمنح فيها الاسترداد">
-                <p>لا نصدر استردادات عادةً في الحالات التالية:</p>
+                <p>لا نصدر استردادات في الحالات التالية:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
+                  <li>انتهت فترة الـ 7 أيام منذ بدء الاشتراك.</li>
+                  <li>حصل الموقع على 100 زيارة أو أكثر خلال الـ 7 أيام الأولى.</li>
                   <li>نسيان إلغاء الاشتراك قبل تاريخ التجديد.</li>
-                  <li>عدم الحاجة إلى الخدمة أو الرغبة في استخدامها.</li>
-                  <li>استخدام الخدمة خلال فترة الفوترة.</li>
                   <li>تعليق الحساب أو إنهاؤه بسبب انتهاك <Link href="/terms" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">شروط الخدمة</Link>.</li>
-                  <li>الأجزاء الجزئية أو الأجزاء غير المستخدمة من فترة الاشتراك.</li>
                 </ul>
               </Section>
               <Section title="الاشتراكات السنوية">
-                <p>الاشتراكات السنوية غير قابلة للاسترداد بعد فترة التهدئة (14 يوماً لعملاء الاتحاد الأوروبي) أو بعد 7 أيام من الشراء (لجميع العملاء الآخرين)، إلا في حالة خلل تقني من جانبنا منع تقديم الخدمة.</p>
+                <p>تسري سياسة الاسترداد ذاتها (أقل من 100 زيارة خلال 7 أيام) على الاشتراكات السنوية أيضاً. بعد انتهاء فترة الـ 7 أيام، تصبح الاشتراكات السنوية غير قابلة للاسترداد إلا في حالة خلل تقني من جانبنا منع تقديم الخدمة كلياً.</p>
               </Section>
               <Section title="كيفية طلب الاسترداد">
-                <p>لطلب الاسترداد، راسلنا على <a href="mailto:support@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">support@syrflow.com</a> مع المعلومات التالية:</p>
+                <p>لطلب الاسترداد، راسلنا على <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> مع المعلومات التالية:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
                   <li>عنوان البريد الإلكتروني المرتبط بحسابك.</li>
-                  <li>تاريخ الشراء.</li>
-                  <li>رقم طلب Paddle (موجود في بريد تأكيد الدفع).</li>
+                  <li>تاريخ بدء الاشتراك.</li>
                   <li>سبب طلب الاسترداد.</li>
                 </ul>
-                <p>سنردّ خلال 3 أيام عمل. تتم معالجة الاستردادات المعتمدة بواسطة Paddle وتظهر عادةً خلال 5-10 أيام عمل حسب مصرفك.</p>
+                <p>سنردّ خلال <strong className="text-foreground">3 أيام عمل</strong>. تتم معالجة الاستردادات المعتمدة خلال 5-10 أيام عمل.</p>
+              </Section>
+              <Section title="الأعطال التقنية">
+                <p>إذا تعذّر عليك استخدام الخدمة بسبب خلل تقني من جانبنا أو تم تحصيل رسوم مضاعفة، نعالج طلبات الاسترداد فوراً بصرف النظر عن أي قيود زمنية.</p>
               </Section>
               <Section title="التواصل">
-                <p>للاستفسار عن الاستردادات، تواصل معنا على <a href="mailto:support@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">support@syrflow.com</a>. نهدف إلى الرد خلال 3 أيام عمل. تُدار المنصة بواسطة <strong className="text-foreground">Osaad</strong> (المعروفة أيضاً باسم <strong className="text-foreground">Osaad.tech</strong>)، الإمارات العربية المتحدة.</p>
+                <p>للاستفسار عن الاستردادات، تواصل معنا على <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>. نهدف إلى الرد خلال 3 أيام عمل.</p>
               </Section>
             </>
           ) : (
             <>
               <Section title="Overview">
-                <p>This Refund Policy applies to subscriptions for the <strong className="text-foreground">syrflow.com</strong> platform, operated by <strong className="text-foreground">Osaad</strong> (also trading as <strong className="text-foreground">Osaad.tech</strong>). All payments are processed by <strong className="text-foreground">Paddle.com Market Limited</strong>, which acts as the Merchant of Record. Refund requests are subject to the terms below and to <a href="https://www.paddle.com/legal/checkout-buyer-terms" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">Paddle's Buyer Terms</a>.</p>
+                <p>This Refund Policy applies to subscriptions for the <strong className="text-foreground">syrflow.com</strong> platform. We believe in providing a service worth every dollar you pay, so we have a clear and fair refund policy.</p>
               </Section>
-              <Section title="14-Day Cooling-Off Period (EU & EEA Customers)">
-                <p>If you are located in the European Union or European Economic Area, you have the right to withdraw from your subscription within <strong className="text-foreground">14 days</strong> of the date of your first payment, without giving any reason, provided that you have not used the Service during this period.</p>
-                <p>To exercise this right, contact us at <a href="mailto:support@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">support@syrflow.com</a> within 14 days of your purchase with the subject line "Refund Request". We will process your refund within 14 business days.</p>
-                <p>Please note: if you access or use the Service (e.g. publish your business page) during the cooling-off period, you expressly waive your right to the statutory withdrawal period.</p>
-              </Section>
-              <Section title="General Refund Policy">
-                <p>Outside of the statutory EU cooling-off period, we consider refund requests on a case-by-case basis. We may issue a refund at our sole discretion in the following situations:</p>
+              <Section title="When Are You Eligible for a Refund?">
+                <p>You are eligible for a full refund if all of the following conditions are met:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
-                  <li>A technical error on our side prevented you from using the Service.</li>
-                  <li>You were charged twice for the same subscription period.</li>
-                  <li>The Service was completely unavailable for an extended period due to our fault.</li>
+                  <li>Your website received <strong className="text-foreground">fewer than 100 visitors</strong> in the first 7 days of your subscription.</li>
+                  <li>You submit your refund request <strong className="text-foreground">within 7 days</strong> of your subscription start date.</li>
                 </ul>
+                <p className="mt-2">This means we guarantee a minimum level of visibility — if customers aren&apos;t reaching you, we refund your money.</p>
               </Section>
               <Section title="Non-Refundable Situations">
-                <p>We generally do not issue refunds in the following cases:</p>
+                <p>We do not issue refunds in the following cases:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
+                  <li>The 7-day window from your subscription start has passed.</li>
+                  <li>Your website received 100 or more visitors during the first 7 days.</li>
                   <li>You forgot to cancel before your renewal date.</li>
-                  <li>You no longer need or wish to use the Service.</li>
-                  <li>You have used the Service during the billing period.</li>
                   <li>Your account was suspended or terminated due to a violation of our <Link href="/terms" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">Terms of Service</Link>.</li>
-                  <li>Partial months or unused portions of a subscription period.</li>
                 </ul>
               </Section>
               <Section title="Annual Subscriptions">
-                <p>Annual subscriptions are non-refundable after the 14-day cooling-off period (for EU customers) or after 7 days of purchase (for all other customers) unless a technical fault on our side prevented service delivery.</p>
+                <p>The same refund policy applies to annual subscriptions (fewer than 100 visitors within 7 days). After the 7-day window, annual subscriptions are non-refundable unless a technical fault on our side prevented service delivery entirely.</p>
               </Section>
               <Section title="How to Request a Refund">
-                <p>To request a refund, email <a href="mailto:support@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">support@syrflow.com</a> with:</p>
+                <p>To request a refund, email <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> with:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
                   <li>Your account email address.</li>
-                  <li>The date of purchase.</li>
-                  <li>Your Paddle order ID (found in your payment confirmation email).</li>
+                  <li>Your subscription start date.</li>
                   <li>The reason for your refund request.</li>
                 </ul>
-                <p>We will respond within 3 business days. Approved refunds are processed by Paddle and typically appear within 5–10 business days depending on your bank.</p>
+                <p>We will respond within <strong className="text-foreground">3 business days</strong>. Approved refunds are processed within 5–10 business days.</p>
+              </Section>
+              <Section title="Technical Faults">
+                <p>If you were unable to use the Service due to a technical fault on our side, or were charged twice for the same period, we process refund requests immediately regardless of any time restrictions.</p>
               </Section>
               <Section title="Contact">
-                <p>For refund enquiries, contact us at <a href="mailto:support@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">support@syrflow.com</a>. We aim to respond within 3 business days. The Platform is operated by <strong className="text-foreground">Osaad</strong> (also trading as <strong className="text-foreground">Osaad.tech</strong>), United Arab Emirates.</p>
+                <p>For refund enquiries, contact us at <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>. We aim to respond within 3 business days.</p>
               </Section>
             </>
           )}

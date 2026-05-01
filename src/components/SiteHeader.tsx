@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
@@ -75,7 +74,7 @@ function DropdownItem({ item }: { item: NavItem }) {
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
             dir={lang === "ar" ? "rtl" : "ltr"}
-            className="absolute top-full right-0 mt-1.5 w-48 bg-background border border-border rounded-[6px] shadow-2xl overflow-hidden z-50"
+            className="absolute top-full right-0 mt-1.5 w-48 bg-background border border-border rounded-[8px] shadow-2xl overflow-hidden z-50"
           >
             <div className="p-1.5 flex flex-col gap-0.5">
               {item.children.map((child) => (
@@ -144,9 +143,7 @@ export default function SiteHeader() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center hover:opacity-70 transition-opacity">
-          <span className="text-xl font-bold tracking-tight" style={{ color: "#0066cc" }}>Syrfl</span>
-          <Image src="/favicon-32x32.png" alt="o" width={18} height={18} className="rounded-full mx-px" style={{ marginBottom: "1px" }} />
-          <span className="text-xl font-bold tracking-tight" style={{ color: "#0066cc" }}>w</span>
+          <span className="text-xl font-bold tracking-tight" style={{ color: "#0066cc" }}>{lang === "ar" ? "سوريا فلو" : "SyrFlow"}</span>
         </Link>
 
         {/* Desktop nav */}

@@ -151,29 +151,29 @@ const plansAr = [
 ];
 
 const faqsEn = [
-  { question: "What is AI Content Generation and how does it work?", answer: "AI Content Generation automatically creates professional website content including headings, descriptions, and taglines based on your business type. Basic plan includes one-time use, while Pro and Enterprise plans offer unlimited generations. Simply enter your business details and our AI does the rest in seconds." },
-  { question: "How many Google reviews can I export with each plan?", answer: "Basic plan allows you to export up to 10 reviews, Pro plan allows up to 20 reviews, and Enterprise plan offers unlimited review exports. This helps you showcase social proof on your website and build trust with potential customers." },
-  { question: "Can I edit my website after it's created?", answer: "Yes! All plans include unlimited website edits. You can update text, images, colors, and layout anytime from your easy-to-use dashboard. No technical skills required." },
-  { question: "What does Multi-language Support mean for my website?", answer: "Basic plan supports English only. Pro and Enterprise plans support both Arabic and English languages, allowing you to reach a wider audience in the UAE and across the Middle East." },
-  { question: "What kind of customer support do I get?", answer: "Basic plan includes email support. Pro and Enterprise plans include priority online assistant support with faster response times and dedicated help for any issues you encounter." },
-  { question: "How does Auto update Google reviews and photos work?", answer: "Pro plan auto-updates up to 20 reviews and photos. Enterprise plan offers unlimited auto-updates. Your website will automatically sync with your Google Maps listing, keeping your reviews and photos current without any manual work." },
-  { question: "Can I connect my own custom domain?", answer: "Basic plan does not include custom domain support. Pro and Enterprise plans allow you to connect your own domain (like yourbusiness.com) to your website for a professional look." },
-  { question: "What is AI Auto Fill and how does it save me time?", answer: "AI Auto Fill automatically populates your website with business information, contact details, and service descriptions. Available on Pro and Enterprise plans (unlimited use), it saves hours of manual data entry." },
-  { question: "Is there a contract or cancellation fee?", answer: "No contracts or cancellation fees! You can cancel anytime. All plans are billed monthly or annually (save 20% with annual billing). You keep your website data even after cancellation." },
-  { question: "How do I get started with syrflow.com?", answer: "Simply choose your plan, click 'Get Started', and follow the setup wizard. You'll need your Google Maps business link. Your website will be ready in less than 5 minutes. No coding or design skills needed!" },
+  { question: "What is SyrFlow?", answer: "SyrFlow is a platform that turns your Google Maps business link into a professional one-page website in minutes. No coding or design skills required — just paste your link and you're live." },
+  { question: "How does it work?", answer: "Paste your Google Maps link, choose your free subdomain (yourbiz.syrflow.com), and your website is live. We automatically import your business name, photos, reviews, opening hours, and contact info." },
+  { question: "How much does it cost?", answer: "Plans start from $1/month — cheaper than a pizza and cheaper than any website developer. See the pricing table above for full plan details." },
+  { question: "What payment methods do you accept?", answer: "We accept Sham Cash and Syrian bank transfer. Contact us at team@syrflow.com to complete your payment and our team will activate your account within 24 hours." },
+  { question: "Does SyrFlow support Arabic?", answer: "Yes! Full Arabic support with RTL layout is built in on all plans. You can switch between Arabic and English at any time, and your visitors can do the same." },
+  { question: "Will my website appear on Google?", answer: "Yes. Every website created with SyrFlow is automatically optimized for search engines (SEO) so customers can find your business on Google without any extra work from you." },
+  { question: "Do I need to buy a domain?", answer: "No. You get a free subdomain (yourbiz.syrflow.com) immediately at no cost. Custom domain support (like yourbusiness.com) is available on Pro and Enterprise plans." },
+  { question: "Can I edit my website after it's created?", answer: "Yes. You can update text, images, services, hours, and contact details anytime from your easy-to-use dashboard. No technical skills needed. All plans include unlimited edits." },
+  { question: "What if I'm not satisfied?", answer: "If your website receives fewer than 100 visitors in the first 7 days of your subscription, you are eligible for a full refund within that 7-day window. See our Refund Policy for full details." },
+  { question: "How do I get started?", answer: "Register at syrflow.com, paste your Google Maps link, choose your subdomain, and you're live in under 3 minutes. No credit card required to sign up." },
 ];
 
 const faqsAr = [
-  { question: "ما هو إنشاء محتوى الذكاء الاصطناعي وكيف يعمل؟", answer: "ينشئ الذكاء الاصطناعي تلقائياً محتوى موقع احترافياً يشمل العناوين والأوصاف والشعارات بناءً على نوع نشاطك. الخطة الأساسية تشمل استخداماً لمرة واحدة، بينما تقدم Pro وEnterprise توليداً غير محدود. أدخل تفاصيل عملك وسيتكفل الذكاء الاصطناعي بالباقي في ثوانٍ." },
-  { question: "كم عدد تقييمات Google التي يمكنني تصديرها مع كل خطة؟", answer: "الخطة الأساسية تتيح تصدير حتى 10 تقييمات، Pro حتى 20، وEnterprise غير محدود. يساعدك ذلك على عرض الدليل الاجتماعي وبناء الثقة مع العملاء المحتملين." },
-  { question: "هل يمكنني تعديل موقعي بعد إنشائه؟", answer: "نعم! جميع الخطط تشمل تعديلات غير محدودة. يمكنك تحديث النصوص والصور والألوان في أي وقت من لوحة التحكم. لا تتطلب مهارات تقنية." },
-  { question: "ما المقصود بدعم متعدد اللغات؟", answer: "الخطة الأساسية تدعم الإنجليزية فقط. خطتا Pro وEnterprise تدعمان العربية والإنجليزية، مما يتيح لك الوصول إلى جمهور أوسع في الإمارات والشرق الأوسط." },
-  { question: "ما نوع دعم العملاء المتاح؟", answer: "الخطة الأساسية تشمل دعماً عبر البريد الإلكتروني. خطتا Pro وEnterprise تشملان دعماً أولوياً مع أوقات استجابة أسرع." },
-  { question: "كيف يعمل التحديث التلقائي لتقييمات Google والصور؟", answer: "خطة Pro تحدّث تلقائياً حتى 20 تقييماً وصورة. Enterprise توفر تحديثات غير محدودة. سيتزامن موقعك تلقائياً مع قائمة Google Maps دون أي عمل يدوي." },
-  { question: "هل يمكنني ربط نطاقي المخصص؟", answer: "الخطة الأساسية لا تتضمن دعم النطاق المخصص. Pro وEnterprise يتيحان ربط نطاقك الخاص لمظهر احترافي." },
-  { question: "ما هي التعبئة التلقائية بالذكاء الاصطناعي؟", answer: "تملأ تلقائياً موقعك ببيانات الأعمال وتفاصيل الاتصال وأوصاف الخدمات. متاحة في Pro وEnterprise وتوفر ساعات من إدخال البيانات يدوياً." },
-  { question: "هل يوجد عقد أو رسوم إلغاء؟", answer: "لا عقود ولا رسوم إلغاء! يمكنك الإلغاء في أي وقت. جميع الخطط تُفوتر شهرياً أو سنوياً (وفّر 20% مع الفواتير السنوية). تحتفظ ببيانات موقعك حتى بعد الإلغاء." },
-  { question: "كيف أبدأ مع syrflow.com؟", answer: "اختر خطتك، انقر على «ابدأ الآن»، واتبع معالج الإعداد. ستحتاج رابط Google Maps لنشاطك. سيكون موقعك جاهزاً في أقل من 5 دقائق!" },
+  { question: "ما هو سوريا فلو؟", answer: "سوريا فلو هي منصة تحوّل رابط نشاطك التجاري على Google Maps إلى موقع احترافي من صفحة واحدة في دقائق. لا حاجة لبرمجة أو تصميم — الصق رابطك وموقعك حي." },
+  { question: "كيف تعمل المنصة؟", answer: "الصق رابط Google Maps، اختر نطاقك الفرعي المجاني (yourbiz.syrflow.com)، وسيكون موقعك حياً. نستورد تلقائياً اسم نشاطك والصور والتقييمات وساعات العمل ومعلومات الاتصال." },
+  { question: "كم تكلف الخدمة؟", answer: "تبدأ الخطط من دولار واحد شهرياً — أرخص من بيتزا وأرخص من أي مطور مواقع. اطلع على جدول الأسعار أعلاه للتفاصيل الكاملة." },
+  { question: "ما طرق الدفع المتاحة؟", answer: "نقبل Sham Cash والتحويل البنكي السوري. تواصل معنا على team@syrflow.com لإتمام الدفع وسيفعّل فريقنا حسابك خلال 24 ساعة." },
+  { question: "هل تدعم المنصة اللغة العربية؟", answer: "نعم! الدعم العربي الكامل مع تخطيط RTL مدمج في جميع الخطط. يمكنك ولزوارك التبديل بين العربية والإنجليزية في أي وقت." },
+  { question: "هل سيظهر موقعي على Google؟", answer: "نعم. كل موقع يُنشأ مع سوريا فلو يُحسَّن تلقائياً لمحركات البحث (SEO) حتى يجدك العملاء على Google دون أي جهد إضافي منك." },
+  { question: "هل أحتاج إلى شراء نطاق؟", answer: "لا. تحصل على نطاق فرعي مجاني (yourbiz.syrflow.com) فوراً بدون تكلفة. دعم النطاقات المخصصة (مثل yourbusiness.com) متاح في خطط Pro وEnterprise." },
+  { question: "هل يمكنني تعديل موقعي بعد إنشائه؟", answer: "نعم. يمكنك تحديث النصوص والصور والخدمات وساعات العمل ومعلومات الاتصال في أي وقت من لوحة التحكم. لا تتطلب مهارات تقنية. جميع الخطط تشمل تعديلات غير محدودة." },
+  { question: "ماذا لو لم أكن راضياً؟", answer: "إذا حصل موقعك على أقل من 100 زيارة في أول 7 أيام من اشتراكك، يحق لك طلب استرداد كامل خلال تلك الفترة. اطلع على سياسة الاسترداد للتفاصيل الكاملة." },
+  { question: "كيف أبدأ؟", answer: "سجّل في syrflow.com، الصق رابط Google Maps، اختر نطاقك الفرعي، وستكون حياً في أقل من 3 دقائق. لا يتطلب الاشتراك بطاقة ائتمانية." },
 ];
 
 export default function PricingPage() {

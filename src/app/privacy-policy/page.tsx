@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { useLanguage } from "@/lib/language";
@@ -31,7 +30,7 @@ export default function PrivacyPage() {
           {isAr ? (
             <>
               <Section title="١. مقدمة">
-                <p>تلتزم <strong className="text-foreground">Osaad</strong> (المعروفة أيضاً باسم <strong className="text-foreground">Osaad.tech</strong>)، مشغّلة <strong className="text-foreground">syrflow.com</strong> ("نحن"، "لنا")، بحماية معلوماتك الشخصية. توضّح سياسة الخصوصية هذه البيانات التي نجمعها وكيفية استخدامها وحقوقك بشأنها. باستخدام خدمتنا، توافق على جمع المعلومات واستخدامها وفقاً لهذه السياسة.</p>
+                <p>نلتزم في <strong className="text-foreground">syrflow.com</strong> بحماية معلوماتك الشخصية. توضّح سياسة الخصوصية هذه البيانات التي نجمعها وكيفية استخدامها وحقوقك بشأنها. باستخدام خدمتنا، توافق على جمع المعلومات واستخدامها وفقاً لهذه السياسة.</p>
               </Section>
               <Section title="٢. البيانات التي نجمعها">
                 <p>نجمع الفئات التالية من البيانات الشخصية:</p>
@@ -39,66 +38,58 @@ export default function PrivacyPage() {
                   <li><strong className="text-foreground">بيانات الحساب:</strong> عنوان البريد الإلكتروني وكلمة المرور (مشفّرة) عند التسجيل.</li>
                   <li><strong className="text-foreground">بيانات الأعمال:</strong> اسم الشركة والعنوان ورقم الهاتف وساعات العمل والصور والمعلومات الأخرى التي تستوردها من ملفك التجاري على Google أو تدخلها يدوياً.</li>
                   <li><strong className="text-foreground">بيانات الاستخدام:</strong> ملفات السجل وعناوين IP ونوع المتصفح والصفحات التي تزورها والطوابع الزمنية لأغراض الأمان والتحليلات.</li>
-                  <li><strong className="text-foreground">بيانات الدفع:</strong> تتم معالجة الدفع بالكامل بواسطة Paddle. لا نخزّن أرقام بطاقات الائتمان أو تفاصيل الدفع الكاملة على خوادمنا.</li>
+                  <li><strong className="text-foreground">بيانات الدفع:</strong> نتلقى تأكيدات الدفع فقط. لا نخزّن أرقام بطاقات مصرفية أو بيانات حساب مالية على خوادمنا.</li>
                 </ul>
               </Section>
-              <Section title="٣. معالجة الدفع بواسطة Paddle">
-                <p>تتم معالجة جميع مدفوعات الاشتراك بواسطة <strong className="text-foreground">Paddle.com Market Limited</strong>، التي تعمل بوصفها تاجر السجل. عند إجراء عملية شراء، تقوم Paddle بجمع ومعالجة تفاصيل الدفع وعنوان الفوترة ومعلومات المعاملة وفقاً لـ <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">سياسة خصوصية Paddle</a>. نشارك عنوان بريدك الإلكتروني مع Paddle لأغراض معالجة الدفع ومنع الاحتيال.</p>
-              </Section>
-              <Section title="٤. كيفية استخدام بياناتك">
+              <Section title="٣. كيفية استخدام بياناتك">
                 <ul className="list-disc pl-5 space-y-1.5">
                   <li>لإنشاء حسابك وصفحة أعمالك والحفاظ عليهما.</li>
-                  <li>لمعالجة الاشتراكات والفواتير (عبر Paddle).</li>
-                  <li>لإرسال رسائل إلكترونية تشغيلية (تأكيد الحساب، الفواتير، تحديثات الخدمة).</li>
+                  <li>لمعالجة الاشتراكات والتحقق من المدفوعات.</li>
+                  <li>لإرسال رسائل إلكترونية تشغيلية (تأكيد الحساب، استعادة كلمة المرور، تحديثات الخدمة).</li>
                   <li>لمراقبة وتحسين أمان وأداء الخدمة.</li>
                   <li>للامتثال للالتزامات القانونية.</li>
                 </ul>
               </Section>
-              <Section title="٥. مشاركة البيانات مع أطراف ثالثة">
-                <p>لا نبيع بياناتك الشخصية. نشارك البيانات فقط مع:</p>
+              <Section title="٤. مشاركة البيانات مع أطراف ثالثة">
+                <p>لا نبيع بياناتك الشخصية ولا نشاركها مع أطراف ثالثة لأغراض تسويقية. نشارك البيانات فقط مع:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
-                  <li><strong className="text-foreground">Paddle</strong> — لمعالجة الدفع والامتثال الضريبي.</li>
-                  <li><strong className="text-foreground">Supabase</strong> — مزود قاعدة البيانات والمصادقة، مستضاف على بنية تحتية سحابية آمنة.</li>
+                  <li><strong className="text-foreground">مزودي البنية التحتية السحابية</strong> — لاستضافة بياناتك بأمان وتوفير الخدمة.</li>
                   <li><strong className="text-foreground">الجهات القانونية</strong> — عند الاقتضاء القانوني أو لحماية حقوقنا.</li>
                 </ul>
               </Section>
-              <Section title="٦. ملفات تعريف الارتباط (Cookies)">
-                <p>نستخدم ملفات تعريف ارتباط ضرورية تقنياً للحفاظ على جلستك وحالة المصادقة. لا نستخدم ملفات تعريف ارتباط إعلانية أو تتبعية. يمكنك التحكم في ملفات تعريف الارتباط من خلال إعدادات المتصفح.</p>
+              <Section title="٥. ملفات تعريف الارتباط (Cookies)">
+                <p>نستخدم ملفات تعريف ارتباط ضرورية تقنياً للحفاظ على جلستك وحالة المصادقة وتفضيل اللغة. لا نستخدم ملفات تعريف ارتباط إعلانية أو تتبعية. يمكنك التحكم في ملفات تعريف الارتباط من خلال إعدادات المتصفح.</p>
               </Section>
-              <Section title="٧. الاحتفاظ بالبيانات">
+              <Section title="٦. الاحتفاظ بالبيانات">
                 <p>نحتفظ ببيانات حسابك وأعمالك طالما كان حسابك نشطاً أو حسب الحاجة لتقديم الخدمة. إذا حذفت حسابك، سنحذف بياناتك الشخصية خلال 30 يوماً، إلا إذا كان القانون يُلزمنا بالاحتفاظ بها لفترة أطول.</p>
               </Section>
-              <Section title="٨. الأمان">
+              <Section title="٧. الأمان">
                 <p>نطبّق معايير الأمان الصناعية بما في ذلك الاتصالات المشفّرة (HTTPS) وكلمات المرور المشفّرة وضوابط الوصول. ومع ذلك، لا توجد طريقة نقل عبر الإنترنت آمنة بنسبة 100%.</p>
               </Section>
-              <Section title="٩. حقوقك">
-                <p>بحسب موقعك، قد تتمتع بالحقوق التالية فيما يتعلق ببياناتك الشخصية:</p>
+              <Section title="٨. حقوقك">
+                <p>يحق لك فيما يتعلق ببياناتك الشخصية:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
                   <li><strong className="text-foreground">الوصول</strong> — طلب نسخة من بياناتك الشخصية.</li>
                   <li><strong className="text-foreground">التصحيح</strong> — طلب تصحيح البيانات غير الدقيقة.</li>
-                  <li><strong className="text-foreground">الحذف</strong> — طلب حذف بياناتك ("الحق في النسيان").</li>
-                  <li><strong className="text-foreground">قابلية النقل</strong> — طلب بياناتك بتنسيق قابل للقراءة آلياً.</li>
-                  <li><strong className="text-foreground">الاعتراض</strong> — الاعتراض على المعالجة المستندة إلى المصالح المشروعة.</li>
+                  <li><strong className="text-foreground">الحذف</strong> — طلب حذف بياناتك.</li>
+                  <li><strong className="text-foreground">الاعتراض</strong> — الاعتراض على المعالجة في حالات معينة.</li>
                 </ul>
-                <p className="mt-2">لممارسة أي من هذه الحقوق، راسلنا على <a href="mailto:privacy@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">privacy@syrflow.com</a>. سنردّ خلال 30 يوماً.</p>
+                <p className="mt-2">لممارسة أي من هذه الحقوق، راسلنا على <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>. سنردّ خلال 30 يوماً.</p>
               </Section>
-              <Section title="١٠. النقل الدولي للبيانات">
-                <p>قد تتم معالجة بياناتك وتخزينها في دول خارج دولتك. عند الاقتضاء، نطبّق ضمانات مناسبة مثل البنود التعاقدية القياسية لضمان حماية بياناتك.</p>
+              <Section title="٩. الأطفال">
+                <p>الخدمة غير موجّهة للأشخاص دون 18 عاماً. لا نجمع بيانات شخصية من القاصرين عمداً. إذا اعتقدت أن قاصراً قدّم لنا بياناته الشخصية، تواصل معنا وسنحذفها فوراً.</p>
               </Section>
-              <Section title="١١. الأطفال">
-                <p>الخدمة غير موجّهة للأطفال دون 18 عاماً. لا نجمع بيانات شخصية من القاصرين عمداً. إذا اعتقدت أن قاصراً قدّم لنا بياناته الشخصية، تواصل معنا وسنحذفها فوراً.</p>
+              <Section title="١٠. التغييرات على هذه السياسة">
+                <p>قد نحدّث سياسة الخصوصية هذه بصورة دورية. سنُعلمك بالتغييرات الجوهرية عبر البريد الإلكتروني أو بنشر إشعار على الخدمة.</p>
               </Section>
-              <Section title="١٢. التغييرات على هذه السياسة">
-                <p>قد نحدّث سياسة الخصوصية هذه بصورة دورية. سنُعلمك بالتغييرات الجوهرية عبر البريد الإلكتروني أو بنشر إشعار على الخدمة. الاستمرار في الاستخدام بعد التغييرات يُعدّ قبولاً لها.</p>
-              </Section>
-              <Section title="١٣. التواصل">
-                <p>للاستفسارات أو الطلبات المتعلقة بالخصوصية، تواصل مع مراقب البيانات لدينا على <a href="mailto:privacy@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">privacy@syrflow.com</a>. تُدار المنصة بواسطة <strong className="text-foreground">Osaad</strong> (المعروفة أيضاً باسم <strong className="text-foreground">Osaad.tech</strong>)، الإمارات العربية المتحدة.</p>
+              <Section title="١١. التواصل">
+                <p>لأي استفسارات تتعلق بالخصوصية، راسلنا على <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>.</p>
               </Section>
             </>
           ) : (
             <>
               <Section title="1. Introduction">
-                <p><strong className="text-foreground">Osaad</strong> (also trading as <strong className="text-foreground">Osaad.tech</strong>), the operator of <strong className="text-foreground">syrflow.com</strong> ("we", "us", "our"), is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights regarding it. By using our Service, you agree to the collection and use of information in accordance with this policy.</p>
+                <p><strong className="text-foreground">syrflow.com</strong> is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights regarding it. By using our Service, you agree to the collection and use of information in accordance with this policy.</p>
               </Section>
               <Section title="2. Data We Collect">
                 <p>We collect the following categories of personal data:</p>
@@ -106,60 +97,52 @@ export default function PrivacyPage() {
                   <li><strong className="text-foreground">Account data:</strong> Email address and password (hashed) when you register.</li>
                   <li><strong className="text-foreground">Business data:</strong> Business name, address, phone number, opening hours, photos, and other information you import from Google Business Profile or enter manually.</li>
                   <li><strong className="text-foreground">Usage data:</strong> Log files, IP addresses, browser type, pages visited, and timestamps for security and analytics purposes.</li>
-                  <li><strong className="text-foreground">Payment data:</strong> Payment processing is handled entirely by Paddle. We do not store credit card numbers or full payment details on our servers.</li>
+                  <li><strong className="text-foreground">Payment data:</strong> We receive payment confirmations only. We do not store bank card numbers or financial account details on our servers.</li>
                 </ul>
               </Section>
-              <Section title="3. Payment Processing by Paddle">
-                <p>All subscription payments are processed by <strong className="text-foreground">Paddle.com Market Limited</strong>, which acts as the Merchant of Record. When you make a purchase, Paddle collects and processes your payment details, billing address, and transaction information in accordance with <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">Paddle's Privacy Policy</a>. We share your email address with Paddle for the purpose of payment processing and fraud prevention.</p>
-              </Section>
-              <Section title="4. How We Use Your Data">
+              <Section title="3. How We Use Your Data">
                 <ul className="list-disc pl-5 space-y-1.5">
                   <li>To create and maintain your account and business page.</li>
-                  <li>To process subscriptions and billing (via Paddle).</li>
-                  <li>To send transactional emails (account confirmation, invoices, service updates).</li>
+                  <li>To process subscriptions and verify payments.</li>
+                  <li>To send transactional emails (account confirmation, password reset, service updates).</li>
                   <li>To monitor and improve the security and performance of the Service.</li>
                   <li>To comply with legal obligations.</li>
                 </ul>
               </Section>
-              <Section title="5. Data Sharing and Third Parties">
-                <p>We do not sell your personal data. We share data only with:</p>
+              <Section title="4. Data Sharing and Third Parties">
+                <p>We do not sell your personal data or share it with third parties for marketing purposes. We share data only with:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
-                  <li><strong className="text-foreground">Paddle</strong> — for payment processing and tax compliance.</li>
-                  <li><strong className="text-foreground">Supabase</strong> — our database and authentication provider, hosted on secure cloud infrastructure.</li>
+                  <li><strong className="text-foreground">Cloud infrastructure providers</strong> — to securely host your data and deliver the Service.</li>
                   <li><strong className="text-foreground">Legal authorities</strong> — when required by law or to protect our rights.</li>
                 </ul>
               </Section>
-              <Section title="6. Cookies">
-                <p>We use strictly necessary cookies to maintain your session and authentication state. We do not use advertising or tracking cookies. You can control cookies through your browser settings.</p>
+              <Section title="5. Cookies">
+                <p>We use strictly necessary cookies to maintain your session, authentication state, and language preference. We do not use advertising or tracking cookies. You can control cookies through your browser settings.</p>
               </Section>
-              <Section title="7. Data Retention">
+              <Section title="6. Data Retention">
                 <p>We retain your account and business data for as long as your account is active or as needed to provide the Service. If you delete your account, we will delete your personal data within 30 days, except where we are required by law to retain it longer.</p>
               </Section>
-              <Section title="8. Security">
+              <Section title="7. Security">
                 <p>We implement industry-standard security measures including encrypted connections (HTTPS), hashed passwords, and access controls. However, no method of transmission over the internet is 100% secure.</p>
               </Section>
-              <Section title="9. Your Rights">
-                <p>Depending on your location, you may have the following rights regarding your personal data:</p>
+              <Section title="8. Your Rights">
+                <p>You have the following rights regarding your personal data:</p>
                 <ul className="list-disc pl-5 space-y-1.5 mt-2">
                   <li><strong className="text-foreground">Access</strong> — request a copy of your personal data.</li>
                   <li><strong className="text-foreground">Correction</strong> — request correction of inaccurate data.</li>
-                  <li><strong className="text-foreground">Deletion</strong> — request deletion of your data ("right to be forgotten").</li>
-                  <li><strong className="text-foreground">Portability</strong> — request your data in a machine-readable format.</li>
-                  <li><strong className="text-foreground">Objection</strong> — object to processing based on legitimate interests.</li>
+                  <li><strong className="text-foreground">Deletion</strong> — request deletion of your data.</li>
+                  <li><strong className="text-foreground">Objection</strong> — object to processing in certain circumstances.</li>
                 </ul>
-                <p className="mt-2">To exercise any of these rights, email us at <a href="mailto:privacy@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">privacy@syrflow.com</a>. We will respond within 30 days.</p>
+                <p className="mt-2">To exercise any of these rights, email us at <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>. We will respond within 30 days.</p>
               </Section>
-              <Section title="10. International Data Transfers">
-                <p>Your data may be processed and stored in countries outside your own. Where required, we implement appropriate safeguards such as Standard Contractual Clauses to ensure your data is protected.</p>
+              <Section title="9. Children">
+                <p>The Service is not directed at persons under 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us with personal data, please contact us and we will delete it promptly.</p>
               </Section>
-              <Section title="11. Children">
-                <p>The Service is not directed at children under 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us with personal data, please contact us and we will delete it promptly.</p>
+              <Section title="10. Changes to This Policy">
+                <p>We may update this Privacy Policy periodically. We will notify you of material changes by email or by posting a notice on the Service.</p>
               </Section>
-              <Section title="12. Changes to This Policy">
-                <p>We may update this Privacy Policy periodically. We will notify you of material changes by email or by posting a notice on the Service. Continued use after changes constitutes acceptance.</p>
-              </Section>
-              <Section title="13. Contact">
-                <p>For privacy-related questions or requests, contact our Data Controller at <a href="mailto:privacy@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">privacy@syrflow.com</a>. The Platform is operated by <strong className="text-foreground">Osaad</strong> (also trading as <strong className="text-foreground">Osaad.tech</strong>), United Arab Emirates.</p>
+              <Section title="11. Contact">
+                <p>For privacy-related questions, contact us at <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>.</p>
               </Section>
             </>
           )}
