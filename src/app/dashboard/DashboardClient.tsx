@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
   MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
-  BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound,
+  BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User as UserIcon,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
@@ -46,7 +46,7 @@ const NAV = [
   { id: "hours",     icon: Clock     },
   { id: "social",    icon: Share2    },
   { id: "reviews",   icon: Star      },
-  { id: "account",   icon: User      },
+  { id: "account",   icon: UserIcon  },
 ] as const;
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
