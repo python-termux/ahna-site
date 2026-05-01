@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Script from "next/script";
 import { motion } from "framer-motion";
 import { Loader2, XCircle } from "lucide-react";
@@ -39,7 +40,7 @@ interface ChannelData {
   }[];
 }
 
-export default function TelegramTestPage() {
+function TelegramTestPageComponent() {
   const [user, setUser] = useState<TelegramUser | null>(null);
   const [channelData, setChannelData] = useState<ChannelData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -99,7 +100,7 @@ export default function TelegramTestPage() {
                 className="telegram-login-button"
                 data-telegram-login="syrflow_bot"
                 data-size="large"
-                data-auth-url={`${window.location.origin}/api/telegram/auth`}
+                data-auth-url={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/telegram/auth`}
                 data-request-access="write"
               />
               <p className="text-sm text-muted-foreground mt-4">
@@ -108,7 +109,6 @@ export default function TelegramTestPage() {
             </div>
           ) : (
             <div>
-              {/* User Info */}
               <div className="bg-card border border-border rounded-lg p-4 mb-6">
                 <div className="flex items-center gap-3">
                   {user.photo_url ? (
@@ -133,7 +133,6 @@ export default function TelegramTestPage() {
                 </div>
               </div>
 
-              {/* Loading State */}
               {loading && (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-[#0066cc]" />
@@ -141,7 +140,6 @@ export default function TelegramTestPage() {
                 </div>
               )}
 
-              {/* Error State */}
               {error && (
                 <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
                   <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -149,14 +147,12 @@ export default function TelegramTestPage() {
                 </div>
               )}
 
-              {/* Channel Data */}
               {channelData && !loading && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-6"
                 >
-                  {/* Channel Info */}
                   <div className="bg-card border border-border rounded-lg overflow-hidden">
                     <div className="p-4 border-b border-border">
                       <h2 className="text-xl font-bold">Channel Information</h2>
@@ -191,7 +187,6 @@ export default function TelegramTestPage() {
                     </div>
                   </div>
 
-                  {/* Posts */}
                   <div className="bg-card border border-border rounded-lg overflow-hidden">
                     <div className="p-4 border-b border-border">
                       <h2 className="text-xl font-bold">Latest Posts (Max 20)</h2>
@@ -244,3 +239,7 @@ export default function TelegramTestPage() {
     </>
   );
 }
+
+export default dynamic(() => Promise.resolve(TelegramTestPageComponent), {
+  ssr: false,
+});
