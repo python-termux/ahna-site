@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import type { PlaceResult } from "@/lib/places";
 import { useLanguage } from "@/lib/language";
+import { ThemeToggle } from "@/components/ThemeProvider";
 
 const FB_APP_ID = "1463790922054350";
 
@@ -508,7 +509,7 @@ export default function RegisterPage() {
           <div className="lg:w-[520px] lg:flex-shrink-0 px-4 sm:px-6 py-14 lg:border-r border-border">
           <div className="w-full max-w-lg">
 
-            <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-foreground transition-colors mb-8">
+            <Link href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-foreground transition-colors mb-8">
               {isAr ? "العودة للرئيسية" : "Return to home"}
             </Link>
 
@@ -869,6 +870,10 @@ export default function RegisterPage() {
           </div>
 
         </div>
+      </div>
+
+      <div className="fixed bottom-5 right-5 z-50">
+        <ThemeToggle />
       </div>
     </>
   );

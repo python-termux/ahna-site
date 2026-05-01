@@ -1,23 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { fetchPlaceFromUrl } from "@/lib/places";
-import { slugify } from "@/lib/slugify";
 import { generateWhyUs } from "@/lib/why-us";
 import { NextResponse } from "next/server";
 
 const MAPS_URL_RE = /^https:\/\/(maps\.app\.goo\.gl|maps\.google\.com|www\.google\.com\/maps|goo\.gl\/maps)\//;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function uniqueSlug(supabase: any, base: string): Promise<string> {
-  const MAX = 50;
-  let candidate = base || "business";
-  let i = 2;
-  while (i <= MAX) {
-    const { data } = await supabase.from("businesses").select("id").eq("slug", candidate).maybeSingle();
-    if (!data) return candidate;
-    candidate = `${base}-${i++}`;
-  }
-  return `${base}-${Math.random().toString(36).slice(2, 8)}`;
-}
 
 // POST /api/places
 export async function POST(request: Request) {
@@ -49,8 +35,7 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const base = slugify(place.name || "business");
-  const slug = await uniqueSlug(supabase, base);
+  const slug = `_tmp_${Math.random().toString(36).slice(2, 10)}`;
   const whyUs = await generateWhyUs(place.name, place.category, place.reviews);
 
   const { data, error } = await supabase

@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ThemeProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
@@ -13,6 +14,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { useLanguage } from "@/lib/language";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 interface Testimonial { author: string; role: string; text: string; rating: number }
@@ -28,19 +30,47 @@ interface Business {
 }
 
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const DAYS_AR: Record<string, string> = {
+  Monday: "الاثنين", Tuesday: "الثلاثاء", Wednesday: "الأربعاء",
+  Thursday: "الخميس", Friday: "الجمعة", Saturday: "السبت", Sunday: "الأحد",
+};
 const ACCENT_THEMES = ["indigo","violet","rose","orange","emerald","sky","amber"];
 
 const NAV = [
-  { id: "branding",  label: "Branding",  icon: Type      },
-  { id: "theme",     label: "Theme",     icon: Palette   },
-  { id: "images",    label: "Images",    icon: Images    },
-  { id: "services",  label: "Services",  icon: Layers    },
-  { id: "contact",   label: "Contact",   icon: Phone     },
-  { id: "stats",     label: "Stats",     icon: BarChart2 },
-  { id: "hours",     label: "Hours",     icon: Clock     },
-  { id: "social",    label: "Social",    icon: Share2    },
-  { id: "reviews",   label: "Reviews",   icon: Star      },
+  { id: "branding",  icon: Type      },
+  { id: "theme",     icon: Palette   },
+  { id: "images",    icon: Images    },
+  { id: "services",  icon: Layers    },
+  { id: "contact",   icon: Phone     },
+  { id: "stats",     icon: BarChart2 },
+  { id: "hours",     icon: Clock     },
+  { id: "social",    icon: Share2    },
+  { id: "reviews",   icon: Star      },
 ] as const;
+
+const NAV_LABELS: Record<string, { en: string; ar: string }> = {
+  branding: { en: "Branding",  ar: "العلامة التجارية" },
+  theme:    { en: "Theme",     ar: "المظهر"           },
+  images:   { en: "Images",    ar: "الصور"            },
+  services: { en: "Services",  ar: "الخدمات"          },
+  contact:  { en: "Contact",   ar: "التواصل"          },
+  stats:    { en: "Stats",     ar: "الإحصائيات"       },
+  hours:    { en: "Hours",     ar: "أوقات العمل"      },
+  social:   { en: "Social",    ar: "التواصل الاجتماعي"},
+  reviews:  { en: "Reviews",   ar: "التقييمات"        },
+};
+
+function LangToggle() {
+  const { lang, setLang } = useLanguage();
+  return (
+    <button
+      onClick={() => setLang(lang === "en" ? "ar" : "en")}
+      className="px-2.5 py-1 text-xs font-semibold border border-border rounded-[6px] text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+    >
+      {lang === "en" ? "AR" : "EN"}
+    </button>
+  );
+}
 
 // ─── main component ────────────────────────────────────────────────────────────
 export default function DashboardClient({ user, businesses }: {
@@ -48,14 +78,30 @@ export default function DashboardClient({ user, businesses }: {
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
   const [activeBiz, setActiveBiz] = useState<Business | null>(
     businesses.length === 1 ? businesses[0] : null
   );
 
   async function logout() {
     await supabase.auth.signOut();
-    toast.success("Logged out");
-    router.push("/");
+    toast.success(isAr ? "تم تسجيل الخروج" : "Logged out");
+    window.location.href = `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`;
+  }
+
+  // If active or any imported biz still has a temp slug, show the slug setup screen
+  const tmpBiz = activeBiz?.slug.startsWith("_tmp_")
+    ? activeBiz
+    : businesses.find((b) => b.slug.startsWith("_tmp_")) ?? null;
+
+  if (tmpBiz) {
+    return (
+      <SlugSetupScreen
+        biz={tmpBiz}
+        onComplete={() => { setActiveBiz(null); router.refresh(); }}
+      />
+    );
   }
 
   if (activeBiz) {
@@ -70,6 +116,7 @@ export default function DashboardClient({ user, businesses }: {
 
   return (
     <motion.div
+      dir={isAr ? "rtl" : "ltr"}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -84,8 +131,10 @@ export default function DashboardClient({ user, businesses }: {
         <span className="font-bold text-lg">syrflow.com</span>
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
+          <LangToggle />
+          <ThemeToggle />
           <button onClick={logout} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <LogOut size={15} /> Log out
+            <LogOut size={15} /> {isAr ? "خروج" : "Log out"}
           </button>
         </div>
       </motion.header>
@@ -97,7 +146,7 @@ export default function DashboardClient({ user, businesses }: {
           transition={{ delay: 0.1 }}
           className="text-2xl font-bold mb-8"
         >
-          Your pages
+          {isAr ? "صفحاتك" : "Your pages"}
         </motion.h1>
 
         {businesses.length === 0 ? (
@@ -124,14 +173,14 @@ export default function DashboardClient({ user, businesses }: {
                     onClick={() => setActiveBiz(b)}
                     className="flex items-center gap-1.5 text-xs text-[#0066cc] hover:opacity-70 border border-[#0066cc]/30 rounded-[4px] px-3 py-1.5 transition-colors"
                   >
-                    <Pencil size={12} /> Edit
+                    <Pencil size={12} /> {isAr ? "تعديل" : "Edit"}
                   </button>
                   <Link
                     href={`https://${b.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`}
                     target="_blank"
                     className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-[4px] px-3 py-1.5 transition-colors"
                   >
-                    View <ExternalLink size={12} />
+                    {isAr ? "عرض" : "View"} <ExternalLink size={12} />
                   </Link>
                 </div>
               </motion.div>
@@ -146,6 +195,8 @@ export default function DashboardClient({ user, businesses }: {
 // ─── NO PAGES STATE ───────────────────────────────────────────────────────────
 function NoPagesState() {
   const router = useRouter();
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
   const [mapsUrl, setMapsUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -162,8 +213,8 @@ function NoPagesState() {
     });
     const json = await res.json();
     setLoading(false);
-    if (!res.ok) { toast.error(json.error ?? "Failed to import business"); return; }
-    toast.success("Business imported!");
+    if (!res.ok) { toast.error(json.error ?? (isAr ? "فشل استيراد النشاط التجاري" : "Failed to import business")); return; }
+    toast.success(isAr ? "تم استيراد النشاط التجاري!" : "Business imported!");
     router.refresh();
   }
 
@@ -175,8 +226,8 @@ function NoPagesState() {
         <Plus size={24} className="text-muted-foreground" />
       </div>
       <div>
-        <h2 className="text-lg font-semibold mb-1">No business pages yet</h2>
-        <p className="text-sm text-muted-foreground">Paste your Google Maps link below to import your business.</p>
+        <h2 className="text-lg font-semibold mb-1">{isAr ? "لا توجد صفحات أعمال بعد" : "No business pages yet"}</h2>
+        <p className="text-sm text-muted-foreground">{isAr ? "الصق رابط Google Maps أدناه لاستيراد بيانات نشاطك التجاري." : "Paste your Google Maps link below to import your business."}</p>
       </div>
       <div className="w-full flex gap-2">
         <input
@@ -191,7 +242,7 @@ function NoPagesState() {
           disabled={loading || !mapsUrl.trim()}
           className="flex items-center gap-2 px-4 py-2.5 bg-[#0066cc] hover:opacity-90 disabled:opacity-50 text-white text-sm font-medium rounded-[6px] transition-colors whitespace-nowrap"
         >
-          {loading ? <Loader2 size={14} className="animate-spin" /> : "Import"}
+          {loading ? <Loader2 size={14} className="animate-spin" /> : (isAr ? "استيراد" : "Import")}
         </button>
       </div>
 
@@ -199,7 +250,7 @@ function NoPagesState() {
         onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
         className="text-xs text-red-400 hover:text-red-300 transition-colors mt-4"
       >
-        Delete my account
+        {isAr ? "حذف حسابي" : "Delete my account"}
       </button>
 
       {deleteModal && (
@@ -211,10 +262,13 @@ function NoPagesState() {
               <div className="w-9 h-9 rounded-[4px] bg-red-950 flex items-center justify-center shrink-0">
                 <AlertTriangle size={16} className="text-red-400" />
               </div>
-              <h3 className="font-semibold text-foreground">Delete account?</h3>
+              <h3 className="font-semibold text-foreground">{isAr ? "حذف الحساب؟" : "Delete account?"}</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              This permanently removes your account. Type <span className="font-mono font-semibold text-foreground">DELETE</span> to confirm.
+              {isAr
+                ? <>سيؤدي هذا إلى حذف حسابك بشكل دائم. اكتب <span className="font-mono font-semibold text-foreground">DELETE</span> للتأكيد.</>
+                : <>This permanently removes your account. Type <span className="font-mono font-semibold text-foreground">DELETE</span> to confirm.</>
+              }
             </p>
             <input
               value={deleteConfirm}
@@ -225,7 +279,7 @@ function NoPagesState() {
             <div className="flex gap-3">
               <button onClick={() => setDeleteModal(false)}
                 className="flex-1 px-4 py-2.5 rounded-[4px] border border-border text-sm text-foreground transition-colors"
-              >Cancel</button>
+              >{isAr ? "إلغاء" : "Cancel"}</button>
               <button
                 disabled={deleteConfirm !== "DELETE" || deleteLoading}
                 onClick={async () => {
@@ -233,18 +287,18 @@ function NoPagesState() {
                   const res = await fetch("/api/delete-account", { method: "DELETE" });
                   if (!res.ok) {
                     const json = await res.json().catch(() => ({}));
-                    toast.error(json.error ?? "Failed to delete account");
+                    toast.error(json.error ?? (isAr ? "فشل حذف الحساب" : "Failed to delete account"));
                     setDeleteLoading(false);
                     return;
                   }
                   const supabase = (await import("@/lib/supabase/client")).createClient();
                   await supabase.auth.signOut();
-                  toast.success("Account deleted.");
-                  window.location.href = "/";
+                  toast.success(isAr ? "تم حذف الحساب." : "Account deleted.");
+                  window.location.href = `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`;
                 }}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-[4px] bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
               >
-                {deleteLoading ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14} /> Delete</>}
+                {deleteLoading ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14} /> {isAr ? "حذف" : "Delete"}</>}
               </button>
             </div>
           </motion.div>
@@ -260,6 +314,8 @@ function EditForm({ biz, onBack, onLogout }: {
   onBack?: () => void;
   onLogout: () => void;
 }) {
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
   const [data, setData] = useState<Business>({ ...biz });
   const savedSnapshot = useRef(JSON.stringify(biz));
   const [saving, setSaving] = useState(false);
@@ -374,34 +430,34 @@ function EditForm({ biz, onBack, onLogout }: {
 
   async function save() {
     if (data.tagline && data.tagline.length < 250) {
-      toast.error(`Tagline too short — min 250 chars (currently ${data.tagline.length})`);
+      toast.error(isAr ? `الشعار قصير جداً — الحد الأدنى 250 حرفاً (حالياً ${data.tagline.length})` : `Tagline too short — min 250 chars (currently ${data.tagline.length})`);
       setActive("branding"); return;
     }
     if (data.tagline && data.tagline.length > 300) {
-      toast.error(`Tagline too long — max 300 chars (currently ${data.tagline.length})`);
+      toast.error(isAr ? `الشعار طويل جداً — الحد الأقصى 300 حرفاً (حالياً ${data.tagline.length})` : `Tagline too long — max 300 chars (currently ${data.tagline.length})`);
       setActive("branding"); return;
     }
     if (data.description && data.description.length < 350) {
-      toast.error(`Description too short — min 350 chars (currently ${data.description.length})`);
+      toast.error(isAr ? `الوصف قصير جداً — الحد الأدنى 350 حرفاً (حالياً ${data.description.length})` : `Description too short — min 350 chars (currently ${data.description.length})`);
       setActive("branding"); return;
     }
     if (data.description && data.description.length > 400) {
-      toast.error(`Description too long — max 400 chars (currently ${data.description.length})`);
+      toast.error(isAr ? `الوصف طويل جداً — الحد الأقصى 400 حرفاً (حالياً ${data.description.length})` : `Description too long — max 400 chars (currently ${data.description.length})`);
       setActive("branding"); return;
     }
     for (let i = 0; i < data.services.length; i++) {
       const svc = data.services[i];
       if (svc.description && svc.description.length < 150) {
-        toast.error(`Service "${svc.title || `#${i + 1}`}" description must be exactly 150 chars`);
+        toast.error(isAr ? `وصف الخدمة "${svc.title || `#${i + 1}`}" يجب أن يكون 150 حرفاً بالضبط` : `Service "${svc.title || `#${i + 1}`}" description must be exactly 150 chars`);
         setActive("services"); return;
       }
       if (svc.description && svc.description.length > 150) {
-        toast.error(`Service "${svc.title || `#${i + 1}`}" description must be exactly 150 chars`);
+        toast.error(isAr ? `وصف الخدمة "${svc.title || `#${i + 1}`}" يجب أن يكون 150 حرفاً بالضبط` : `Service "${svc.title || `#${i + 1}`}" description must be exactly 150 chars`);
         setActive("services"); return;
       }
     }
     setSaving(true); setSaved(false);
-    const id = toast.loading("Saving changes…");
+    const id = toast.loading(isAr ? "جارٍ الحفظ…" : "Saving changes…");
     const res = await fetch("/api/business", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -410,9 +466,9 @@ function EditForm({ biz, onBack, onLogout }: {
     const json = await res.json();
     setSaving(false);
     if (!res.ok) {
-      toast.error(json.error ?? "Failed to save", { id });
+      toast.error(json.error ?? (isAr ? "فشل الحفظ" : "Failed to save"), { id });
     } else {
-      toast.success("Changes saved!", { id });
+      toast.success(isAr ? "تم حفظ التغييرات!" : "Changes saved!", { id });
       savedSnapshot.current = JSON.stringify(data);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -425,7 +481,7 @@ function EditForm({ biz, onBack, onLogout }: {
     : data.theme_color === "white" ? "indigo" : (data.theme_color || "indigo");
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div dir={isAr ? "rtl" : "ltr"} className="min-h-screen bg-background text-foreground">
 
       {/* ── Sticky header ── */}
       <header className="sticky top-0 z-30 bg-background border-b border-border md:border-0">
@@ -441,6 +497,8 @@ function EditForm({ biz, onBack, onLogout }: {
             <span className="text-sm font-semibold truncate max-w-[180px] text-foreground">{data.name}</span>
           </div>
           <div className="flex items-center gap-2">
+            <LangToggle />
+            <ThemeToggle />
             <AnimatePresence>
               {isDirty && (
                 <motion.button
@@ -454,7 +512,7 @@ function EditForm({ biz, onBack, onLogout }: {
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-[#0066cc] hover:opacity-90 disabled:opacity-60 text-white text-sm font-medium transition-colors"
                 >
                   {saving && <Loader2 size={13} className="animate-spin" />}
-                  {saving ? "Saving…" : "Save"}
+                  {saving ? (isAr ? "جارٍ الحفظ…" : "Saving…") : (isAr ? "حفظ" : "Save")}
                 </motion.button>
               )}
             </AnimatePresence>
@@ -467,18 +525,19 @@ function EditForm({ biz, onBack, onLogout }: {
               <DropdownMenu.Portal>
                 <DropdownMenu.Content align="end" sideOffset={8}
                   className="z-50 w-52 bg-card border border-border rounded-[6px] shadow-2xl overflow-hidden">
+                  <div dir={isAr ? "rtl" : "ltr"}>
                   <div className="p-2 flex flex-col gap-0.5">
                     <DropdownMenu.Item asChild>
                       <Link href={`https://${data.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`} target="_blank"
                         className="flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none">
-                        <ExternalLink size={15} className="shrink-0" /> Preview site
+                        <ExternalLink size={15} className="shrink-0" /> {isAr ? "معاينة الموقع" : "Preview site"}
                       </Link>
                     </DropdownMenu.Item>
                     <DropdownMenu.Item asChild>
                       <button onClick={save} disabled={saving}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none disabled:opacity-50">
                         {saving ? <Loader2 size={15} className="animate-spin shrink-0" /> : <Check size={15} className="shrink-0" />}
-                        {saving ? "Saving…" : saved ? "Saved!" : "Save changes"}
+                        {saving ? (isAr ? "جارٍ الحفظ…" : "Saving…") : saved ? (isAr ? "تم الحفظ!" : "Saved!") : (isAr ? "حفظ التغييرات" : "Save changes")}
                       </button>
                     </DropdownMenu.Item>
                   </div>
@@ -486,9 +545,10 @@ function EditForm({ biz, onBack, onLogout }: {
                     <DropdownMenu.Item asChild>
                       <button onClick={onLogout}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-red-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer outline-none">
-                        <LogOut size={15} className="shrink-0" /> Log out
+                        <LogOut size={15} className="shrink-0" /> {isAr ? "تسجيل الخروج" : "Log out"}
                       </button>
                     </DropdownMenu.Item>
+                  </div>
                   </div>
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
@@ -500,13 +560,13 @@ function EditForm({ biz, onBack, onLogout }: {
       {/* ── Mobile tab strip ── */}
       <div className="md:hidden sticky top-14 z-20 bg-background border-b border-border overflow-x-auto">
         <div className="flex gap-0.5 px-4 sm:px-6 py-1.5 w-max min-w-full">
-          {NAV.map(({ id, label, icon: Icon }) => (
+          {NAV.map(({ id, icon: Icon }) => (
             <button key={id} onClick={() => setActive(id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-xs whitespace-nowrap transition-colors ${
                 active === id ? "bg-secondary text-foreground font-medium" : "text-muted-foreground"
               }`}
             >
-              <Icon size={12} />{label}
+              <Icon size={12} />{NAV_LABELS[id][isAr ? "ar" : "en"]}
             </button>
           ))}
         </div>
@@ -518,23 +578,23 @@ function EditForm({ biz, onBack, onLogout }: {
         {/* ── Sidebar (desktop) ── */}
         <aside className="hidden md:block w-44 shrink-0">
           <nav className="sticky top-[calc(3.5rem+1px)] flex flex-col gap-0.5 pt-2">
-            {NAV.map(({ id, label, icon: Icon }) => (
+            {NAV.map(({ id, icon: Icon }) => (
               <button key={id} onClick={() => setActive(id)}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-sm transition-colors text-left w-full ${
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-sm transition-colors text-start w-full ${
                   active === id
                     ? "bg-secondary text-foreground font-medium"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 }`}
               >
-                <Icon size={15} className="shrink-0" />{label}
+                <Icon size={15} className="shrink-0" />{NAV_LABELS[id][isAr ? "ar" : "en"]}
               </button>
             ))}
             <div className="mt-3 pt-3 border-t border-border">
               <button
                 onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-sm text-red-400 hover:text-red-500 hover:bg-red-500/10 w-full transition-colors"
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-sm text-red-400 hover:text-red-500 hover:bg-red-500/10 w-full transition-colors text-start"
               >
-                <Trash2 size={15} className="shrink-0" /> Delete account
+                <Trash2 size={15} className="shrink-0" /> {isAr ? "حذف الحساب" : "Delete account"}
               </button>
             </div>
           </nav>
@@ -546,18 +606,18 @@ function EditForm({ biz, onBack, onLogout }: {
 
             {/* BRANDING */}
             {active === "branding" && <>
-              <Field label="Business name" value={data.name} onChange={(v) => update("name", v)} maxLength={20} placeholder="Your business name" />
+              <Field label={isAr ? "اسم النشاط التجاري" : "Business name"} value={data.name} onChange={(v) => update("name", v)} maxLength={20} placeholder={isAr ? "اسم نشاطك التجاري" : "Your business name"} />
               <Field
-                label="Tagline"
+                label={isAr ? "الشعار" : "Tagline"}
                 value={data.tagline}
                 onChange={(v) => update("tagline", v)}
-                placeholder="e.g. Best pizza in town since 1998"
+                placeholder={isAr ? "مثال: أفضل بيتزا في المدينة منذ 1998" : "e.g. Best pizza in town since 1998"}
                 maxLength={300} minLength={250}
                 aiLoading={aiLoading["tagline"]}
                 onAI={async () => { const v = await fillWithAI("tagline", "tagline", { name: data.name, category: data.category }); if (v) update("tagline", v); }}
               />
               <TextareaField
-                label="About description"
+                label={isAr ? "وصف النشاط" : "About description"}
                 value={data.description}
                 onChange={(v) => update("description", v)}
                 maxLength={400} minLength={350}
@@ -565,29 +625,29 @@ function EditForm({ biz, onBack, onLogout }: {
                 onAI={async () => { const v = await fillWithAI("description", "description", { name: data.name, category: data.category, tagline: data.tagline }); if (v) update("description", v); }}
               />
               <div>
-                <label className="block text-sm text-foreground mb-1.5">Category</label>
+                <label className="block text-sm text-foreground mb-1.5">{isAr ? "الفئة" : "Category"}</label>
                 <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.category || "—"}</div>
-                <p className="text-[10px] text-muted-foreground mt-1">Auto-set from Google Places · cannot be changed</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{isAr ? "محدد تلقائياً من Google · لا يمكن تغييره" : "Auto-set from Google Places · cannot be changed"}</p>
               </div>
             </>}
 
             {/* THEME */}
             {active === "theme" && <>
               <div>
-                <p className="text-sm text-foreground mb-2 font-medium">Mode</p>
+                <p className="text-sm text-foreground mb-2 font-medium">{isAr ? "المظهر" : "Mode"}</p>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => update("theme_color", `white-${currentAccent}`)}
                     className={`px-5 py-2 rounded-[6px] text-sm font-medium border transition-all ${isLight ? "bg-white text-gray-900 border-white shadow-sm" : "text-muted-foreground border-border hover:border-gray-500"}`}>
-                    Light
+                    {isAr ? "فاتح" : "Light"}
                   </button>
                   <button type="button" onClick={() => update("theme_color", currentAccent)}
                     className={`px-5 py-2 rounded-[6px] text-sm font-medium border transition-all ${!isLight ? "bg-secondary text-foreground border-gray-600" : "text-muted-foreground border-border hover:border-gray-500"}`}>
-                    Dark
+                    {isAr ? "داكن" : "Dark"}
                   </button>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-foreground mb-2 font-medium">Accent colour</p>
+                <p className="text-sm text-foreground mb-2 font-medium">{isAr ? "لون التمييز" : "Accent colour"}</p>
                 <div className="flex gap-2.5 flex-wrap">
                   {ACCENT_THEMES.map((t) => (
                     <button key={t} type="button"
@@ -601,13 +661,13 @@ function EditForm({ biz, onBack, onLogout }: {
                 </div>
               </div>
               <div>
-                <p className="text-sm text-foreground mb-2 font-medium">Corner roundness</p>
+                <p className="text-sm text-foreground mb-2 font-medium">{isAr ? "استدارة الزوايا" : "Corner roundness"}</p>
                 <div className="flex gap-2">
                   {([
-                    { value: "none", label: "Sharp",   radius: "0px" },
-                    { value: "md",   label: "Rounded", radius: "8px" },
-                    { value: "pill", label: "Pill",    radius: "9999px" },
-                  ] as const).map(({ value, label, radius }) => {
+                    { value: "none" as const, label: isAr ? "حاد"    : "Sharp",   radius: "0px" },
+                    { value: "md"   as const, label: isAr ? "مدور"   : "Rounded", radius: "8px" },
+                    { value: "pill" as const, label: isAr ? "كبسولي" : "Pill",    radius: "9999px" },
+                  ]).map(({ value, label, radius }) => {
                     const selected = (data.corner_radius || "md") === value;
                     return (
                       <button
@@ -635,7 +695,7 @@ function EditForm({ biz, onBack, onLogout }: {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm text-foreground font-medium">
-                    Gallery <span className="text-muted-foreground font-normal">({data.gallery.length} images)</span>
+                    {isAr ? "المعرض" : "Gallery"} <span className="text-muted-foreground font-normal">({data.gallery.length} {isAr ? "صور" : "images"})</span>
                   </p>
                   <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={(e) => handleGalleryUpload(e.target.files)} />
                   <button
@@ -644,11 +704,11 @@ function EditForm({ biz, onBack, onLogout }: {
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
                   >
                     {galleryUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                    {galleryUploading ? "Uploading…" : "Upload"}
+                    {galleryUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع" : "Upload")}
                   </button>
                 </div>
                 {data.gallery.length === 0 && !galleryUploading ? (
-                  <p className="text-sm text-muted-foreground">No gallery images.</p>
+                  <p className="text-sm text-muted-foreground">{isAr ? "لا توجد صور في المعرض." : "No gallery images."}</p>
                 ) : (
                   <div className="grid grid-cols-5 gap-1.5">
                     {data.gallery.map((url, i) => (
@@ -657,7 +717,7 @@ function EditForm({ biz, onBack, onLogout }: {
                           onClick={() => update("about_image", url)}
                           className="absolute inset-x-0 top-0 py-1 bg-[#0066cc]/90 text-white text-[9px] font-semibold z-10"
                         >
-                          About Us
+                          {isAr ? "من نحن" : "About Us"}
                         </button>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={url} alt={`gallery ${i + 1}`} className="w-full h-full object-cover" />
@@ -665,7 +725,7 @@ function EditForm({ biz, onBack, onLogout }: {
                           onClick={() => { deleteR2Image(url); update("gallery", data.gallery.filter((_, idx) => idx !== i)); }}
                           className="absolute inset-x-0 bottom-0 py-1 bg-red-600/90 text-white text-[9px] font-semibold z-10"
                         >
-                          Delete
+                          {isAr ? "حذف" : "Delete"}
                         </button>
                       </div>
                     ))}
@@ -676,7 +736,7 @@ function EditForm({ biz, onBack, onLogout }: {
               {/* About Us image */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-foreground font-medium">About Us image</p>
+                  <p className="text-sm text-foreground font-medium">{isAr ? "صورة من نحن" : "About Us image"}</p>
                   <input ref={aboutInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => handleAboutUpload(e.target.files)} />
                   <button
                     onClick={() => aboutInputRef.current?.click()}
@@ -684,7 +744,7 @@ function EditForm({ biz, onBack, onLogout }: {
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
                   >
                     {aboutUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                    {aboutUploading ? "Uploading…" : "Upload image"}
+                    {aboutUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع صورة" : "Upload image")}
                   </button>
                 </div>
                 {data.about_image ? (
@@ -695,11 +755,11 @@ function EditForm({ biz, onBack, onLogout }: {
                       onClick={() => { deleteR2Image(data.about_image); update("about_image", ""); }}
                       className="absolute inset-x-0 bottom-0 py-1.5 bg-red-600/90 text-white text-xs font-semibold"
                     >
-                      Delete
+                      {isAr ? "حذف" : "Delete"}
                     </button>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No about image. Upload one above.</p>
+                  <p className="text-sm text-muted-foreground">{isAr ? "لا توجد صورة. ارفع إحداها أعلاه." : "No about image. Upload one above."}</p>
                 )}
               </div>
             </>}
@@ -719,12 +779,12 @@ function EditForm({ biz, onBack, onLogout }: {
             {/* CONTACT */}
             {active === "contact" && (
               <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Phone" value={data.phone} onChange={(v) => update("phone", v)} placeholder="+1 234 567 8900" />
-                <Field label="Email" value={data.email} onChange={(v) => update("email", v)} placeholder="hello@yourbusiness.com" />
+                <Field label={isAr ? "الهاتف" : "Phone"} value={data.phone} onChange={(v) => update("phone", v)} placeholder="+1 234 567 8900" />
+                <Field label={isAr ? "البريد الإلكتروني" : "Email"} value={data.email} onChange={(v) => update("email", v)} placeholder="hello@yourbusiness.com" />
                 <div>
-                  <label className="text-sm text-foreground block mb-1.5">Address</label>
+                  <label className="text-sm text-foreground block mb-1.5">{isAr ? "العنوان" : "Address"}</label>
                   <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.address || "—"}</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">Set during registration · cannot be changed</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{isAr ? "محدد أثناء التسجيل · لا يمكن تغييره" : "Set during registration · cannot be changed"}</p>
                 </div>
                 <Field
                   label={<span className="flex items-center gap-1.5"><img src="/social-icons/whatsapp.png" alt="WhatsApp" width={14} height={14} className="object-contain" />WhatsApp</span>}
@@ -738,16 +798,16 @@ function EditForm({ biz, onBack, onLogout }: {
             {/* STATS */}
             {active === "stats" && (
               <div className="grid sm:grid-cols-3 gap-4">
-                <Field label="Years in business" value={data.stat_years} onChange={(v) => update("stat_years", v)} placeholder="e.g. 12+" />
+                <Field label={isAr ? "سنوات في العمل" : "Years in business"} value={data.stat_years} onChange={(v) => update("stat_years", v)} placeholder="e.g. 12+" />
                 <div>
-                  <label className="text-sm text-foreground block mb-1.5">Clients / Reviews</label>
+                  <label className="text-sm text-foreground block mb-1.5">{isAr ? "العملاء / التقييمات" : "Clients / Reviews"}</label>
                   <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.stat_clients || "—"}</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">Auto-fetched from Google Places</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{isAr ? "مجلوب تلقائياً من Google Places" : "Auto-fetched from Google Places"}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-foreground block mb-1.5">Rating</label>
+                  <label className="text-sm text-foreground block mb-1.5">{isAr ? "التقييم" : "Rating"}</label>
                   <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.stat_projects || "—"}</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">Auto-fetched from Google Places</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{isAr ? "مجلوب تلقائياً من Google Places" : "Auto-fetched from Google Places"}</p>
                 </div>
               </div>
             )}
@@ -757,11 +817,11 @@ function EditForm({ biz, onBack, onLogout }: {
               <div className="flex flex-col gap-3">
                 {DAYS.map((day) => (
                   <div key={day} className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground w-24 shrink-0">{day}</span>
+                    <span className="text-sm text-muted-foreground w-24 shrink-0">{isAr ? DAYS_AR[day] : day}</span>
                     <input
                       value={(data.hours as Record<string, string>)[day] ?? ""}
                       onChange={(e) => update("hours", { ...data.hours, [day]: e.target.value })}
-                      placeholder="9am – 6pm or Closed"
+                      placeholder={isAr ? "9ص – 6م أو مغلق" : "9am – 6pm or Closed"}
                       className="flex-1 bg-secondary border border-border rounded-[6px] px-3 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc]"
                     />
                   </div>
@@ -795,7 +855,7 @@ function EditForm({ biz, onBack, onLogout }: {
             {active === "reviews" && (
               <div className="flex flex-col gap-3">
                 {data.testimonials.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No reviews imported.</p>
+                  <p className="text-sm text-muted-foreground">{isAr ? "لم يتم استيراد أي تقييمات." : "No reviews imported."}</p>
                 ) : data.testimonials.map((t, i) => (
                   <motion.div key={i} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                     className="bg-secondary rounded-[6px] p-4 flex items-start justify-between gap-3">
@@ -814,7 +874,7 @@ function EditForm({ biz, onBack, onLogout }: {
                     </button>
                   </motion.div>
                 ))}
-                <p className="text-xs text-muted-foreground mt-1">Reviews imported from Google Maps · cannot be modified.</p>
+                <p className="text-xs text-muted-foreground mt-1">{isAr ? "التقييمات مستوردة من Google Maps · لا يمكن تعديلها." : "Reviews imported from Google Maps · cannot be modified."}</p>
               </div>
             )}
 
@@ -822,7 +882,7 @@ function EditForm({ biz, onBack, onLogout }: {
             <div className="md:hidden mt-6 pt-5 border-t border-border">
               <button onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
                 className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors">
-                <Trash2 size={15} /> Delete account
+                <Trash2 size={15} /> {isAr ? "حذف الحساب" : "Delete account"}
               </button>
             </div>
 
@@ -842,16 +902,16 @@ function EditForm({ biz, onBack, onLogout }: {
                 <div className="w-9 h-9 rounded-[4px] bg-amber-950/60 flex items-center justify-center shrink-0">
                   <AlertTriangle size={16} className="text-amber-400" />
                 </div>
-                <h3 className="font-semibold text-foreground">Unsaved changes</h3>
+                <h3 className="font-semibold text-foreground">{isAr ? "تغييرات غير محفوظة" : "Unsaved changes"}</h3>
               </div>
-              <p className="text-sm text-muted-foreground mb-5">You have unsaved changes. Save before leaving or discard them?</p>
+              <p className="text-sm text-muted-foreground mb-5">{isAr ? "لديك تغييرات غير محفوظة. هل تريد الحفظ قبل المغادرة أو تجاهلها؟" : "You have unsaved changes. Save before leaving or discard them?"}</p>
               <div className="flex gap-2">
                 <button onClick={() => setDiscardModal(null)}
-                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors">Stay</button>
+                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors">{isAr ? "البقاء" : "Stay"}</button>
                 <button onClick={() => { setDiscardModal(null); discardModal.onConfirm(); }}
-                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-muted-foreground hover:text-foreground transition-colors">Discard</button>
+                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-border text-sm text-muted-foreground hover:text-foreground transition-colors">{isAr ? "تجاهل" : "Discard"}</button>
                 <button onClick={async () => { await save(); setDiscardModal(null); discardModal.onConfirm(); }}
-                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-[#0066cc] hover:opacity-90 text-sm font-medium text-white transition-colors">Save & leave</button>
+                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-[#0066cc] hover:opacity-90 text-sm font-medium text-white transition-colors">{isAr ? "حفظ والمغادرة" : "Save & leave"}</button>
               </div>
             </motion.div>
           </motion.div>
@@ -868,23 +928,26 @@ function EditForm({ biz, onBack, onLogout }: {
                 <AlertTriangle size={18} className="text-red-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Delete your account?</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">This will permanently delete all your data.</p>
+                <h3 className="font-semibold text-foreground">{isAr ? "حذف حسابك؟" : "Delete your account?"}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{isAr ? "سيتم حذف جميع بياناتك بشكل دائم." : "This will permanently delete all your data."}</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              This action <strong className="text-foreground">cannot be undone</strong>. All your business pages and account data will be permanently erased.
+              {isAr
+                ? <>لا يمكن <strong className="text-foreground">التراجع عن هذا الإجراء</strong>. ستُمحى جميع صفحات أعمالك وبيانات حسابك بشكل نهائي.</>
+                : <>This action <strong className="text-foreground">cannot be undone</strong>. All your business pages and account data will be permanently erased.</>
+              }
             </p>
             <div className="mb-5">
               <label className="text-xs text-muted-foreground block mb-1.5">
-                Type <span className="font-mono font-semibold text-foreground">DELETE</span> to confirm
+                {isAr ? <>اكتب <span className="font-mono font-semibold text-foreground">DELETE</span> للتأكيد</> : <>Type <span className="font-mono font-semibold text-foreground">DELETE</span> to confirm</>}
               </label>
               <input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="DELETE"
                 className="w-full bg-secondary border border-border rounded-[6px] px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-red-500 transition-colors" />
             </div>
             <div className="flex gap-3">
               <button onClick={() => setDeleteModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors">Cancel</button>
+                className="flex-1 px-4 py-2.5 rounded-[4px] border border-border text-sm text-foreground hover:border-border/60 transition-colors">{isAr ? "إلغاء" : "Cancel"}</button>
               <button
                 disabled={deleteConfirm !== "DELETE" || deleteLoading}
                 onClick={async () => {
@@ -892,18 +955,18 @@ function EditForm({ biz, onBack, onLogout }: {
                   const res = await fetch("/api/delete-account", { method: "DELETE" });
                   if (!res.ok) {
                     const json = await res.json().catch(() => ({}));
-                    toast.error(json.error ?? "Failed to delete account");
+                    toast.error(json.error ?? (isAr ? "فشل حذف الحساب" : "Failed to delete account"));
                     setDeleteLoading(false);
                     return;
                   }
                   const supabase = (await import("@/lib/supabase/client")).createClient();
                   await supabase.auth.signOut();
-                  toast.success("Account deleted.");
-                  window.location.href = "/";
+                  toast.success(isAr ? "تم حذف الحساب." : "Account deleted.");
+                  window.location.href = `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`;
                 }}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-[4px] bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
               >
-                {deleteLoading ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14} /> Delete forever</>}
+                {deleteLoading ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14} /> {isAr ? "حذف نهائي" : "Delete forever"}</>}
               </button>
             </div>
           </motion.div>
@@ -911,6 +974,156 @@ function EditForm({ biz, onBack, onLogout }: {
       )}
 
     </div>
+  );
+}
+
+// ─── SLUG SETUP SCREEN ────────────────────────────────────────────────────────
+function SlugSetupScreen({ biz, onComplete }: { biz: Business; onComplete: () => void }) {
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
+  const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
+
+  const [slug, setSlug] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [available, setAvailable] = useState<boolean | null>(null);
+  const [availError, setAvailError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const checkTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isValidFormat = /^[a-z0-9]{4,30}$/.test(slug);
+
+  function handleChange(raw: string) {
+    const clean = raw.toLowerCase().replace(/[^a-z0-9]/g, "");
+    setSlug(clean);
+    setAvailable(null);
+    setAvailError("");
+    if (checkTimer.current) clearTimeout(checkTimer.current);
+    if (clean.length >= 4) {
+      setChecking(true);
+      checkTimer.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/set-slug?slug=${encodeURIComponent(clean)}`);
+          const json = await res.json();
+          setAvailable(json.available ?? false);
+          setAvailError(json.error ?? "");
+        } catch {
+          setAvailable(null);
+        } finally {
+          setChecking(false);
+        }
+      }, 500);
+    } else {
+      setChecking(false);
+    }
+  }
+
+  async function handleSave() {
+    if (!isValidFormat || available !== true || saving) return;
+    setSaving(true);
+    const res = await fetch("/api/set-slug", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ businessId: biz.id, slug }),
+    });
+    const json = await res.json();
+    setSaving(false);
+    if (!res.ok) {
+      toast.error(json.error ?? (isAr ? "فشل الحفظ" : "Failed to save"));
+      if (json.error?.includes("taken")) setAvailable(false);
+      return;
+    }
+    toast.success(isAr ? "تم تعيين رابط موقعك!" : "Site link saved!");
+    onComplete();
+  }
+
+  const statusNode = (() => {
+    if (slug.length === 0) return null;
+    if (slug.length < 4) return (
+      <span className="text-amber-400 text-xs">
+        {isAr ? `الحد الأدنى 4 أحرف (حالياً ${slug.length})` : `Min 4 characters (${slug.length} so far)`}
+      </span>
+    );
+    if (checking) return <span className="text-muted-foreground text-xs">{isAr ? "جارٍ التحقق…" : "Checking…"}</span>;
+    if (available === true) return <span className="text-emerald-500 text-xs">{isAr ? "متاح ✓" : "Available ✓"}</span>;
+    if (available === false) return (
+      <span className="text-red-500 text-xs">
+        {availError || (isAr ? "مستخدم بالفعل" : "Already taken")}
+      </span>
+    );
+    return null;
+  })();
+
+  const indicatorIcon = (() => {
+    if (slug.length < 4) return null;
+    if (checking) return <Loader2 size={13} className="animate-spin text-muted-foreground" />;
+    if (available === true) return <Check size={13} className="text-emerald-500" strokeWidth={2.5} />;
+    if (available === false) return <X size={13} className="text-red-500" strokeWidth={2.5} />;
+    return null;
+  })();
+
+  return (
+    <motion.div
+      dir={isAr ? "rtl" : "ltr"}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-background text-foreground flex flex-col"
+    >
+      <div className="flex items-center justify-end gap-2 px-6 py-4 border-b border-border">
+        <LangToggle />
+        <ThemeToggle />
+      </div>
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm">
+          <div className="bg-card border border-border rounded-[6px] p-8">
+            <h2 className="text-xl font-semibold mb-1">
+              {isAr ? "اختر رابط موقعك" : "Choose your site link"}
+            </h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              {isAr
+                ? "هذا هو العنوان الذي سيصل به العملاء إلى موقعك. لا يمكن تغييره لاحقاً."
+                : "This is the address your customers will visit. It cannot be changed later."}
+            </p>
+
+            <div className="mb-5">
+              <label className="text-sm text-foreground block mb-2">
+                {isAr ? "رابط الموقع" : "Site link"}
+              </label>
+              <div className="flex items-center border border-input rounded-[6px] overflow-hidden focus-within:border-[#0066cc] transition-colors bg-background">
+                <input
+                  value={slug}
+                  onChange={(e) => handleChange(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSave()}
+                  placeholder={isAr ? "اسمك" : "yourname"}
+                  maxLength={30}
+                  autoFocus
+                  className="flex-1 bg-transparent px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none min-w-0"
+                />
+                <div className="flex items-center gap-1.5 px-3 shrink-0 border-s border-input bg-secondary/40">
+                  {indicatorIcon}
+                  <span className="text-xs text-muted-foreground">.{ROOT_DOMAIN}</span>
+                </div>
+              </div>
+              <div className="mt-1.5 min-h-[18px]">{statusNode}</div>
+            </div>
+
+            {slug.length >= 4 && available === true && (
+              <div className="mb-5 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-[6px] text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                {isAr ? `موقعك: ${slug}.${ROOT_DOMAIN}` : `Your site: ${slug}.${ROOT_DOMAIN}`}
+              </div>
+            )}
+
+            <button
+              onClick={handleSave}
+              disabled={!isValidFormat || available !== true || saving}
+              className="w-full flex items-center justify-center gap-2 bg-[#0066cc] hover:opacity-90 disabled:opacity-40 text-white font-medium py-2.5 rounded-[4px] text-sm transition-colors"
+            >
+              {saving && <Loader2 size={14} className="animate-spin" />}
+              {isAr ? "حفظ الرابط" : "Save link"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -923,6 +1136,8 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
   aiLoading: Record<string, boolean>;
   onFillAI: (key: string, field: string, ctx: Record<string, string>) => Promise<string | undefined>;
 }) {
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
   function add() { onChange([...value, { title: "", description: "" }]); }
   function remove(i: number) { onChange(value.filter((_, idx) => idx !== i)); }
   function set(i: number, k: "title" | "description", v: string) {
@@ -933,33 +1148,33 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
       {value.length === 0 && (
         <div className="rounded-[6px] border border-dashed border-border px-5 py-8 flex flex-col items-center gap-2 text-center">
           <Layers size={20} className="text-muted-foreground/50" />
-          <p className="text-sm font-medium text-foreground">No services added yet</p>
-          <p className="text-xs text-muted-foreground">Add your services so customers know what you offer.</p>
+          <p className="text-sm font-medium text-foreground">{isAr ? "لم تتم إضافة خدمات بعد" : "No services added yet"}</p>
+          <p className="text-xs text-muted-foreground">{isAr ? "أضف خدماتك لإعلام العملاء بما تقدمه." : "Add your services so customers know what you offer."}</p>
         </div>
       )}
       {value.map((s, i) => (
         <div key={i} className="bg-secondary rounded-[6px] p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Service {i + 1}</span>
+            <span className="text-xs text-muted-foreground">{isAr ? `خدمة ${i + 1}` : `Service ${i + 1}`}</span>
             <button
               onClick={() => remove(i)}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-[6px] px-2 py-1 transition-colors"
             >
-              <Trash2 size={12} /> Remove
+              <Trash2 size={12} /> {isAr ? "إزالة" : "Remove"}
             </button>
           </div>
           <Field
-            label="Service name"
+            label={isAr ? "اسم الخدمة" : "Service name"}
             value={s.title}
             onChange={(v) => set(i, "title", v)}
-            placeholder="e.g. Custom Cakes"
+            placeholder={isAr ? "مثال: تصميم ويب" : "e.g. Custom Cakes"}
             maxLength={20}
           />
           <TextareaField
-            label="Description"
+            label={isAr ? "الوصف" : "Description"}
             value={s.description}
             onChange={(v) => set(i, "description", v)}
-            placeholder="Brief description..."
+            placeholder={isAr ? "وصف مختصر..." : "Brief description..."}
             maxLength={150}
             minLength={150}
             aiLoading={aiLoading[`svc_desc_${i}`]}
@@ -971,7 +1186,7 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
         </div>
       ))}
       <button onClick={add} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground bg-secondary hover:bg-secondary/80 border border-border rounded-[6px] px-4 py-2.5 w-fit transition-colors">
-        <Plus size={14} /> Add service
+        <Plus size={14} /> {isAr ? "إضافة خدمة" : "Add service"}
       </button>
     </div>
   );
@@ -983,6 +1198,8 @@ function Field({ label, value, onChange, placeholder, required, maxLength, minLe
   placeholder?: string; required?: boolean; maxLength?: number; minLength?: number;
   onAI?: () => void; aiLoading?: boolean;
 }) {
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
   const belowMin = minLength !== undefined && value.length > 0 && value.length < minLength;
   return (
     <div>
@@ -993,7 +1210,7 @@ function Field({ label, value, onChange, placeholder, required, maxLength, minLe
             <button type="button" onClick={onAI} disabled={aiLoading}
               className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#0066cc] hover:opacity-90 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50">
               {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
-              AI fill
+              {isAr ? "ملء بالذكاء الاصطناعي" : "AI fill"}
             </button>
           )}
           {maxLength && (
@@ -1020,6 +1237,8 @@ function TextareaField({ label, value, onChange, placeholder, maxLength, minLeng
   placeholder?: string; maxLength?: number; minLength?: number;
   onAI?: () => void; aiLoading?: boolean;
 }) {
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
   const belowMin = minLength !== undefined && value.length > 0 && value.length < minLength;
   const taRef = useRef<HTMLTextAreaElement>(null);
 
@@ -1039,7 +1258,7 @@ function TextareaField({ label, value, onChange, placeholder, maxLength, minLeng
             <button type="button" onClick={onAI} disabled={aiLoading}
               className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#0066cc] hover:opacity-90 rounded-[4px] px-2.5 py-1 transition-colors disabled:opacity-50">
               {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
-              AI fill
+              {isAr ? "ملء بالذكاء الاصطناعي" : "AI fill"}
             </button>
           )}
           {maxLength && (

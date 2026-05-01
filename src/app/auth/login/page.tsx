@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/lib/language";
+import { ThemeToggle } from "@/components/ThemeProvider";
 
 export default function LoginPage() {
   const supabase = createClient();
@@ -48,7 +49,7 @@ export default function LoginPage() {
           className="w-full max-w-sm"
         >
           <Link
-            href="/"
+            href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`}
             className="flex justify-center items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-foreground transition-colors mb-8"
           >
             {t.login.returnHome}
@@ -122,6 +123,9 @@ export default function LoginPage() {
         </motion.div>
       </div>
 
+      <div className="fixed bottom-5 right-5 z-50">
+        <ThemeToggle />
+      </div>
     </div>
   );
 }

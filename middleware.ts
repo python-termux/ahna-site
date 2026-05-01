@@ -25,10 +25,10 @@ export async function middleware(request: NextRequest) {
     // fall through to auth guard below
   }
 
-  // any other subdomain → user business site
+  // any other subdomain → user business site (but not temp/unconfirmed slugs)
   if (!isApex && !isApp && !isLocal && hostWithoutPort.endsWith(`.${ROOT_DOMAIN}`)) {
     const slug = hostWithoutPort.slice(0, -(ROOT_DOMAIN.length + 1));
-    if (slug && !pathname.startsWith("/site/")) {
+    if (slug && !slug.startsWith("_tmp_") && !pathname.startsWith("/site/")) {
       const url = request.nextUrl.clone();
       url.pathname = `/site/${slug}${pathname === "/" ? "" : pathname}`;
       return NextResponse.rewrite(url);

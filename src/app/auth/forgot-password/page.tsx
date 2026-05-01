@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
           className="w-full max-w-sm"
         >
           <Link
-            href="/"
+            href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`}
             className="flex justify-center items-center gap-1.5 text-xs text-gray-500 hover:text-foreground transition-colors mb-8"
           >
             {t.forgot.returnHome}
