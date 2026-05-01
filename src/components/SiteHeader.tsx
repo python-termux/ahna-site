@@ -143,7 +143,7 @@ export default function SiteHeader() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center hover:opacity-70 transition-opacity">
-          <span className="text-xl font-bold tracking-tight" style={{ color: "#0066cc" }}>{lang === "ar" ? "سوريا فلو" : "SyrFlow"}</span>
+          <span className="text-xl font-bold tracking-tight" style={{ color: "#0066cc" }}>{lang === "ar" ? "سوريا فلو" : "Syria flow"}</span>
         </Link>
 
         {/* Desktop nav */}
