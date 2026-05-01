@@ -233,12 +233,12 @@ export default function PricingPage() {
                 </div>
 
                 {plan.comingSoon ? (
-                  <div className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[9999px] font-medium mb-6 cursor-not-allowed select-none"
+                  <div className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[8px] font-medium mb-6 cursor-not-allowed select-none"
                     style={{ border: "1px solid rgba(16,185,129,0.4)", color: "#10b981" }}>
                     {plan.buttonText}
                   </div>
                 ) : slotsLeft === 0 ? (
-                  <button disabled className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[9999px] font-medium mb-6 border border-border bg-secondary text-muted-foreground opacity-50 cursor-not-allowed">
+                  <button disabled className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[8px] font-medium mb-6 border border-border bg-secondary text-muted-foreground opacity-50 cursor-not-allowed">
                     {t.pricing.fullyBooked}
                   </button>
                 ) : (
