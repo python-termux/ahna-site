@@ -35,6 +35,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // ── Redirect /site/[slug] → [slug].syrflow.com ────────────────────────────
+  if ((isApex || isApp) && pathname.startsWith("/site/")) {
+    const slug = pathname.split("/")[2];
+    if (slug) {
+      const url = request.nextUrl.clone();
+      url.hostname = `${slug}.${ROOT_DOMAIN}`;
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  }
+
   // ── Demo bypass ────────────────────────────────────────────────────────────
   if (request.cookies.get("shirka_demo")?.value === "1") {
     return NextResponse.next({ request });

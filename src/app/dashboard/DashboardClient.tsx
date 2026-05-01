@@ -117,7 +117,7 @@ export default function DashboardClient({ user, businesses }: {
               >
                 <div>
                   <p className="font-medium">{b.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">/site/{b.slug}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{b.slug}.{process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -127,7 +127,7 @@ export default function DashboardClient({ user, businesses }: {
                     <Pencil size={12} /> Edit
                   </button>
                   <Link
-                    href={`/site/${b.slug}`}
+                    href={`https://${b.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`}
                     target="_blank"
                     className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-[4px] px-3 py-1.5 transition-colors"
                   >
@@ -469,7 +469,7 @@ function EditForm({ biz, onBack, onLogout }: {
                   className="z-50 w-52 bg-card border border-border rounded-[6px] shadow-2xl overflow-hidden">
                   <div className="p-2 flex flex-col gap-0.5">
                     <DropdownMenu.Item asChild>
-                      <Link href={`/site/${data.slug}`} target="_blank"
+                      <Link href={`https://${data.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`} target="_blank"
                         className="flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none">
                         <ExternalLink size={15} className="shrink-0" /> Preview site
                       </Link>
