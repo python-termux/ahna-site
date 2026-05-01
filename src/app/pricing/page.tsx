@@ -244,8 +244,7 @@ export default function PricingPage() {
                 ) : (
                   <Link
                     href="/register"
-                    className="w-full flex items-center justify-center gap-2 py-2.5 font-medium transition-opacity hover:opacity-90 active:scale-95 mb-6"
-                    style={{ border: "1px solid #0066cc", color: "#0066cc", borderRadius: 8px }}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 font-medium transition-opacity hover:opacity-90 active:scale-95 mb-6 border border-[#0066cc] text-[#0066cc] rounded-[8px]"
                   >
                     {slotsLeft === null ? (
                       <span className="opacity-60">{t.pricing.loading}</span>
