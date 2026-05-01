@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { slugify } from "@/lib/slugify";
 import { getHeroImage, getImagesForCategory } from "@/lib/images";
 import { generateWhyUs } from "@/lib/why-us";
 import { NextResponse } from "next/server";
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
     ? body.gallery.filter((u: unknown) => typeof u === "string" && u.length < 1000)
     : getImagesForCategory(category).slice(1, 4);
 
-  const slug = await uniqueSlug(supabase, slugify(name));
+  const slug = `_tmp_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
   const whyUs = await generateWhyUs(name, category, body.testimonials ?? []);
 
   const { data, error } = await supabase

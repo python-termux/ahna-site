@@ -12,7 +12,7 @@ ALTER TABLE businesses
 ADD CONSTRAINT businesses_slug_format CHECK (
   slug ~ '^[a-z0-9]{4,30}$'
   OR
-  slug ~ '^_tmp_[a-z0-9]{6,12}$'
+  slug ~ '^_tmp_[a-z0-9]{8,20}$'
 );
 
 -- Step 3: Index for fast slug lookups

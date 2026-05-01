@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const slug = `_tmp_${Math.random().toString(36).slice(2, 10)}`;
+  const slug = `_tmp_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
   const whyUs = await generateWhyUs(place.name, place.category, place.reviews);
 
   const { data, error } = await supabase
