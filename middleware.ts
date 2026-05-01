@@ -46,6 +46,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // ── App routes on apex → redirect to app.syrflow.com ──────────────────────
+  const APP_ROUTES = ["/dashboard", "/auth", "/register"];
+  if (isApex && APP_ROUTES.some((r) => pathname.startsWith(r))) {
+    const url = request.nextUrl.clone();
+    url.hostname = `app.${ROOT_DOMAIN}`;
+    return NextResponse.redirect(url);
+  }
+
   // ── Demo bypass ────────────────────────────────────────────────────────────
   if (request.cookies.get("shirka_demo")?.value === "1") {
     return NextResponse.next({ request });
@@ -75,6 +83,7 @@ export async function middleware(request: NextRequest) {
 
   if (pathname.startsWith("/dashboard") && !user) {
     const url = request.nextUrl.clone();
+    url.hostname = `app.${ROOT_DOMAIN}`;
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
   }
