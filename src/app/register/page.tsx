@@ -661,11 +661,11 @@ export default function RegisterPage() {
                     <div className="p-4 pt-3">
                       <div className="flex items-center gap-1.5 mb-2">
                         {source === "facebook" ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#1877F2]/10 text-[#1877F2]">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-[4px] bg-[#1877F2]/10 text-[#1877F2]">
                             <FBIcon size={10} /> Facebook Page
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#0066cc]/10 text-[#0066cc]">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-[4px] bg-[#0066cc]/10 text-[#0066cc]">
                             <MapPin size={10} /> Google Maps
                           </span>
                         )}

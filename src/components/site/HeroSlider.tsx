@@ -58,13 +58,13 @@ export default function HeroSlider({ images }: { images: string[] }) {
         <>
           <button
             onClick={() => go((idx - 1 + images.length) % images.length)}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-[6px] flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <ChevronLeft size={18} />
           </button>
           <button
             onClick={() => go((idx + 1) % images.length)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-[6px] flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <ChevronRight size={18} />
           </button>
@@ -78,7 +78,7 @@ export default function HeroSlider({ images }: { images: string[] }) {
             <button
               key={i}
               onClick={() => go(i)}
-              className={`rounded-full transition-all duration-300 ${
+              className={`rounded-[2px] transition-all duration-300 ${
                 i === idx ? "w-5 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/40 hover:bg-white/70"
               }`}
             />

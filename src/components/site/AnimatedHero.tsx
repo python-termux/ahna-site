@@ -59,7 +59,7 @@ export default function AnimatedHero({
           {category && (
             <motion.span
               variants={item}
-              className={`inline-block text-xs font-medium ${themeText} ${themeAccent} border ${themeBorder} px-3 py-1 rounded-full mb-4`}
+              className={`inline-block text-xs font-medium ${themeText} ${themeAccent} border ${themeBorder} px-3 py-1 site-btn mb-4`}
             >
               {category}
             </motion.span>

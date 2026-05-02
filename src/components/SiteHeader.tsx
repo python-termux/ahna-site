@@ -268,7 +268,7 @@ export default function SiteHeader() {
 
               <div className="h-px bg-accent my-6" />
 
-              <div className="flex items-center border border-input rounded-[9999px] overflow-hidden">
+              <div className="flex items-center border border-input rounded-[8px] overflow-hidden">
                 <Link
                   href="/auth/login"
                   className="flex-1 text-center px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
