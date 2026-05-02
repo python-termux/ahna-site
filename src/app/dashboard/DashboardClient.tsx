@@ -2,13 +2,14 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useRateLimit } from "@/lib/use-rate-limit";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
   MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
-  BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User as UserIcon,
+  BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User, Link2,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
@@ -46,7 +47,7 @@ const NAV = [
   { id: "hours",     icon: Clock     },
   { id: "social",    icon: Share2    },
   { id: "reviews",   icon: Star      },
-  { id: "account",   icon: UserIcon  },
+  { id: "account",   icon: User      },
 ] as const;
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -74,6 +75,50 @@ const NAV_DESCS: Record<string, { en: string; ar: string }> = {
   reviews:  { en: "Google reviews",              ar: "تقييمات غوغل"                   },
   account:  { en: "Password & danger zone",       ar: "كلمة المرور والإعدادات الحساسة"},
 };
+
+// ─── Dynamic section label based on category ─────────────────────────────────
+function getSectionMeta(category: string) {
+  const c = (category ?? "").toLowerCase();
+  if (/restaurant|cafe|coffee|pizza|bakery|food|dining|burger|sushi|مطعم|كافيه|مقهى|بيتزا|شاورما|فلافل/.test(c)) {
+    return {
+      en: { label: "Menu",      desc: "Dishes, drinks & offerings",     item: "item",    addItem: "Add item",     noItems: "No menu items yet",     noItemsDesc: "Add your menu items so customers know what you serve." },
+      ar: { label: "قائمة الطعام", desc: "الأطباق والمشروبات",          item: "عنصر",   addItem: "إضافة عنصر",   noItems: "لم تتم إضافة عناصر بعد", noItemsDesc: "أضف عناصر قائمتك لإعلام العملاء بما تقدمه." },
+    };
+  }
+  if (/retail|shop|store|boutique|fashion|clothing|market|pharmacy|متجر|بقالة|صيدلية|ملابس/.test(c)) {
+    return {
+      en: { label: "Products",  desc: "Items you sell",                  item: "product", addItem: "Add product",  noItems: "No products added yet",  noItemsDesc: "Add your products so customers know what you sell." },
+      ar: { label: "المنتجات", desc: "المنتجات المعروضة",                item: "منتج",   addItem: "إضافة منتج",   noItems: "لم تتم إضافة منتجات بعد", noItemsDesc: "أضف منتجاتك لإعلام العملاء بما تعرضه." },
+    };
+  }
+  if (/hotel|resort|motel|accommodation|فندق|منتجع|شقق/.test(c)) {
+    return {
+      en: { label: "Amenities", desc: "Rooms & facilities",              item: "amenity", addItem: "Add amenity",  noItems: "No amenities added yet", noItemsDesc: "Add your rooms and facilities." },
+      ar: { label: "المرافق",  desc: "الغرف والمرافق",                  item: "مرفق",   addItem: "إضافة مرفق",   noItems: "لم تتم إضافة مرافق بعد", noItemsDesc: "أضف غرفك ومرافقك." },
+    };
+  }
+  return {
+    en: { label: "Services",  desc: "What you offer",                   item: "service", addItem: "Add service",  noItems: "No services added yet",  noItemsDesc: "Add your services so customers know what you offer." },
+    ar: { label: "الخدمات",  desc: "الخدمات التي تقدمها",               item: "خدمة",   addItem: "إضافة خدمة",   noItems: "لم تتم إضافة خدمات بعد", noItemsDesc: "أضف خدماتك لإعلام العملاء بما تقدمه." },
+  };
+}
+
+// ─── Page completion percentage ───────────────────────────────────────────────
+function calcCompletion(data: Business): number {
+  const checks = [
+    (data.name?.trim().length ?? 0) > 0,
+    (data.tagline?.trim().length ?? 0) >= 250,
+    (data.description?.trim().length ?? 0) >= 350,
+    (data.gallery?.length ?? 0) > 0,
+    (data.about_image?.trim().length ?? 0) > 0,
+    (data.services?.length ?? 0) > 0,
+    (data.phone?.trim().length ?? 0) > 0,
+    (data.email?.trim().length ?? 0) > 0,
+    Object.values(data.hours ?? {}).some((v) => (v as string)?.trim()),
+    Object.values(data.social ?? {}).some((v) => (v as string)?.trim()),
+  ];
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+}
 
 function LangToggle() {
   const { lang, setLang } = useLanguage();
@@ -142,6 +187,7 @@ export default function DashboardClient({ user, businesses }: {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
+        dir="ltr"
         className="border-b border-border px-6 py-4 flex items-center justify-between max-w-6xl mx-auto"
       >
         <span className="font-bold text-lg">syrflow.com</span>
@@ -344,7 +390,9 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [discardModal, setDiscardModal] = useState<{ onConfirm: () => void } | null>(null);
+  const { isLimited, label: rlLabel, handle429 } = useRateLimit();
 
   const isDirty = JSON.stringify(data) !== savedSnapshot.current;
 
@@ -363,6 +411,17 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
   }
 
   function update(k: keyof Business, v: unknown) { setData((d) => ({ ...d, [k]: v })); }
+
+  async function resetPassword() {
+    setResetLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+    setResetLoading(false);
+    if (error) toast.error(isAr ? "فشل إرسال رابط إعادة التعيين" : "Failed to send reset link");
+    else toast.success(isAr ? "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني" : "Password reset link sent to your email");
+  }
 
   async function deleteR2Image(url: string) {
     if (!url.startsWith(process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? "https://pub-90d3e7f40c0c4f5d8a8289b088e8d7f7.r2.dev")) return;
@@ -397,12 +456,19 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
     }
   }
 
+  const R2_BASE = process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? "https://pub-90d3e7f40c0c4f5d8a8289b088e8d7f7.r2.dev";
+  const uploadedImageCount = data.gallery.filter((u) => u.startsWith(R2_BASE)).length;
+
   async function handleGalleryUpload(files: FileList | null) {
     if (!files || files.length === 0) return;
+    if (uploadedImageCount >= 5) {
+      toast.error(isAr ? "الحد الأقصى 5 صور مرفوعة — احذف صورة لرفع أخرى" : "Max 5 uploaded images — delete one to upload a new one");
+      return;
+    }
     setGalleryUploading(true);
     const uploaded: string[] = [];
     for (const file of Array.from(files)) {
-      if (data.gallery.length + uploaded.length >= 30) break;
+      if (uploadedImageCount + uploaded.length >= 5) break;
       try {
         const res = await fetch("/api/upload", {
           method: "POST",
@@ -438,10 +504,15 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
         body: JSON.stringify({ field, context }),
       });
       const json = await res.json();
+      if (res.status === 429) {
+        handle429(json.retryAfter ?? 60);
+        toast.error(isAr ? `محاولات كثيرة — انتظر ${rlLabel}` : `AI rate limited — wait ${rlLabel}`);
+        return;
+      }
       if (!res.ok) { toast.error(json.error ?? "AI failed"); return; }
       return json.value as string;
     } catch {
-      toast.error("AI request failed");
+      toast.error(isAr ? "فشل الاتصال بالخادم" : "Request failed");
     } finally {
       setAiLoading((s) => ({ ...s, [key]: false }));
     }
@@ -484,7 +555,10 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
     });
     const json = await res.json();
     setSaving(false);
-    if (!res.ok) {
+    if (res.status === 429) {
+      handle429(json.retryAfter ?? 60);
+      toast.error(isAr ? `محاولات كثيرة — انتظر ${rlLabel}` : `Too many saves — wait ${rlLabel}`, { id });
+    } else if (!res.ok) {
       toast.error(json.error ?? (isAr ? "فشل الحفظ" : "Failed to save"), { id });
     } else {
       toast.success(isAr ? "تم حفظ التغييرات!" : "Changes saved!", { id });
@@ -499,27 +573,53 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
     ? data.theme_color.slice(6)
     : data.theme_color === "white" ? "indigo" : (data.theme_color || "indigo");
 
+  const sectionMeta = getSectionMeta(data.category);
+  const sectionLang = sectionMeta[isAr ? "ar" : "en"];
+  const completion = calcCompletion(data);
+
   return (
     <div dir={isAr ? "rtl" : "ltr"} className="min-h-screen bg-background text-foreground">
 
       {/* ── Sticky header ── */}
-      <header className="sticky top-0 z-30 bg-background border-b border-border md:border-0">
+      <header dir="ltr" className="sticky top-0 z-30 bg-background border-b border-border md:border-0">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between md:border-b md:border-border">
-          <div className="flex items-center gap-3">
-            {onBack ? (
-              <button onClick={tryBack} className="text-muted-foreground hover:text-foreground transition-colors">
-                <X size={18} />
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Mobile: section view — back to card list */}
+            {mobileView === "section" && (
+              <button
+                onClick={() => setMobileView("list")}
+                className="md:hidden flex items-center gap-1.5 text-sm font-semibold text-foreground truncate max-w-[200px]"
+              >
+                {isAr ? <ArrowRight size={16} className="shrink-0" /> : <ArrowLeft size={16} className="shrink-0" />}
+                {active === "services" ? sectionLang.label : NAV_LABELS[active]?.[isAr ? "ar" : "en"]}
               </button>
-            ) : (
-              <span className="font-bold text-sm">syrflow</span>
             )}
-            <span className="text-sm font-semibold truncate max-w-[180px] text-foreground">{data.name}</span>
+            {/* Desktop + mobile list view — business name */}
+            <div className={`flex items-center gap-3 ${mobileView === "section" ? "hidden md:flex" : "flex"}`}>
+              {onBack && (
+                <button onClick={tryBack} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <X size={18} />
+                </button>
+              )}
+              <span className="text-sm font-semibold truncate max-w-[200px] text-foreground">{data.name}</span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <LangToggle />
-            <ThemeToggle />
+            {/* Desktop completion indicator */}
+            <div className="hidden md:flex items-center gap-2 me-1">
+              <div className="w-16 bg-secondary rounded-full h-1.5 overflow-hidden">
+                <div className="h-full rounded-full bg-[#0066cc] transition-all duration-500" style={{ width: `${completion}%` }} />
+              </div>
+              <span className="text-xs text-muted-foreground font-medium">{completion}%</span>
+            </div>
+            <Tooltip tip={isAr ? "تبديل لغة لوحة التحكم" : "Switch dashboard language"} side="bottom">
+              <LangToggle />
+            </Tooltip>
+            <Tooltip tip={isAr ? "تبديل الوضع الفاتح/الداكن" : "Toggle light/dark mode"} side="bottom">
+              <ThemeToggle />
+            </Tooltip>
             <AnimatePresence>
-              {isDirty && (
+              {(isDirty || isLimited) && (
                 <motion.button
                   key="save-btn"
                   initial={{ opacity: 0, scale: 0.85, x: 10 }}
@@ -527,11 +627,11 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                   exit={{ opacity: 0, scale: 0.85, x: 10 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
                   onClick={save}
-                  disabled={saving}
+                  disabled={saving || isLimited}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-[#0066cc] hover:opacity-90 disabled:opacity-60 text-white text-sm font-medium transition-colors"
                 >
                   {saving && <Loader2 size={13} className="animate-spin" />}
-                  {saving ? (isAr ? "جارٍ الحفظ…" : "Saving…") : (isAr ? "حفظ" : "Save")}
+                  {saving ? (isAr ? "جارٍ الحفظ…" : "Saving…") : isLimited ? rlLabel : (isAr ? "حفظ" : "Save")}
                 </motion.button>
               )}
             </AnimatePresence>
@@ -551,6 +651,21 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                         className="flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none">
                         <ExternalLink size={15} className="shrink-0" /> {isAr ? "معاينة الموقع" : "Preview site"}
                       </Link>
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item asChild onSelect={(e) => e.preventDefault()}>
+                      <button
+                        onClick={() => {
+                          const url = `https://${data.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`;
+                          navigator.clipboard.writeText(url).then(() => {
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          });
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none"
+                      >
+                        {copied ? <Check size={15} className="shrink-0 text-emerald-500" /> : <Link2 size={15} className="shrink-0" />}
+                        {copied ? (isAr ? "تم النسخ!" : "Copied!") : (isAr ? "نسخ الرابط" : "Copy link")}
+                      </button>
                     </DropdownMenu.Item>
                     <DropdownMenu.Item asChild>
                       <button onClick={save} disabled={saving}
@@ -576,46 +691,65 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
         </div>
       </header>
 
-      {/* ── Mobile tab strip ── */}
-      <div className="md:hidden sticky top-14 z-20 bg-background border-b border-border overflow-x-auto">
-        <div className="flex gap-0.5 px-4 sm:px-6 py-1.5 w-max min-w-full">
-          {NAV.map(({ id, icon: Icon }) => (
-            <button key={id} onClick={() => setActive(id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-xs whitespace-nowrap transition-colors ${
-                active === id ? "bg-secondary text-foreground font-medium" : "text-muted-foreground"
-              }`}
-            >
-              <Icon size={12} />{NAV_LABELS[id][isAr ? "ar" : "en"]}
-            </button>
-          ))}
+      {/* ── Mobile card grid (list view) ── */}
+      {mobileView === "list" && (
+        <div className="md:hidden px-4 pt-5 pb-24">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4 px-1">
+            {isAr ? "الإعدادات" : "Settings"}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {NAV.map(({ id, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => { setActive(id); setMobileView("section"); }}
+                className={`bg-card border rounded-[8px] p-4 text-start flex flex-col gap-3 transition-all active:scale-[0.97] ${
+                  id === "account"
+                    ? "border-red-500/20 hover:border-red-500/40"
+                    : "border-border hover:border-border/60"
+                }`}
+              >
+                <div className={`w-9 h-9 rounded-[6px] flex items-center justify-center ${
+                  id === "account" ? "bg-red-500/10" : "bg-[#0066cc]/10"
+                }`}>
+                  <Icon size={18} className={id === "account" ? "text-red-400" : "text-[#0066cc]"} />
+                </div>
+                <div>
+                  <p className={`font-semibold text-sm ${id === "account" ? "text-red-400" : "text-foreground"}`}>
+                    {id === "services" ? sectionLang.label : NAV_LABELS[id][isAr ? "ar" : "en"]}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                    {id === "services" ? sectionLang.desc : NAV_DESCS[id][isAr ? "ar" : "en"]}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Two-column body ── */}
-      <div className="max-w-6xl mx-auto flex px-4 sm:px-6 py-6 sm:py-8 gap-6 lg:gap-10">
+      <div className={`max-w-6xl mx-auto flex px-4 sm:px-6 py-6 sm:py-8 pb-24 md:pb-8 gap-6 lg:gap-10 ${mobileView === "list" ? "hidden md:flex" : "flex"}`}>
 
         {/* ── Sidebar (desktop) ── */}
         <aside className="hidden md:block w-44 shrink-0">
           <nav className="sticky top-[calc(3.5rem+1px)] flex flex-col gap-0.5 pt-2">
             {NAV.map(({ id, icon: Icon }) => (
-              <button key={id} onClick={() => setActive(id)}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-sm transition-colors text-start w-full ${
-                  active === id
-                    ? "bg-secondary text-foreground font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                }`}
-              >
-                <Icon size={15} className="shrink-0" />{NAV_LABELS[id][isAr ? "ar" : "en"]}
-              </button>
+              <Tooltip key={id} tip={NAV_DESCS[id][isAr ? "ar" : "en"]} side="right">
+                <button onClick={() => setActive(id)}
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-sm transition-colors text-start w-full ${
+                    active === id
+                      ? id === "account"
+                        ? "bg-red-500/10 text-red-400 font-medium"
+                        : "bg-secondary text-foreground font-medium"
+                      : id === "account"
+                        ? "text-red-400/70 hover:text-red-400 hover:bg-red-500/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  }`}
+                >
+                  <Icon size={15} className="shrink-0" />{id === "services" ? sectionLang.label : NAV_LABELS[id][isAr ? "ar" : "en"]}
+                </button>
+              </Tooltip>
             ))}
-            <div className="mt-3 pt-3 border-t border-border">
-              <button
-                onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-sm text-red-400 hover:text-red-500 hover:bg-red-500/10 w-full transition-colors text-start"
-              >
-                <Trash2 size={15} className="shrink-0" /> {isAr ? "حذف الحساب" : "Delete account"}
-              </button>
-            </div>
           </nav>
         </aside>
 
@@ -625,7 +759,8 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
 
             {/* BRANDING */}
             {active === "branding" && <>
-              <Field label={isAr ? "اسم النشاط التجاري" : "Business name"} value={data.name} onChange={(v) => update("name", v)} maxLength={20} placeholder={isAr ? "اسم نشاطك التجاري" : "Your business name"} />
+              <Field label={isAr ? "اسم النشاط التجاري" : "Business name"} value={data.name} onChange={(v) => update("name", v)} maxLength={20} placeholder={isAr ? "اسم نشاطك التجاري" : "Your business name"}
+                hint={isAr ? "يظهر في أعلى صفحتك (حد أقصى 20 حرفاً)" : "Displayed at the top of your site (max 20 chars)"} />
               <Field
                 label={isAr ? "الشعار" : "Tagline"}
                 value={data.tagline}
@@ -634,6 +769,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                 maxLength={300} minLength={250}
                 aiLoading={aiLoading["tagline"]}
                 onAI={async () => { const v = await fillWithAI("tagline", "tagline", { name: data.name, category: data.category }); if (v) update("tagline", v); }}
+                hint={isAr ? "جملة جذابة تحت الاسم — بين 250 و300 حرف" : "Catchy one-liner below your name — 250 to 300 chars"}
               />
               <TextareaField
                 label={isAr ? "وصف النشاط" : "About description"}
@@ -642,6 +778,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                 maxLength={400} minLength={350}
                 aiLoading={aiLoading["description"]}
                 onAI={async () => { const v = await fillWithAI("description", "description", { name: data.name, category: data.category, tagline: data.tagline }); if (v) update("description", v); }}
+                hint={isAr ? "فقرة قسم 'من نحن' — بين 350 و400 حرف" : "Your About section paragraph — 350 to 400 chars"}
               />
               <div>
                 <label className="block text-sm text-foreground mb-1.5">{isAr ? "الفئة" : "Category"}</label>
@@ -693,14 +830,10 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                         key={value}
                         type="button"
                         onClick={() => update("corner_radius", value)}
-                        className={`flex flex-col items-center gap-1.5 px-4 py-2.5 border transition-all ${selected ? "border-[#0066cc] bg-[#0066cc]/5 text-[#0066cc]" : "border-border text-muted-foreground hover:border-border/70"}`}
-                        style={{ borderRadius: "8px" }}
+                        className={`px-5 py-2 text-sm font-medium border transition-all ${selected ? "border-[#0066cc] bg-[#0066cc]/10 text-[#0066cc]" : "border-border text-muted-foreground hover:border-border/70"}`}
+                        style={{ borderRadius: radius }}
                       >
-                        <div
-                          className={`w-10 h-6 border-2 ${selected ? "border-[#0066cc]" : "border-current"}`}
-                          style={{ borderRadius: radius === "9999px" ? "9999px" : radius }}
-                        />
-                        <span className="text-xs font-medium">{label}</span>
+                        {label}
                       </button>
                     );
                   })}
@@ -717,15 +850,20 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                     {isAr ? "المعرض" : "Gallery"} <span className="text-muted-foreground font-normal">({data.gallery.length} {isAr ? "صور" : "images"})</span>
                   </p>
                   <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={(e) => handleGalleryUpload(e.target.files)} />
-                  <button
-                    onClick={() => galleryInputRef.current?.click()}
-                    disabled={galleryUploading || data.gallery.length >= 30}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
-                  >
-                    {galleryUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                    {galleryUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع" : "Upload")}
-                  </button>
+                  <Tooltip tip={isAr ? "حتى 5 صور مرفوعة (JPEG, PNG, WebP)" : "Up to 5 uploaded images — JPEG, PNG or WebP"} side="bottom">
+                    <button
+                      onClick={() => galleryInputRef.current?.click()}
+                      disabled={galleryUploading || uploadedImageCount >= 5}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
+                    >
+                      {galleryUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                      {galleryUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع" : "Upload")}
+                    </button>
+                  </Tooltip>
                 </div>
+                {uploadedImageCount >= 5 && (
+                  <p className="text-xs text-amber-500 mb-2">{isAr ? "وصلت لحد الرفع (5 صور) — احذف صورة لرفع أخرى." : "Upload limit reached (5) — delete one to upload a new one."}</p>
+                )}
                 {data.gallery.length === 0 && !galleryUploading ? (
                   <p className="text-sm text-muted-foreground">{isAr ? "لا توجد صور في المعرض." : "No gallery images."}</p>
                 ) : (
@@ -757,14 +895,16 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm text-foreground font-medium">{isAr ? "صورة من نحن" : "About Us image"}</p>
                   <input ref={aboutInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => handleAboutUpload(e.target.files)} />
-                  <button
-                    onClick={() => aboutInputRef.current?.click()}
-                    disabled={aboutUploading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
-                  >
-                    {aboutUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                    {aboutUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع صورة" : "Upload image")}
-                  </button>
+                  <Tooltip tip={isAr ? "صورة قسم 'من نحن' في موقعك" : "Photo shown in your About Us section"} side="bottom">
+                    <button
+                      onClick={() => aboutInputRef.current?.click()}
+                      disabled={aboutUploading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
+                    >
+                      {aboutUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                      {aboutUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع صورة" : "Upload image")}
+                    </button>
+                  </Tooltip>
                 </div>
                 {data.about_image ? (
                   <div className="relative w-full h-36 rounded-[6px] overflow-hidden">
@@ -790,6 +930,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                 onChange={(v) => update("services", v)}
                 bizName={data.name}
                 bizCategory={data.category}
+                sectionLang={sectionLang}
                 aiLoading={aiLoading}
                 onFillAI={fillWithAI}
               />
@@ -798,8 +939,10 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
             {/* CONTACT */}
             {active === "contact" && (
               <div className="grid sm:grid-cols-2 gap-4">
-                <Field label={isAr ? "الهاتف" : "Phone"} value={data.phone} onChange={(v) => update("phone", v)} placeholder="+1 234 567 8900" />
-                <Field label={isAr ? "البريد الإلكتروني" : "Email"} value={data.email} onChange={(v) => update("email", v)} placeholder="hello@yourbusiness.com" />
+                <Field label={isAr ? "الهاتف" : "Phone"} value={data.phone} onChange={(v) => update("phone", v)} placeholder="+1 234 567 8900"
+                  hint={isAr ? "يظهر كزر اتصال مباشر في موقعك" : "Shown as a tap-to-call button on your site"} />
+                <Field label={isAr ? "البريد الإلكتروني" : "Email"} value={data.email} onChange={(v) => update("email", v)} placeholder="hello@yourbusiness.com"
+                  hint={isAr ? "بريد التواصل المعروض في موقعك" : "Contact email displayed on your site"} />
                 <div>
                   <label className="text-sm text-foreground block mb-1.5">{isAr ? "العنوان" : "Address"}</label>
                   <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.address || "—"}</div>
@@ -810,6 +953,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                   value={(data.social as Record<string, string>).whatsapp ?? ""}
                   onChange={(v) => update("social", { ...data.social, whatsapp: v })}
                   placeholder="+1234567890"
+                  hint={isAr ? "يضيف زر دردشة واتساب في موقعك" : "Adds a WhatsApp chat button on your site"}
                 />
               </div>
             )}
@@ -817,7 +961,8 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
             {/* STATS */}
             {active === "stats" && (
               <div className="grid sm:grid-cols-3 gap-4">
-                <Field label={isAr ? "سنوات في العمل" : "Years in business"} value={data.stat_years} onChange={(v) => update("stat_years", v)} placeholder="e.g. 12+" />
+                <Field label={isAr ? "سنوات في العمل" : "Years in business"} value={data.stat_years} onChange={(v) => update("stat_years", v)} placeholder="e.g. 12+"
+                  hint={isAr ? "إحصائية بارزة في موقعك، مثل: 12+" : "Shown as a highlight stat on your site, e.g. 12+"} />
                 <div>
                   <label className="text-sm text-foreground block mb-1.5">{isAr ? "العملاء / التقييمات" : "Clients / Reviews"}</label>
                   <div className="w-full bg-secondary/50 border border-border/40 rounded-[6px] px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed select-none">{data.stat_clients || "—"}</div>
@@ -840,7 +985,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                     <input
                       value={(data.hours as Record<string, string>)[day] ?? ""}
                       onChange={(e) => update("hours", { ...data.hours, [day]: e.target.value })}
-                      placeholder={isAr ? "9ص – 6م أو مغلق" : "9am – 6pm or Closed"}
+                      placeholder={isAr ? "مثال: 09:00 صباحاً – 06:00 مساءً  أو  مغلق" : "e.g. 9:00 AM – 6:00 PM  or  Closed"}
                       className="flex-1 bg-secondary border border-border rounded-[6px] px-3 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc]"
                     />
                   </div>
@@ -864,6 +1009,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                       value={(data.social as Record<string, string>)[k] ?? ""}
                       onChange={(v) => update("social", { ...data.social, [k]: v })}
                       placeholder={`https://${k}.com/yourpage`}
+                      hint={isAr ? "الرابط الكامل لملفك الشخصي — يظهر كأيقونة في موقعك" : "Full profile URL — shown as an icon link on your site"}
                     />
                   );
                 })}
@@ -897,13 +1043,56 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
               </div>
             )}
 
-            {/* Mobile: delete account */}
-            <div className="md:hidden mt-6 pt-5 border-t border-border">
-              <button onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
-                className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors">
-                <Trash2 size={15} /> {isAr ? "حذف الحساب" : "Delete account"}
-              </button>
-            </div>
+            {/* ACCOUNT */}
+            {active === "account" && (
+              <div className="flex flex-col gap-4">
+                {/* Email info */}
+                <div className="bg-secondary/50 border border-border/40 rounded-[8px] px-4 py-3 flex items-center gap-2">
+                  <User size={14} className="text-muted-foreground shrink-0" />
+                  <span className="text-sm text-muted-foreground truncate">{userEmail}</span>
+                </div>
+
+                {/* Reset password */}
+                <div className="bg-card border border-border rounded-[8px] p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm text-foreground">{isAr ? "إعادة تعيين كلمة المرور" : "Reset password"}</p>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {isAr ? "سيتم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني" : "A reset link will be sent to your email address"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={resetPassword}
+                      disabled={resetLoading}
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-border rounded-[6px] text-foreground hover:bg-secondary transition-colors whitespace-nowrap disabled:opacity-50 shrink-0"
+                    >
+                      {resetLoading ? <Loader2 size={12} className="animate-spin" /> : <KeyRound size={12} />}
+                      {isAr ? "إرسال رابط" : "Send link"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Delete account */}
+                <div className="bg-card border border-red-500/20 rounded-[8px] p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm text-red-400">{isAr ? "حذف الحساب" : "Delete account"}</p>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {isAr
+                          ? "سيتم حذف حسابك وجميع صفحات أعمالك بشكل نهائي. لا يمكن التراجع عن هذا الإجراء."
+                          : "Permanently delete your account and all business pages. This cannot be undone."}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => { setDeleteModal(true); setDeleteConfirm(""); }}
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-red-500/30 rounded-[6px] text-red-400 hover:bg-red-500/10 transition-colors whitespace-nowrap shrink-0"
+                    >
+                      <Trash2 size={12} /> {isAr ? "حذف" : "Delete"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
           </div>
         </main>
@@ -936,6 +1125,15 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Mobile completion bar (fixed bottom) ── */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-20 bg-background/95 backdrop-blur border-t border-border px-5 py-3 flex items-center gap-3">
+        <div className="flex-1 bg-secondary rounded-full h-1.5 overflow-hidden">
+          <div className="h-full rounded-full bg-[#0066cc] transition-all duration-500" style={{ width: `${completion}%` }} />
+        </div>
+        <span className="text-xs font-semibold text-muted-foreground tabular-nums w-10 text-end">{completion}%</span>
+        <span className="text-xs text-muted-foreground">{isAr ? "مكتمل" : "complete"}</span>
+      </div>
 
       {/* ── Delete account modal ── */}
       {deleteModal && (
@@ -1147,11 +1345,12 @@ function SlugSetupScreen({ biz, onComplete }: { biz: Business; onComplete: () =>
 }
 
 // ─── SERVICES EDITOR ──────────────────────────────────────────────────────────
-function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFillAI }: {
+function ServicesEditor({ value, onChange, bizName, bizCategory, sectionLang, aiLoading, onFillAI }: {
   value: { title: string; description: string }[];
   onChange: (v: { title: string; description: string }[]) => void;
   bizName: string;
   bizCategory: string;
+  sectionLang: { label: string; desc: string; item: string; addItem: string; noItems: string; noItemsDesc: string };
   aiLoading: Record<string, boolean>;
   onFillAI: (key: string, field: string, ctx: Record<string, string>) => Promise<string | undefined>;
 }) {
@@ -1167,14 +1366,14 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
       {value.length === 0 && (
         <div className="rounded-[6px] border border-dashed border-border px-5 py-8 flex flex-col items-center gap-2 text-center">
           <Layers size={20} className="text-muted-foreground/50" />
-          <p className="text-sm font-medium text-foreground">{isAr ? "لم تتم إضافة خدمات بعد" : "No services added yet"}</p>
-          <p className="text-xs text-muted-foreground">{isAr ? "أضف خدماتك لإعلام العملاء بما تقدمه." : "Add your services so customers know what you offer."}</p>
+          <p className="text-sm font-medium text-foreground">{sectionLang.noItems}</p>
+          <p className="text-xs text-muted-foreground">{sectionLang.noItemsDesc}</p>
         </div>
       )}
       {value.map((s, i) => (
         <div key={i} className="bg-secondary rounded-[6px] p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">{isAr ? `خدمة ${i + 1}` : `Service ${i + 1}`}</span>
+            <span className="text-xs text-muted-foreground capitalize">{sectionLang.item} {i + 1}</span>
             <button
               onClick={() => remove(i)}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-[6px] px-2 py-1 transition-colors"
@@ -1183,11 +1382,12 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
             </button>
           </div>
           <Field
-            label={isAr ? "اسم الخدمة" : "Service name"}
+            label={isAr ? `اسم ${sectionLang.item}` : `${sectionLang.item.charAt(0).toUpperCase() + sectionLang.item.slice(1)} name`}
             value={s.title}
             onChange={(v) => set(i, "title", v)}
             placeholder={isAr ? "مثال: تصميم ويب" : "e.g. Custom Cakes"}
             maxLength={20}
+            hint={isAr ? "عنوان قصير، حد أقصى 20 حرفاً" : "Short title, max 20 chars"}
           />
           <TextareaField
             label={isAr ? "الوصف" : "Description"}
@@ -1196,6 +1396,7 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
             placeholder={isAr ? "وصف مختصر..." : "Brief description..."}
             maxLength={150}
             minLength={150}
+            hint={isAr ? "وصف من 150 حرفاً بالضبط لهذا العنصر" : "Exactly 150 chars describing this item"}
             aiLoading={aiLoading[`svc_desc_${i}`]}
             onAI={async () => {
               const v = await onFillAI(`svc_desc_${i}`, "service_description", { name: bizName, category: bizCategory, serviceTitle: s.title || "service" });
@@ -1205,17 +1406,58 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, aiLoading, onFi
         </div>
       ))}
       <button onClick={add} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground bg-secondary hover:bg-secondary/80 border border-border rounded-[6px] px-4 py-2.5 w-fit transition-colors">
-        <Plus size={14} /> {isAr ? "إضافة خدمة" : "Add service"}
+        <Plus size={14} /> {sectionLang.addItem}
       </button>
     </div>
   );
 }
 
+// ─── TOOLTIP ──────────────────────────────────────────────────────────────────
+function Tooltip({ tip, children, side = "top" }: {
+  tip: string; children: React.ReactNode; side?: "top" | "bottom" | "right";
+}) {
+  const [show, setShow] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function open() { if (hideTimer.current) clearTimeout(hideTimer.current); setShow(true); }
+  function close() { setShow(false); }
+  function toggle() { if (show) { close(); } else { open(); hideTimer.current = setTimeout(close, 2800); } }
+  useEffect(() => () => { if (hideTimer.current) clearTimeout(hideTimer.current); }, []);
+  const pos = side === "top"
+    ? "bottom-full mb-2 left-1/2 -translate-x-1/2"
+    : side === "bottom"
+    ? "top-full mt-2 left-1/2 -translate-x-1/2"
+    : "left-full ms-2 top-1/2 -translate-y-1/2";
+  const arrow = side === "top"
+    ? "absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"
+    : side === "bottom"
+    ? "absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-800"
+    : "absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-e-gray-800";
+  return (
+    <span className="relative inline-flex items-center" onMouseEnter={open} onMouseLeave={close} onClick={toggle}>
+      {children}
+      {show && (
+        <span className={`absolute ${pos} z-[9999] px-3 py-2 text-xs font-medium text-white bg-gray-900 border border-white/10 rounded-[6px] pointer-events-none shadow-2xl whitespace-nowrap`}>
+          {tip}
+          <span className={arrow} />
+        </span>
+      )}
+    </span>
+  );
+}
+
+function FieldHint({ tip }: { tip: string }) {
+  return (
+    <Tooltip tip={tip}>
+      <span className="inline-flex cursor-help text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors select-none ms-1.5 text-xs">ⓘ</span>
+    </Tooltip>
+  );
+}
+
 // ─── SHARED INPUTS ─────────────────────────────────────────────────────────────
-function Field({ label, value, onChange, placeholder, required, maxLength, minLength, onAI, aiLoading }: {
+function Field({ label, value, onChange, placeholder, required, maxLength, minLength, onAI, aiLoading, hint }: {
   label: React.ReactNode; value: string; onChange: (v: string) => void;
   placeholder?: string; required?: boolean; maxLength?: number; minLength?: number;
-  onAI?: () => void; aiLoading?: boolean;
+  onAI?: () => void; aiLoading?: boolean; hint?: string;
 }) {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
@@ -1223,7 +1465,7 @@ function Field({ label, value, onChange, placeholder, required, maxLength, minLe
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-sm text-foreground">{label}</label>
+        <label className="text-sm text-foreground flex items-center">{label}{hint && <FieldHint tip={hint} />}</label>
         <div className="flex items-center gap-2">
           {onAI && (
             <button type="button" onClick={onAI} disabled={aiLoading}
@@ -1251,10 +1493,10 @@ function Field({ label, value, onChange, placeholder, required, maxLength, minLe
   );
 }
 
-function TextareaField({ label, value, onChange, placeholder, maxLength, minLength, onAI, aiLoading }: {
+function TextareaField({ label, value, onChange, placeholder, maxLength, minLength, onAI, aiLoading, hint }: {
   label: string; value: string; onChange: (v: string) => void;
   placeholder?: string; maxLength?: number; minLength?: number;
-  onAI?: () => void; aiLoading?: boolean;
+  onAI?: () => void; aiLoading?: boolean; hint?: string;
 }) {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
@@ -1271,7 +1513,7 @@ function TextareaField({ label, value, onChange, placeholder, maxLength, minLeng
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-sm text-foreground">{label}</label>
+        <label className="text-sm text-foreground flex items-center">{label}{hint && <FieldHint tip={hint} />}</label>
         <div className="flex items-center gap-2">
           {onAI && (
             <button type="button" onClick={onAI} disabled={aiLoading}

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 const SLUG_RE = /^[a-z0-9]{4,30}$/;
 const RESERVED = new Set([
@@ -55,6 +56,10 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // 10 slug attempts per hour per user
+  const rl = rateLimit(`set-slug:${user.id}`, 10, 3600);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
 
   // Verify business belongs to this user and still has a temp slug
   const { data: biz } = await supabase

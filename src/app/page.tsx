@@ -77,7 +77,7 @@ export default function Home() {
           <Link
             href="/register"
             className="inline-flex items-center gap-2 text-white font-semibold px-7 py-3.5 transition-opacity hover:opacity-90 active:scale-95 text-base group"
-            style={{ backgroundColor: "#0066cc", borderRadius: 9999 }}
+            style={{ backgroundColor: "#0066cc", borderRadius: 8 }}
           >
             {t.home.cta}
             <motion.span

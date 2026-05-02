@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MODEL = "llama-3.3-70b-versatile";
@@ -68,10 +69,13 @@ async function callAI(prompt: string, maxTokens: number, key: string): Promise<s
 }
 
 export async function POST(request: Request) {
-  // Auth required — no free AI access
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // 10 AI calls per minute per user
+  const rl = rateLimit(`ai-fill:${user.id}`, 10, 60);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {

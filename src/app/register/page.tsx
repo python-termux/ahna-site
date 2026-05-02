@@ -1,18 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRateLimit } from "@/lib/use-rate-limit";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  MapPin, Loader2, Star, Phone, Globe, Eye, EyeOff, Brain, Image,
-  ChevronRight, Upload, X,
+  MapPin, Loader2, Star, Phone, Globe, Eye, EyeOff, Image,
+  ChevronRight,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { PlaceResult } from "@/lib/places";
 import { useLanguage } from "@/lib/language";
 import { ThemeToggle } from "@/components/ThemeProvider";
+import { DotmSquare12 } from "@/components/ui/dotm-square-12";
 
 const FB_APP_ID = "1463790922054350";
 
@@ -231,18 +233,21 @@ function FBIcon({ size = 16, className = "" }: { size?: number; className?: stri
   );
 }
 
-function AILoadingBlock({ step, steps, isAr }: { step: number; steps: string[]; isAr: boolean }) {
+// NEW DotMatrix Loading Component replacing the old AILoadingBlock
+function DotMatrixLoading({ step, steps, isAr }: { step: number; steps: string[]; isAr: boolean }) {
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden mt-2">
-      <div className="border border-[#0066cc]/30 rounded-[6px] bg-[#0066cc]/8 dark:bg-[#0066cc]/10 overflow-hidden">
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-[#0066cc]/30 bg-[#0066cc]/10 dark:bg-[#0066cc]/15">
-          <Brain size={16} className="text-[#2997ff]/30" />
+      <div className="border border-[#0066cc]/30 rounded-[6px] bg-[#0066cc]/5 dark:bg-[#0066cc]/10 overflow-hidden">
+        <div className="flex items-center gap-1.5 px-4 py-2 border-b border-[#0066cc]/30 bg-[#0066cc]/8 dark:bg-[#0066cc]/15">
+       <div className="shrink-0" style={{ transform: "scale(0.5)", width: 12, height: 12 }}>
+        <DotmSquare12 />
+         </div>
           <motion.span className="text-xs font-medium text-[#0066cc] dark:text-[#2997ff]" animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }}>
             {isAr ? "الذكاء الاصطناعي يفكر" : "AI is thinking"}
           </motion.span>
           <div className="flex gap-1 ml-auto">
             {[0, 0.2, 0.4].map((d, i) => (
-              <motion.span key={i} className="w-1 h-1 bg-[#2997ff] rounded-[6px]" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d }} />
+              <motion.span key={i} className="w-1 h-1 bg-[#2997ff] rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d }} />
             ))}
           </div>
         </div>
@@ -261,6 +266,7 @@ export default function RegisterPage() {
   const supabase = createClient();
   const { lang } = useLanguage();
   const isAr = lang === "ar";
+  const { isLimited, label: rlLabel, handle429 } = useRateLimit();
 
   const strengthLabel = isAr
     ? ["قصير جداً", "ضعيفة", "مقبولة", "جيدة", "قوية"]
@@ -324,7 +330,7 @@ export default function RegisterPage() {
   }
 
   async function findBusiness() {
-    if (!canFind) return;
+    if (!canFind || isLimited) return;
     setIsLoading(true);
     setFetchError("");
     setUrlError("");
@@ -338,12 +344,17 @@ export default function RegisterPage() {
       await animPromise;
       setIsLoading(false);
       const data = await res.json();
+      if (res.status === 429) {
+        handle429(data.retryAfter ?? 60);
+        setFetchError(isAr ? `الرجاء الانتظار ${rlLabel} قبل المحاولة مجدداً` : `Too many requests — try again in ${rlLabel}`);
+        return;
+      }
       if (!res.ok) { setFetchError(data.error ?? "Could not find that business."); return; }
       setPlace(data as PlaceResult);
       setStep(2);
     } catch {
       setIsLoading(false);
-      setFetchError("Failed to fetch business data");
+      setFetchError(isAr ? "فشل الاتصال بالخادم" : "Failed to connect to server");
     }
   }
 
@@ -424,33 +435,6 @@ export default function RegisterPage() {
     );
   }
 
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  async function handleImageUpload(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    setUploading(true);
-    const uploaded: string[] = [];
-    for (const file of Array.from(files)) {
-      if (uploaded.length + uploadedImages.length >= 10) break;
-      try {
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename: file.name, contentType: file.type, size: file.size }),
-        });
-        if (!res.ok) continue;
-        const { presignedUrl, publicUrl } = await res.json();
-        const putRes = await fetch(presignedUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-        if (!putRes.ok) continue;
-        uploaded.push(publicUrl);
-      } catch { /* skip failed uploads */ }
-    }
-    setUploadedImages((prev) => [...prev, ...uploaded]);
-    setUploading(false);
-  }
-
   const pwStrength = strength(password);
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const pwMatch = password === confirmPw && confirmPw.length > 0;
@@ -472,7 +456,7 @@ export default function RegisterPage() {
         website: place.website, hero_image: "", gallery: place.images,
         hours: place.hours, services: [],
         testimonials: place.reviews.map((r) => ({ author: r.author, role: "", text: r.text, rating: r.rating })),
-        social: {}, theme_color: "indigo", stat_years: "",
+        social: {}, theme_color: "white-emerald", stat_years: "",
         stat_clients: place.reviewCount ? `${place.reviewCount.toLocaleString()}+` : "",
         stat_projects: place.rating ? `${place.rating} ★` : "",
       }),
@@ -494,8 +478,8 @@ export default function RegisterPage() {
         {/* Progress bar */}
         <div className="w-full flex justify-center">
           <div className="w-full max-w-6xl px-4 sm:px-6">
-            <div className="w-full h-0.5 bg-accent rounded-[6px]">
-              <motion.div className="h-full bg-[#0071e3] rounded-[6px]"
+            <div className="w-full h-0.5 bg-accent rounded-full">
+              <motion.div className="h-full bg-[#0071e3] rounded-full"
                 animate={{ width: step === 1 ? "33%" : step === 2 ? "66%" : "100%" }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
               />
@@ -528,8 +512,8 @@ export default function RegisterPage() {
 
                   {!source && (
                     <div className="grid grid-cols-2 gap-3 mb-6">
-                      <button onClick={() => setSource("maps")} className="flex flex-col items-center gap-3 p-5 bg-card border-2 border-border hover:border-[#0066cc] rounded-[8px] transition-all text-center group">
-                        <div className="w-11 h-11 rounded-[8px] bg-[#0066cc]/10 flex items-center justify-center group-hover:bg-[#0066cc]/15 transition-colors">
+                      <button onClick={() => setSource("maps")} className="flex flex-col items-center gap-3 p-5 bg-card border-2 border-border hover:border-[#0066cc] rounded-xl transition-all text-center group">
+                        <div className="w-11 h-11 rounded-xl bg-[#0066cc]/10 flex items-center justify-center group-hover:bg-[#0066cc]/15 transition-colors">
                           <MapPin size={20} style={{ color: "#0066cc" }} />
                         </div>
                         <div>
@@ -539,10 +523,10 @@ export default function RegisterPage() {
                       </button>
 
                       <div
-                        className="flex flex-col items-center gap-3 p-5 rounded-[8px] text-center cursor-default select-none relative"
+                        className="flex flex-col items-center gap-3 p-5 rounded-xl text-center cursor-default select-none relative"
                         style={{ backgroundColor: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.28)" }}
                       >
-                        <div className="w-11 h-11 rounded-[8px] flex items-center justify-center" style={{ backgroundColor: "rgba(16,185,129,0.12)" }}>
+                        <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(16,185,129,0.12)" }}>
                           <FBIcon size={20} className="text-[#10b981]" />
                         </div>
                         <div>
@@ -562,7 +546,7 @@ export default function RegisterPage() {
                         {isAr ? "تغيير المصدر" : "Change source"}
                       </button>
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-7 h-7 rounded-[6px] bg-[#0066cc]/10 flex items-center justify-center">
+                        <div className="w-7 h-7 rounded-lg bg-[#0066cc]/10 flex items-center justify-center">
                           <MapPin size={13} style={{ color: "#0066cc" }} />
                         </div>
                         <span className="text-sm font-medium">Google Maps</span>
@@ -574,7 +558,7 @@ export default function RegisterPage() {
                         }
                       </p>
                       {fetchError && (
-                        <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-[6px] px-4 py-3">
+                        <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
                           {fetchError}
                         </div>
                       )}
@@ -586,11 +570,11 @@ export default function RegisterPage() {
                             onChange={handleUrlChange}
                             onKeyDown={(e) => e.key === "Enter" && canFind && findBusiness()}
                             placeholder="https://maps.app.goo.gl/your-business-link"
-                            className={`flex-1 bg-background border rounded-[6px] px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors ${urlError ? "border-red-500" : "border-input"}`}
+                            className={`flex-1 bg-background border rounded-lg px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors ${urlError ? "border-red-500" : "border-input"}`}
                           />
-                          <button onClick={findBusiness} disabled={!canFind}
-                            className={`px-5 py-3 rounded-[6px] text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${canFind ? "bg-[#0066cc] hover:bg-[#0071e3] text-white" : "bg-accent opacity-50 cursor-not-allowed"}`}>
-                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : (isAr ? "بحث" : "Find")}
+                          <button onClick={findBusiness} disabled={!canFind || isLimited}
+                            className={`px-5 py-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${canFind && !isLimited ? "bg-[#0066cc] hover:bg-[#0071e3] text-white" : "bg-accent opacity-50 cursor-not-allowed"}`}>
+                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : isLimited ? rlLabel : (isAr ? "بحث" : "Find")}
                           </button>
                         </div>
                         {urlError && <p className="text-xs text-red-400 mt-1">{urlError}</p>}
@@ -599,7 +583,7 @@ export default function RegisterPage() {
                         </p>
                       </div>
                       <AnimatePresence mode="wait">
-                        {isLoading && currentSteps.length > 0 && <AILoadingBlock step={reasoningStep} steps={currentSteps} isAr={isAr} />}
+                        {isLoading && currentSteps.length > 0 && <DotMatrixLoading step={reasoningStep} steps={currentSteps} isAr={isAr} />}
                       </AnimatePresence>
                     </div>
                   )}
@@ -611,19 +595,19 @@ export default function RegisterPage() {
                         {isAr ? "تغيير المصدر" : "Change source"}
                       </button>
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-7 h-7 rounded-[6px] bg-[#1877F2]/10 flex items-center justify-center">
+                        <div className="w-7 h-7 rounded-lg bg-[#1877F2]/10 flex items-center justify-center">
                           <FBIcon size={13} className="text-[#1877F2]" />
                         </div>
                         <span className="text-sm font-medium">Facebook Page</span>
                       </div>
                       {fbError && (
-                        <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-[6px] px-4 py-3">
+                        <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
                           {fbError}
                         </div>
                       )}
                       {fbSubStep === "connect" && (
                         <button onClick={handleFBLogin} disabled={fbLoadingPages}
-                          className="flex items-center justify-center gap-2.5 bg-[#1877F2] hover:bg-[#166FE5] disabled:opacity-50 text-white font-semibold py-3.5 rounded-[6px] transition-colors">
+                          className="flex items-center justify-center gap-2.5 bg-[#1877F2] hover:bg-[#166FE5] disabled:opacity-50 text-white font-semibold py-3.5 rounded-lg transition-colors">
                           {(fbLoadingPages || !sdkReady) ? <Loader2 size={16} className="animate-spin" /> : <FBIcon size={16} />}
                           {fbLoadingPages
                             ? (isAr ? "جارٍ الاتصال…" : "Connecting…")
@@ -637,7 +621,7 @@ export default function RegisterPage() {
                           <p className="text-sm text-muted-foreground mb-1">{isAr ? "اختر صفحتك التجارية:" : "Select your business page:"}</p>
                           {fbPages.map((page) => (
                             <button key={page.id} onClick={() => selectFBPage(page)}
-                              className="w-full flex items-center gap-3 bg-card hover:bg-accent border border-border hover:border-border/70 rounded-[8px] p-3.5 text-left transition-all">
+                              className="w-full flex items-center gap-3 bg-card hover:bg-accent border border-border hover:border-border/70 rounded-xl p-3.5 text-left transition-all">
                               {page.picture?.data.url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={page.picture.data.url} alt={page.name} width={36} height={36} className="rounded-full shrink-0 object-cover" />
@@ -657,7 +641,7 @@ export default function RegisterPage() {
                       )}
                       {fbSubStep === "fetching" && (
                         <AnimatePresence>
-                          <AILoadingBlock step={reasoningStep} steps={currentSteps} isAr={isAr} />
+                          <DotMatrixLoading step={reasoningStep} steps={currentSteps} isAr={isAr} />
                         </AnimatePresence>
                       )}
                     </div>
@@ -672,7 +656,7 @@ export default function RegisterPage() {
                   <p className="text-muted-foreground mb-6">{isAr ? "تأكد من أن هذه القائمة الصحيحة قبل إعداد صفحتك." : "Confirm this is the correct listing before we set up your page."}</p>
 
                   <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                    className="bg-card border border-border rounded-[6px] overflow-hidden mb-6">
+                    className="bg-card border border-border rounded-lg overflow-hidden mb-6">
                     <div className="pt-4 px-4"><ImageSlider images={place.images} /></div>
                     <div className="p-4 pt-3">
                       <div className="flex items-center gap-1.5 mb-2">
@@ -700,7 +684,7 @@ export default function RegisterPage() {
                         </div>
                       )}
                       {place.reviews?.length > 0 && <ReviewsSlider reviews={place.reviews} />}
-                      <div className="flex items-center gap-4 py-2.5 px-3 bg-accent/50 rounded-[6px] mb-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-4 py-2.5 px-3 bg-accent/50 rounded-lg mb-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                           <Star size={11} className="text-yellow-400 fill-yellow-400" />
                           <span><span className="text-foreground font-semibold">{place.reviewCount?.toLocaleString() ?? 0}</span> {source === "facebook" ? (isAr ? "متابع" : "followers") : (isAr ? "تقييم" : "reviews")}</span>
@@ -719,59 +703,14 @@ export default function RegisterPage() {
                     </div>
                   </motion.div>
 
-                  {/* ── Upload extra photos ── */}
-                  <div className="mb-6">
-                    <p className="text-sm font-medium mb-2">{isAr ? "أضف صورك الخاصة (اختياري)" : "Add your own photos (optional)"}</p>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => handleImageUpload(e.target.files)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading || uploadedImages.length >= 10}
-                      className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-border hover:border-[#0066cc] rounded-[6px] py-4 text-sm text-muted-foreground hover:text-[#0066cc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                      {uploading
-                        ? (isAr ? "جارٍ الرفع…" : "Uploading…")
-                        : (isAr ? "اختر صوراً (حتى 10، بحد أقصى 5 ميغا للصورة)" : "Choose photos (up to 10, max 5 MB each)")}
-                    </button>
-                    {uploadedImages.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {uploadedImages.map((url, i) => (
-                          <div key={i} className="relative w-16 h-16 shrink-0">
-                            <img src={url} alt="" className="w-full h-full object-cover rounded-[6px]" />
-                            <button
-                              type="button"
-                              onClick={() => setUploadedImages((prev) => prev.filter((_, idx) => idx !== i))}
-                              className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center"
-                            >
-                              <X size={10} className="text-white" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
                   <div className="flex flex-col gap-3">
                     <button
-                      onClick={() => {
-                        if (uploadedImages.length > 0) {
-                          setPlace((p) => p ? { ...p, images: [...uploadedImages, ...p.images] } : p);
-                        }
-                        setStep(3);
-                      }}
-                      className="bg-[#0066cc] hover:bg-[#0071e3] text-white py-3.5 rounded-[6px] font-medium transition-colors">
+                      onClick={() => setStep(3)}
+                      className="bg-[#0066cc] hover:bg-[#0071e3] text-white py-3.5 rounded-lg font-medium transition-colors">
                       {isAr ? "نعم، هذا نشاطي التجاري" : "Yes, this is my business"}
                     </button>
-                    <button onClick={() => { setStep(1); setPlace(null); setFetchError(""); setMapsUrl(""); setUrlError(""); setFbSubStep("connect"); setFbPages([]); setFbError(""); setUploadedImages([]); }}
-                      className="border border-input hover:border-border text-muted-foreground hover:text-foreground py-3.5 rounded-[6px] font-medium transition-colors">
+                    <button onClick={() => { setStep(1); setPlace(null); setFetchError(""); setMapsUrl(""); setUrlError(""); setFbSubStep("connect"); setFbPages([]); setFbError(""); }}
+                      className="border border-input hover:border-border text-muted-foreground hover:text-foreground py-3.5 rounded-lg font-medium transition-colors">
                       {isAr ? "ليس نشاطي، البحث مجدداً" : "Not my business, search again"}
                     </button>
                   </div>
@@ -785,7 +724,7 @@ export default function RegisterPage() {
                   <p className="text-muted-foreground mb-8">{isAr ? "اكتمل تقريباً. أعدّ بيانات تسجيل الدخول." : "Almost done. Set up your login details."}</p>
 
                   {authError && (
-                    <div className="mb-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-[6px] px-4 py-3">
+                    <div className="mb-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
                       {authError}
                     </div>
                   )}
@@ -795,7 +734,7 @@ export default function RegisterPage() {
                       <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "البريد الإلكتروني" : "Email address"}</label>
                       <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                         placeholder={isAr ? "you@example.com" : "you@example.com"} required
-                        className={`w-full bg-background border rounded-[6px] px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${email.length > 0 ? (emailValid ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
+                        className={`w-full bg-background border rounded-lg px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${email.length > 0 ? (emailValid ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
                       />
                       {email.length > 0 && !emailValid && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{isAr ? "أدخل بريداً إلكترونياً صحيحاً" : "Enter a valid email address"}</p>}
                     </div>
@@ -805,7 +744,7 @@ export default function RegisterPage() {
                       <div className="relative">
                         <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
                           placeholder={isAr ? "8 أحرف على الأقل" : "At least 8 characters"} required
-                          className="w-full bg-background border border-input rounded-[6px] px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
+                          className="w-full bg-background border border-input rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
                         />
                         <button type="button" onClick={() => setShowPw((v) => !v)}
                           className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
@@ -827,7 +766,7 @@ export default function RegisterPage() {
                       <div className="relative">
                         <input type={showConfirmPw ? "text" : "password"} value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
                           placeholder={isAr ? "كرّر كلمة المرور" : "Repeat your password"} required
-                          className={`w-full bg-background border rounded-[6px] px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${confirmPw.length > 0 ? (pwMatch ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
+                          className={`w-full bg-background border rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${confirmPw.length > 0 ? (pwMatch ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
                         />
                         <button type="button" onClick={() => setShowConfirmPw((v) => !v)}
                           className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
@@ -846,7 +785,7 @@ export default function RegisterPage() {
                     </p>
 
                     <button type="submit" disabled={authLoading || !canSubmit}
-                      className="flex items-center justify-center gap-2 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 py-3.5 rounded-[6px] font-medium transition-colors text-white">
+                      className="flex items-center justify-center gap-2 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 py-3.5 rounded-lg font-medium transition-colors text-white">
                       {authLoading ? <Loader2 size={16} className="animate-spin" /> : (isAr ? "إنشاء الحساب" : "Create account")}
                     </button>
                   </form>

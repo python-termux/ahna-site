@@ -2,11 +2,20 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchPlaceFromUrl } from "@/lib/places";
 import { generateWhyUs } from "@/lib/why-us";
 import { NextResponse } from "next/server";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 const MAPS_URL_RE = /^https:\/\/(maps\.app\.goo\.gl|maps\.google\.com|www\.google\.com\/maps|goo\.gl\/maps)\//;
 
 // POST /api/places
 export async function POST(request: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // 5 imports per hour per user
+  const rl = rateLimit(`places:${user.id}`, 5, 3600);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
+
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
@@ -30,10 +39,6 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Could not fetch business data from that URL" }, { status: 422 });
   }
-
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const slug = `_tmp_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
   const whyUs = await generateWhyUs(place.name, place.category, place.reviews);
@@ -63,7 +68,7 @@ export async function POST(request: Request) {
         rating: r.rating,
       })),
       social: {},
-      theme_color: "indigo",
+      theme_color: "white-emerald",
       stat_years: "",
       stat_clients: place.reviewCount ? `${place.reviewCount.toLocaleString()}+` : "",
       stat_projects: place.rating ? `${place.rating} ★` : "",

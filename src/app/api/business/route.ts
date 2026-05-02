@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getHeroImage, getImagesForCategory } from "@/lib/images";
 import { generateWhyUs } from "@/lib/why-us";
 import { NextResponse } from "next/server";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 // Strip control characters and null bytes, enforce max length
 function clean(v: unknown, max = 500): string {
@@ -34,6 +35,10 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // 5 business creations per hour per user
+  const rlPost = rateLimit(`biz-create:${user.id}`, 5, 3600);
+  if (!rlPost.ok) return tooManyRequests(rlPost.retryAfter);
+
   const hero = body.hero_image || getHeroImage(category);
   const gallery = Array.isArray(body.gallery) && body.gallery.length
     ? body.gallery.filter((u: unknown) => typeof u === "string" && u.length < 1000)
@@ -60,7 +65,7 @@ export async function POST(request: Request) {
       services: Array.isArray(body.services) ? body.services : [],
       testimonials: Array.isArray(body.testimonials) ? body.testimonials : [],
       social: typeof body.social === "object" && body.social !== null ? body.social : {},
-      theme_color: clean(body.theme_color, 50) || "indigo",
+      theme_color: clean(body.theme_color, 50) || "white-emerald",
       stat_years: clean(body.stat_years, 50),
       stat_clients: clean(body.stat_clients, 50),
       stat_projects: clean(body.stat_projects, 50),
@@ -86,6 +91,10 @@ export async function PATCH(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // 30 saves per 5 minutes per user
+  const rlPatch = rateLimit(`biz-update:${user.id}`, 30, 300);
+  if (!rlPatch.ok) return tooManyRequests(rlPatch.retryAfter);
 
   // Build update object — only whitelisted keys, nothing else
   const fields: Record<string, unknown> = {};

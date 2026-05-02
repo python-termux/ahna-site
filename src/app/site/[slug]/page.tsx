@@ -190,6 +190,19 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   return (
     <div className={`min-h-screen ${T.page} ${T.text}`} dir={isRtl ? "rtl" : "ltr"}>
       <style>{`
+        @font-face{font-family:'GoogleSans';src:url('/fonts/english-fonts/GoogleSans-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+        @font-face{font-family:'GoogleSans';src:url('/fonts/english-fonts/GoogleSans-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+        @font-face{font-family:'GoogleSans';src:url('/fonts/english-fonts/GoogleSans-Medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap}
+        @font-face{font-family:'GoogleSans';src:url('/fonts/english-fonts/GoogleSans-MediumItalic.ttf') format('truetype');font-weight:500;font-style:italic;font-display:swap}
+        @font-face{font-family:'GoogleSans';src:url('/fonts/english-fonts/GoogleSans-SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+        @font-face{font-family:'GoogleSans';src:url('/fonts/english-fonts/GoogleSans-SemiBoldItalic.ttf') format('truetype');font-weight:600;font-style:italic;font-display:swap}
+        @font-face{font-family:'GoogleSans';src:url('/fonts/english-fonts/GoogleSans-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+        @font-face{font-family:'GoogleSans';src:url('/fonts/english-fonts/GoogleSans-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap}
+        @font-face{font-family:'Almarai';src:url('/fonts/arabic-fonts/Almarai-Light.ttf') format('truetype');font-weight:300;font-style:normal;font-display:swap}
+        @font-face{font-family:'Almarai';src:url('/fonts/arabic-fonts/Almarai-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+        @font-face{font-family:'Almarai';src:url('/fonts/arabic-fonts/Almarai-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+        @font-face{font-family:'Almarai';src:url('/fonts/arabic-fonts/Almarai-ExtraBold.ttf') format('truetype');font-weight:800;font-style:normal;font-display:swap}
+        html,body,*{font-family:${isRtl ? "'Almarai'" : "'GoogleSans'"},sans-serif!important}
         html{scrollbar-color:${sb.thumb} ${sbTrack}!important}
         ::-webkit-scrollbar-track{background:${sbTrack}!important}
         ::-webkit-scrollbar-thumb{background:${sb.thumb}!important}

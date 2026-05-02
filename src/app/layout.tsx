@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -28,8 +29,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={cn("dark font-sans scroll-smooth")} suppressHydrationWarning>
       <head>
-        {/* Anti-flash: apply stored theme + language direction before first paint */}
-        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme');document.documentElement.classList.toggle('dark',(t??'dark')==='dark');var l=localStorage.getItem('lang');if(l==='ar'){document.documentElement.dir='rtl';document.documentElement.lang='ar';}}catch(e){}` }} />
+        <Script
+          id="anti-flash"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme');document.documentElement.classList.toggle('dark',(t??'dark')==='dark');var l=localStorage.getItem('lang');if(l==='ar'){document.documentElement.dir='rtl';document.documentElement.lang='ar';}}catch(e){}` }}
+        />
       </head>
       <body className="antialiased">
         <ThemeProvider>
