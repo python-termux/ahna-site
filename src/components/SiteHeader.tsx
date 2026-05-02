@@ -134,12 +134,9 @@ export default function SiteHeader() {
 
   return (
     <>
-      <motion.nav
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+      <nav
         dir="ltr"
-        className="flex items-center justify-between px-4 sm:px-6 py-5 max-w-6xl mx-auto w-full relative z-40"
+        className="anim-down flex items-center justify-between px-4 sm:px-6 py-5 max-w-6xl mx-auto w-full relative z-40"
       >
         {/* Logo */}
         <Link href="/" className="flex items-center hover:opacity-70 transition-opacity">
@@ -189,7 +186,7 @@ export default function SiteHeader() {
             </span>
           </button>
         </div>
-      </motion.nav>
+      </nav>
 
       {/* Mobile full-viewport menu */}
       <AnimatePresence>

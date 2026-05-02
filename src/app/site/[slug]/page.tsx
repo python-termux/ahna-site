@@ -151,7 +151,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: data.name,
     description: data.tagline || data.category,
-    other: { "theme-color": themeColor },
+    themeColor,
   };
 }
 

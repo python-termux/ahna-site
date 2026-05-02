@@ -5,6 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, Zap, ChevronDown, Flame } from "lucide-react";
+import InView from "@/components/InView";
+
+// framer-motion kept only for FAQ accordion open/close animation
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { createClient } from "@/lib/supabase/client";
@@ -12,89 +15,82 @@ import { useLanguage } from "@/lib/language";
 
 const TOTAL_SLOTS = 10;
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
 
-const stagger = (delay: number) => ({
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: delay } },
-});
-
-const VIEWPORT = { once: true, amount: 0.2 };
-
-const sharedFeaturesEn = [
-  { name: "Ai Content Generation", included: true,  value: "one time use" },
-  { name: "Google Reviews Export", included: true,  value: "Yes" },
-  { name: "Website Edits",         included: true,  value: "Unlimited" },
-  { name: "Multiple Theme Changes",included: true,  value: "yes" },
-  { name: "Multi-language Support",included: true,  value: "yes" },
-  { name: "Syrflow Badge",         included: true,  value: "Footer" },
-  { name: "Syrflow Popup",         included: true,  value: "5 min Inactivity" },
-  { name: "Online Support",        included: true,  value: "Email" },
-  { name: "Auto update Google reviews", included: true, value: "Yes" },
-  { name: "Auto update Google Photos",  included: true, value: "Yes" },
-  { name: "Custom domain",         included: true, value: "Yes" },
-  { name: "Ai Auto Fill",          included: true,  value: "yes" },
-  { name: "Website Views Counter", included: false, value: "no" },
+const baseEn = [
+  { name: "Ai Content Generation",  included: true,  value: "Unlimited" },
+  { name: "Website Edits",          included: true,  value: "Unlimited" },
+  { name: "Multiple Theme Changes",  included: true,  value: "Yes" },
+  { name: "Multi-language Support",  included: true,  value: "Yes" },
+  { name: "Unlimited Image Search",  included: true,  value: "Yes" },
+  { name: "Custom domain",           included: true,  value: "Yes" },
+  { name: "Ai Auto Fill",            included: true,  value: "Yes" },
+  { name: "Syrflow Badge",           included: true,  value: "Footer" },
+  { name: "Syrflow Popup",           included: true,  value: "5 min Inactivity" },
+  { name: "Online Support",          included: true,  value: "Email" },
+  { name: "Website Views Counter",   included: false, value: "No" },
 ];
+
+const googleFeaturesEn  = [{ name: "Google Reviews Export",   included: true, value: "Yes" }, ...baseEn];
+const facebookFeaturesEn = [{ name: "Facebook Posts Export",   included: true, value: "Yes" }, ...baseEn];
+const telegramFeaturesEn = [{ name: "Telegram Channel Export", included: true, value: "Yes" }, ...baseEn];
 
 const plansEn = [
   {
     name: "With Google Link", price: 1, period: "monthly", yearlyPrice: 12,
-    description: "Perfect for small businesses in Syria. Get online instantly with Google Maps.",
+    description: "Perfect for businesses that have a Google Business profile.",
     icon: "/pricing/star-94.png", buttonText: "Get started", popular: false, comingSoon: false,
-    features: sharedFeaturesEn,
+    features: googleFeaturesEn,
   },
   {
     name: "With Facebook", price: 1, period: "monthly", yearlyPrice: 12,
     description: "Import your business directly from your Facebook Page. Coming soon.",
     icon: "/pricing/fire-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
-    features: sharedFeaturesEn,
+    features: facebookFeaturesEn,
   },
   {
     name: "With Telegram", price: 1, period: "monthly", yearlyPrice: 12,
     description: "Import your business from your Telegram channel or group. Coming soon.",
     icon: "/pricing/crown-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
-    features: sharedFeaturesEn,
+    features: telegramFeaturesEn,
   },
 ];
 
-const sharedFeaturesAr = [
-  { name: "إنشاء محتوى بالذكاء الاصطناعي",        included: true,  value: "مرة واحدة" },
-  { name: "تصدير تقييمات Google",                  included: true,  value: "نعم" },
-  { name: "تعديلات الموقع",                        included: true,  value: "غير محدودة" },
-  { name: "تغيير الثيمات المتعددة",                 included: true,  value: "نعم" },
-  { name: "دعم متعدد اللغات",                       included: true,  value: "نعم" },
-  { name: "شارة Syrflow",                          included: true,  value: "تذييل الصفحة" },
-  { name: "نافذة Syrflow المنبثقة",                 included: true,  value: "5 دقائق خمول" },
-  { name: "الدعم الإلكتروني",                       included: true,  value: "البريد الإلكتروني" },
-  { name: "تحديث تلقائي لتقييمات Google",          included: true, value: "نعم" },
-  { name: "تحديث تلقائي لصور Google",              included: true, value: "نعم" },
-  { name: "نطاق مخصص",                             included: true, value: "نعم" },
-  { name: "التعبئة التلقائية بالذكاء الاصطناعي",   included: true,  value: "نعم" },
-  { name: "عداد مشاهدات الموقع",                   included: false, value: "لا" },
+const baseAr = [
+  { name: "إنشاء محتوى بالذكاء الاصطناعي",       included: true,  value: "غير محدود" },
+  { name: "تعديلات الموقع",                       included: true,  value: "غير محدودة" },
+  { name: "تغيير الثيمات المتعددة",                included: true,  value: "نعم" },
+  { name: "دعم متعدد اللغات",                      included: true,  value: "نعم" },
+  { name: "بحث صور غير محدود",                    included: true,  value: "نعم" },
+  { name: "نطاق مخصص",                            included: true,  value: "نعم" },
+  { name: "التعبئة التلقائية بالذكاء الاصطناعي",  included: true,  value: "نعم" },
+  { name: "شارة Syrflow",                         included: true,  value: "تذييل الصفحة" },
+  { name: "نافذة Syrflow المنبثقة",                included: true,  value: "5 دقائق خمول" },
+  { name: "الدعم الإلكتروني",                      included: true,  value: "البريد الإلكتروني" },
+  { name: "عداد مشاهدات الموقع",                  included: false, value: "لا" },
 ];
+
+const googleFeaturesAr  = [{ name: "تصدير تقييمات Google",    included: true, value: "نعم" }, ...baseAr];
+const facebookFeaturesAr = [{ name: "تصدير منشورات فيسبوك",   included: true, value: "نعم" }, ...baseAr];
+const telegramFeaturesAr = [{ name: "تصدير قناة تيليجرام",    included: true, value: "نعم" }, ...baseAr];
 
 const plansAr = [
   {
     name: "مع رابط جوجل", price: 1, period: "شهرياً", yearlyPrice: 12,
-    description: "مثالي للشركات الصغيرة في سوريا. انطلق فوراً عبر Google Maps.",
+    description: "مثالي للأعمال التي لديها ملف تجاري على Google.",
     icon: "/pricing/star-94.png", buttonText: "ابدأ الآن", popular: false, comingSoon: false,
-    features: sharedFeaturesAr,
+    features: googleFeaturesAr,
   },
   {
     name: "مع فيسبوك", price: 1, period: "شهرياً", yearlyPrice: 12,
     description: "استورد نشاطك التجاري مباشرة من صفحة Facebook الخاصة بك. قريباً.",
     icon: "/pricing/fire-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
-    features: sharedFeaturesAr,
+    features: facebookFeaturesAr,
   },
   {
     name: "مع تيليجرام", price: 1, period: "شهرياً", yearlyPrice: 12,
     description: "استورد نشاطك التجاري من قناة أو مجموعة Telegram. قريباً.",
     icon: "/pricing/crown-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
-    features: sharedFeaturesAr,
+    features: telegramFeaturesAr,
   },
 ];
 
@@ -153,56 +149,35 @@ export default function PricingPage() {
 
       {/* Header */}
       <section className="flex flex-col items-center text-center px-4 sm:px-6 pt-16 pb-12 max-w-3xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="inline-flex items-center gap-2 border text-xs font-medium px-3 py-1.5 rounded-[6px] mb-6"
+        <div
+          className="anim-up inline-flex items-center gap-2 border text-xs font-medium px-3 py-1.5 rounded-[6px] mb-6"
           style={{ backgroundColor: "rgba(0,102,204,0.08)", borderColor: "rgba(0,102,204,0.2)", color: "#0066cc" }}
         >
           <Zap size={12} />
           {t.pricing.badge}
-        </motion.div>
+        </div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.2 }}
-          className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4"
-        >
+        <h1 className="anim-up anim-d1 text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4">
           {t.pricing.h1a}
           <br />
           <span style={{ color: "#0066cc" }}>{t.pricing.h1b}</span>
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-          className="text-sm text-muted-foreground mb-8 max-w-xl"
-        >
+        <p className="anim-up anim-d2 text-sm text-muted-foreground mb-8 max-w-xl">
           {t.pricing.sub}
-        </motion.p>
+        </p>
       </section>
 
       {/* Cards */}
-      <motion.section
-        variants={stagger(0.1)}
-        initial="hidden"
-        whileInView="show"
-        viewport={VIEWPORT}
-        className="w-full max-w-6xl mx-auto px-4 sm:px-6 pb-16"
-      >
+      <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 pb-16">
         <div className="grid md:grid-cols-3 gap-8">
-          {plans.map((plan) => (
-            <motion.div
+          {plans.map((plan, pi) => (
+            <InView
               key={plan.name}
-              variants={fadeUp}
+              delay={pi * 0.1}
+              animation="up"
               className="relative rounded-[6px] transition-all duration-300 bg-card border"
-              style={plan.comingSoon
-                ? { borderColor: "rgba(16,185,129,0.28)" }
-                : { borderColor: undefined }
-              }
+              style={plan.comingSoon ? { borderColor: "rgba(16,185,129,0.28)" } : undefined}
             >
               {plan.comingSoon && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -275,10 +250,10 @@ export default function PricingPage() {
                   ))}
                 </div>
               </div>
-            </motion.div>
+            </InView>
           ))}
         </div>
-      </motion.section>
+      </section>
 
       {/* FAQs */}
       <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 pb-24">

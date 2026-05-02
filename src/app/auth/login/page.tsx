@@ -4,7 +4,6 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/lib/language";
@@ -42,12 +41,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-          className="w-full max-w-sm"
-        >
+        <div className="anim-up w-full max-w-sm">
           <Link
             href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`}
             className="flex justify-center items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-foreground transition-colors mb-8"
@@ -120,7 +114,7 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       <div className="fixed bottom-5 right-5 z-50">

@@ -95,6 +95,27 @@ html[dir="rtl"] body {
   line-height: 1.65 !important;
 }
 
+/* ── Page animations ──────────────────────────────────────────────────────── */
+@keyframes fade-up   { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fade-in   { from { opacity: 0; }                              to { opacity: 1; } }
+@keyframes slide-dn  { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+
+.anim-up   { animation: fade-up  0.55s cubic-bezier(0.25, 0.1, 0.25, 1) both; }
+.anim-in   { animation: fade-in  0.45s cubic-bezier(0.25, 0.1, 0.25, 1) both; }
+.anim-down { animation: slide-dn 0.4s  cubic-bezier(0.25, 0.1, 0.25, 1) both; }
+
+/* Sequential delay steps */
+.anim-d1 { animation-delay: 0.08s; }
+.anim-d2 { animation-delay: 0.16s; }
+.anim-d3 { animation-delay: 0.26s; }
+.anim-d4 { animation-delay: 0.36s; }
+.anim-d5 { animation-delay: 0.46s; }
+.anim-d6 { animation-delay: 0.56s; }
+
+/* InView: animation is paused until JS adds .seen */
+.inview                 { animation-play-state: paused; }
+.inview.seen            { animation-play-state: running; }
+
 /* ── Marquee keyframes ────────────────────────────────────────────────────── */
 @keyframes marquee-l {
   0%   { transform: translateX(0); }
