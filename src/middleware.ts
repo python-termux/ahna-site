@@ -10,7 +10,8 @@ function ip(req: NextRequest): string {
 }
 
 export function middleware(req: NextRequest) {
-  const { pathname, method } = req.nextUrl;
+  const { pathname } = req.nextUrl;
+  const { method } = req;
   const clientIp = ip(req);
 
   // ── Per-IP rate limits for public / cheap-to-abuse endpoints ─────────────
