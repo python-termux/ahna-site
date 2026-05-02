@@ -10,6 +10,7 @@ import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
   MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
   BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User as UserIcon, Link2,
+  Search, RefreshCw,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
@@ -433,6 +434,55 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
   const aboutInputRef = useRef<HTMLInputElement>(null);
   const [aboutUploading, setAboutUploading] = useState(false);
 
+  // Pexels picker
+  type PickerTarget = "gallery" | "about";
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerTarget, setPickerTarget] = useState<PickerTarget>("gallery");
+  const [pickerQuery, setPickerQuery] = useState("");
+  const [pickerResults, setPickerResults] = useState<{ id: number; src: { medium: string; large2x: string }; alt: string }[]>([]);
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [pickerPage, setPickerPage] = useState(1);
+  const pickerSearchRef = useRef<HTMLInputElement>(null);
+
+  function openPicker(target: PickerTarget) {
+    setPickerTarget(target);
+    setPickerResults([]);
+    setPickerPage(1);
+    const q = data.name || data.category || "";
+    setPickerQuery(q);
+    setPickerOpen(true);
+    setTimeout(() => pickerSearchRef.current?.focus(), 50);
+    if (q) searchPexels(q, 1);
+  }
+
+  async function searchPexels(q: string, page: number) {
+    if (!q.trim()) return;
+    setPickerLoading(true);
+    try {
+      const res = await fetch(`/api/search-images?query=${encodeURIComponent(q)}&page=${page}&perPage=20`);
+      if (!res.ok) throw new Error("Failed");
+      const json = await res.json();
+      setPickerResults(json.photos ?? []);
+      setPickerPage(page);
+    } catch {
+      toast.error(isAr ? "فشل تحميل الصور" : "Failed to load images");
+    } finally {
+      setPickerLoading(false);
+    }
+  }
+
+  function pickPexelsImage(url: string) {
+    if (pickerTarget === "gallery") {
+      if (data.gallery.includes(url)) { toast(isAr ? "الصورة موجودة بالفعل" : "Image already in gallery"); return; }
+      update("gallery", [...data.gallery, url]);
+      toast.success(isAr ? "تمت إضافة الصورة إلى المعرض" : "Added to gallery");
+    } else {
+      update("about_image", url);
+      toast.success(isAr ? "تم تعيين صورة من نحن" : "About image set");
+    }
+    setPickerOpen(false);
+  }
+
   async function handleAboutUpload(files: FileList | null) {
     if (!files || files.length === 0) return;
     const file = files[0];
@@ -850,16 +900,27 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                     {isAr ? "المعرض" : "Gallery"} <span className="text-muted-foreground font-normal">({data.gallery.length} {isAr ? "صور" : "images"})</span>
                   </p>
                   <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={(e) => handleGalleryUpload(e.target.files)} />
-                  <Tooltip tip={isAr ? "حتى 5 صور مرفوعة (JPEG, PNG, WebP)" : "Up to 5 uploaded images — JPEG, PNG or WebP"} side="bottom">
-                    <button
-                      onClick={() => galleryInputRef.current?.click()}
-                      disabled={galleryUploading || uploadedImageCount >= 5}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
-                    >
-                      {galleryUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                      {galleryUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع" : "Upload")}
-                    </button>
-                  </Tooltip>
+                  <div className="flex items-center gap-2">
+                    <Tooltip tip={isAr ? "ابحث عن صور مجانية من Pexels" : "Search free photos from Pexels"} side="bottom">
+                      <button
+                        onClick={() => openPicker("gallery")}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border hover:border-[#0066cc] hover:text-[#0066cc] rounded-[6px] transition-colors"
+                      >
+                        <Search size={12} />
+                        {isAr ? "بحث عن صور" : "Search photos"}
+                      </button>
+                    </Tooltip>
+                    <Tooltip tip={isAr ? "حتى 5 صور مرفوعة (JPEG, PNG, WebP)" : "Up to 5 uploaded images — JPEG, PNG or WebP"} side="bottom">
+                      <button
+                        onClick={() => galleryInputRef.current?.click()}
+                        disabled={galleryUploading || uploadedImageCount >= 5}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
+                      >
+                        {galleryUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                        {galleryUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع" : "Upload")}
+                      </button>
+                    </Tooltip>
+                  </div>
                 </div>
                 {uploadedImageCount >= 5 && (
                   <p className="text-xs text-amber-500 mb-2">{isAr ? "وصلت لحد الرفع (5 صور) — احذف صورة لرفع أخرى." : "Upload limit reached (5) — delete one to upload a new one."}</p>
@@ -895,16 +956,27 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm text-foreground font-medium">{isAr ? "صورة من نحن" : "About Us image"}</p>
                   <input ref={aboutInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => handleAboutUpload(e.target.files)} />
-                  <Tooltip tip={isAr ? "صورة قسم 'من نحن' في موقعك" : "Photo shown in your About Us section"} side="bottom">
-                    <button
-                      onClick={() => aboutInputRef.current?.click()}
-                      disabled={aboutUploading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
-                    >
-                      {aboutUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                      {aboutUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع صورة" : "Upload image")}
-                    </button>
-                  </Tooltip>
+                  <div className="flex items-center gap-2">
+                    <Tooltip tip={isAr ? "ابحث عن صورة مجانية من Pexels" : "Search free photos from Pexels"} side="bottom">
+                      <button
+                        onClick={() => openPicker("about")}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border hover:border-[#0066cc] hover:text-[#0066cc] rounded-[6px] transition-colors"
+                      >
+                        <Search size={12} />
+                        {isAr ? "بحث" : "Search"}
+                      </button>
+                    </Tooltip>
+                    <Tooltip tip={isAr ? "صورة قسم 'من نحن' في موقعك" : "Photo shown in your About Us section"} side="bottom">
+                      <button
+                        onClick={() => aboutInputRef.current?.click()}
+                        disabled={aboutUploading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
+                      >
+                        {aboutUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                        {aboutUploading ? (isAr ? "جارٍ الرفع…" : "Uploading…") : (isAr ? "رفع صورة" : "Upload image")}
+                      </button>
+                    </Tooltip>
+                  </div>
                 </div>
                 {data.about_image ? (
                   <div className="relative w-full h-36 rounded-[6px] overflow-hidden">
@@ -1189,6 +1261,112 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
           </motion.div>
         </div>
       )}
+
+      {/* ── Pexels image picker modal ── */}
+      <AnimatePresence>
+        {pickerOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[60] flex flex-col bg-background"
+          >
+            {/* Header */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
+              <button onClick={() => setPickerOpen(false)} className="p-2 rounded-[6px] hover:bg-secondary transition-colors">
+                <X size={18} />
+              </button>
+              <form
+                onSubmit={(e) => { e.preventDefault(); searchPexels(pickerQuery, 1); }}
+                className="flex-1 flex gap-2"
+              >
+                <div className="relative flex-1">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                  <input
+                    ref={pickerSearchRef}
+                    value={pickerQuery}
+                    onChange={(e) => setPickerQuery(e.target.value)}
+                    placeholder={isAr ? "ابحث عن صورة…" : "Search photos…"}
+                    className="w-full bg-secondary border border-border rounded-[6px] pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-[#0066cc]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={pickerLoading}
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white rounded-[6px] transition-colors"
+                >
+                  {pickerLoading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+                  {isAr ? "بحث" : "Search"}
+                </button>
+                {pickerResults.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => searchPexels(pickerQuery, pickerPage + 1)}
+                    disabled={pickerLoading}
+                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-border hover:border-border/60 rounded-[6px] transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw size={14} className={pickerLoading ? "animate-spin" : ""} />
+                    {isAr ? "مزيد" : "More"}
+                  </button>
+                )}
+              </form>
+            </div>
+
+            {/* Context label */}
+            <div className="px-4 py-2 shrink-0">
+              <span className="text-xs text-muted-foreground">
+                {isAr
+                  ? (pickerTarget === "gallery" ? "اختر صورة لإضافتها إلى المعرض" : "اختر صورة لقسم 'من نحن'")
+                  : (pickerTarget === "gallery" ? "Tap a photo to add it to your gallery" : "Tap a photo to set as your About Us image")}
+              </span>
+            </div>
+
+            {/* Results grid */}
+            <div className="flex-1 overflow-y-auto px-4 pb-6">
+              {pickerLoading && pickerResults.length === 0 ? (
+                <div className="flex items-center justify-center h-40">
+                  <Loader2 size={28} className="animate-spin text-muted-foreground" />
+                </div>
+              ) : pickerResults.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-40 gap-2 text-muted-foreground">
+                  <Search size={24} />
+                  <p className="text-sm">{isAr ? "ابحث للعثور على صور" : "Search to find photos"}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 mt-1">
+                  {pickerResults.map((photo) => (
+                    <button
+                      key={photo.id}
+                      onClick={() => pickPexelsImage(photo.src.large2x)}
+                      className="relative aspect-square rounded-[6px] overflow-hidden group bg-secondary focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photo.src.medium} alt={photo.alt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="bg-white/90 text-gray-900 text-xs font-semibold px-3 py-1 rounded-[4px]">
+                          {isAr ? "اختر" : "Select"}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {pickerResults.length > 0 && (
+                <div className="flex justify-center mt-4">
+                  <button
+                    onClick={() => searchPexels(pickerQuery, pickerPage + 1)}
+                    disabled={pickerLoading}
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm border border-border rounded-[6px] hover:border-border/60 disabled:opacity-50 transition-colors"
+                  >
+                    <RefreshCw size={14} className={pickerLoading ? "animate-spin" : ""} />
+                    {isAr ? "تحميل المزيد" : "Load more"}
+                  </button>
+                </div>
+              )}
+              <p className="text-center text-[10px] text-muted-foreground mt-3">Photos provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline">Pexels</a></p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

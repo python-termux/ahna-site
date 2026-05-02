@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/language";
 
 export default function Footer() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const brandName = lang === "ar" ? "سيريا فلو" : "Syria Flow";
 
   return (
     <footer className="mt-auto">
@@ -16,7 +17,7 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start gap-3">
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <Link href="/" className="text-sm font-semibold hover:opacity-70 transition-opacity" style={{ color: "#0066cc" }}>
-              syrflow.com
+              {brandName}
             </Link>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs text-muted-foreground">
               <Link href="/pricing"        className="hover:text-foreground transition-colors">{t.footer.pricing}</Link>
@@ -29,7 +30,7 @@ export default function Footer() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} syrflow.com. {t.footer.copyright}
+            © {new Date().getFullYear()} {brandName}. {t.footer.copyright}
           </p>
         </div>
       </div>
