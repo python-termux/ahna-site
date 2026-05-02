@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Toaster } from "sonner";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -25,14 +26,23 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const theme = cookieStore.get("syrflow_theme")?.value === "light" ? "light" : "dark";
+  const lang = cookieStore.get("syrflow_lang")?.value === "ar" ? "ar" : "en";
+
   return (
-    <html lang="en" className={cn("dark font-sans scroll-smooth")} suppressHydrationWarning>
+    <html
+      lang={lang}
+      dir={lang === "ar" ? "rtl" : "ltr"}
+      className={cn(theme === "dark" ? "dark" : "", "font-sans scroll-smooth")}
+      suppressHydrationWarning
+    >
       <head>
         <Script
           id="anti-flash"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme');document.documentElement.classList.toggle('dark',(t??'dark')==='dark');var l=localStorage.getItem('lang');if(l==='ar'){document.documentElement.dir='rtl';document.documentElement.lang='ar';}}catch(e){}` }}
+          dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme')||document.cookie.match(/syrflow_theme=([^;]+)/)?.[1];document.documentElement.classList.toggle('dark',(t??'dark')==='dark');var l=localStorage.getItem('lang')||document.cookie.match(/syrflow_lang=([^;]+)/)?.[1];if(l==='ar'){document.documentElement.dir='rtl';document.documentElement.lang='ar';}else{document.documentElement.dir='ltr';}}catch(e){}` }}
         />
       </head>
       <body className="antialiased">

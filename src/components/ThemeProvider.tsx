@@ -28,6 +28,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme((t) => {
       const next = t === "dark" ? "light" : "dark";
       localStorage.setItem("theme", next);
+      document.cookie = `syrflow_theme=${next};path=/;max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
       document.documentElement.classList.toggle("dark", next === "dark");
       return next;
     });
