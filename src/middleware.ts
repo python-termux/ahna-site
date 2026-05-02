@@ -12,11 +12,11 @@ function securityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-export function proxy(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const hostname = req.headers.get("host") ?? "";
   const { pathname } = req.nextUrl;
 
-  // ── Subdomain routing: {slug}.syrflow.com → /site/{slug} ──────────────────
+  // Subdomain routing: {slug}.syrflow.com → /site/{slug}
   if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
     const subdomain = hostname.slice(0, -(ROOT_DOMAIN.length + 1));
     if (subdomain && !APP_SUBDOMAINS.has(subdomain)) {
@@ -28,7 +28,6 @@ export function proxy(req: NextRequest) {
     }
   }
 
-  // ── Security headers on all main app responses ─────────────────────────────
   const res = NextResponse.next();
   res.headers.set("X-Frame-Options", "DENY");
   securityHeaders(res);
