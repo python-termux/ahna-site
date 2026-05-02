@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
   MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
-  BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User, Link2,
+  BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User as UserIcon, Link2,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
@@ -47,7 +47,7 @@ const NAV = [
   { id: "hours",     icon: Clock     },
   { id: "social",    icon: Share2    },
   { id: "reviews",   icon: Star      },
-  { id: "account",   icon: User      },
+  { id: "account",   icon: UserIcon  },
 ] as const;
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -1048,7 +1048,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
               <div className="flex flex-col gap-4">
                 {/* Email info */}
                 <div className="bg-secondary/50 border border-border/40 rounded-[8px] px-4 py-3 flex items-center gap-2">
-                  <User size={14} className="text-muted-foreground shrink-0" />
+                  <UserIcon size={14} className="text-muted-foreground shrink-0" />
                   <span className="text-sm text-muted-foreground truncate">{userEmail}</span>
                 </div>
 
