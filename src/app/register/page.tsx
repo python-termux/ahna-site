@@ -296,6 +296,14 @@ export default function RegisterPage() {
   const [authError, setAuthError] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
+  // OTP verification in register
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [otpCodes, setOtpCodes] = useState(["", "", "", "", "", ""]);
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [otpError, setOtpError] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
+
   function getRandomSteps(pool: string[]) {
     const shuffled = [...pool];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -442,7 +450,8 @@ export default function RegisterPage() {
   async function createAccount(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit || !place) return;
-    setAuthLoading(true); setAuthError("");
+    setAuthLoading(true);
+    setAuthError("");
 
     // Validate email format
     const emailValidation = validateEmail(email);
@@ -460,30 +469,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const { error: authErr } = await supabase.auth.signUp({ email: email.trim(), password });
-    if (authErr) { setAuthError(authErr.message); setAuthLoading(false); return; }
-    const bizRes = await fetch("/api/business", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: place.name, tagline: "", description: place.description,
-        category: place.category, phone: place.phone, email: "",
-        address: place.address, maps_url: place.mapsUrl || "",
-        website: place.website, hero_image: "", gallery: place.images,
-        hours: place.hours, services: [],
-        testimonials: place.reviews.map((r) => ({ author: r.author, role: "", text: r.text, rating: r.rating })),
-        social: {}, theme_color: "white-emerald", stat_years: "",
-        stat_clients: place.reviewCount ? `${place.reviewCount.toLocaleString()}+` : "",
-        stat_projects: place.rating ? `${place.rating} ★` : "",
-      }),
-    });
-    if (!bizRes.ok) {
-      const d = await bizRes.json();
-      setAuthError(d.error ?? "Account created but failed to save business");
-      setAuthLoading(false); return;
-    }
-
-    // Send OTP for verification before dashboard
+    // Step 1: Send OTP (do NOT create account yet)
     const otpRes = await fetch("/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -491,21 +477,150 @@ export default function RegisterPage() {
     });
 
     if (!otpRes.ok) {
-      // OTP send failed — graceful degradation
+      setAuthError(isAr ? "فشل إرسال رمز التحقق" : "Failed to send verification code");
+      setAuthLoading(false);
+      return;
+    }
+
+    // Show OTP verification UI
+    setShowOtpVerification(true);
+    setOtpCodes(["", "", "", "", "", ""]);
+    setOtpError("");
+    setResendCountdown(60);
+    setAuthLoading(false);
+    setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+  }
+
+  async function verifyOtpAndCreateAccount() {
+    const code = otpCodes.join("");
+    if (code.length !== 6 || !place) {
+      setOtpError(isAr ? "أدخل جميع الأرقام الستة" : "Enter all 6 digits");
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpError("");
+
+    try {
+      // Verify OTP first
+      const verifyRes = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), code, purpose: "login" }),
+      });
+
+      if (!verifyRes.ok) {
+        const data = await verifyRes.json().catch(() => ({}));
+        setOtpError(data.error || (isAr ? "رمز غير صحيح" : "Invalid code"));
+        setOtpLoading(false);
+        return;
+      }
+
+      // OTP verified! Now create account and business
+      const { error: authErr } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+      });
+
+      if (authErr) {
+        setOtpError(authErr.message);
+        setOtpLoading(false);
+        return;
+      }
+
+      // Create business
+      const bizRes = await fetch("/api/business", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: place.name,
+          tagline: "",
+          description: place.description,
+          category: place.category,
+          phone: place.phone,
+          email: "",
+          address: place.address,
+          maps_url: place.mapsUrl || "",
+          website: place.website,
+          hero_image: "",
+          gallery: place.images,
+          hours: place.hours,
+          services: [],
+          testimonials: place.reviews.map((r) => ({
+            author: r.author,
+            role: "",
+            text: r.text,
+            rating: r.rating,
+          })),
+          social: {},
+          theme_color: "white-emerald",
+          stat_years: "",
+          stat_clients: place.reviewCount ? `${place.reviewCount.toLocaleString()}+` : "",
+          stat_projects: place.rating ? `${place.rating} ★` : "",
+        }),
+      });
+
+      if (!bizRes.ok) {
+        const d = await bizRes.json();
+        setOtpError(d.error ?? "Failed to create business");
+        setOtpLoading(false);
+        return;
+      }
+
+      // Send welcome email
       fetch("/api/auth/welcome-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ businessName: place.name }),
       }).catch(() => {});
-      router.push("/dashboard");
-      return;
-    }
 
-    // Redirect to OTP verification
-    router.push(
-      `/auth/verify-otp?email=${encodeURIComponent(email.trim())}&purpose=login`
-    );
+      // Success! Redirect to dashboard
+      router.push("/dashboard");
+    } catch (err: any) {
+      setOtpError(err.message || (isAr ? "حدث خطأ" : "An error occurred"));
+      setOtpLoading(false);
+    }
   }
+
+  const handleOtpInputChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const newCodes = [...otpCodes];
+    newCodes[index] = digit;
+    setOtpCodes(newCodes);
+
+    if (digit && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otpCodes[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  async function handleResendOtp() {
+    if (resendCountdown > 0) return;
+    const otpRes = await fetch("/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim(), purpose: "login" }),
+    });
+    if (otpRes.ok) {
+      setOtpCodes(["", "", "", "", "", ""]);
+      setResendCountdown(60);
+      otpInputRefs.current[0]?.focus();
+    }
+  }
+
+  // Countdown timer for resend
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCountdown]);
 
   return (
     <>
@@ -758,89 +873,144 @@ export default function RegisterPage() {
               {/* ── STEP 3 ── */}
               {step === 3 && (
                 <motion.div key="step3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }}>
-                  <h1 className="text-3xl font-bold mb-2">{isAr ? "إنشاء حسابك" : "Create your account"}</h1>
-                  <p className="text-muted-foreground mb-8">{isAr ? "اكتمل تقريباً. أعدّ بيانات تسجيل الدخول." : "Almost done. Set up your login details."}</p>
+                  <AnimatePresence mode="wait">
+                    {!showOtpVerification ? (
+                      <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+                        <h1 className="text-3xl font-bold mb-2">{isAr ? "إنشاء حسابك" : "Create your account"}</h1>
+                        <p className="text-muted-foreground mb-8">{isAr ? "اكتمل تقريباً. أعدّ بيانات تسجيل الدخول." : "Almost done. Set up your login details."}</p>
 
-                  {authError && (
-                    <div className="mb-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
-                      {authError}
-                    </div>
-                  )}
-
-                  <form onSubmit={createAccount} className="flex flex-col gap-5">
-                    <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "البريد الإلكتروني" : "Email address"}</label>
-                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                        placeholder={isAr ? "you@example.com" : "you@example.com"} required
-                        className={`w-full bg-background border rounded-lg px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${email.length > 0 ? (emailValid ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
-                      />
-                      {email.length > 0 && !emailValid && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{isAr ? "أدخل بريداً إلكترونياً صحيحاً" : "Enter a valid email address"}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "كلمة المرور" : "Password"}</label>
-                      <div className="relative">
-                        <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
-                          placeholder={isAr ? "8 أحرف على الأقل" : "At least 8 characters"} required
-                          className="w-full bg-background border border-input rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
-                        />
-                        <button type="button" onClick={() => setShowPw((v) => !v)}
-                          className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-                          {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
-                        </button>
-                      </div>
-                      {password.length > 0 && (
-                        <div className="mt-2">
-                          <div className="flex gap-1 mb-1">
-                            {[0,1,2,3].map((i) => <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i < pwStrength ? strengthColor[pwStrength] : "bg-border"}`} />)}
+                        {authError && (
+                          <div className="mb-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
+                            {authError}
                           </div>
-                          <p className="text-xs text-gray-500">{strengthLabel[pwStrength]}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "تأكيد كلمة المرور" : "Confirm password"}</label>
-                      <div className="relative">
-                        <input type={showConfirmPw ? "text" : "password"} value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
-                          placeholder={isAr ? "كرّر كلمة المرور" : "Repeat your password"} required
-                          className={`w-full bg-background border rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${confirmPw.length > 0 ? (pwMatch ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
-                        />
-                        <button type="button" onClick={() => setShowConfirmPw((v) => !v)}
-                          className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-                          {showConfirmPw ? <EyeOff size={17} /> : <Eye size={17} />}
-                        </button>
-                      </div>
-                      {confirmPw.length > 0 && !pwMatch && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{isAr ? "كلمتا المرور غير متطابقتين" : "Passwords do not match"}</p>}
-                    </div>
-
-                    <div className="flex items-start gap-2.5 mb-2">
-                      <input
-                        type="checkbox"
-                        id="terms"
-                        checked={termsAccepted}
-                        onChange={(e) => setTermsAccepted(e.target.checked)}
-                        className="w-4 h-4 mt-0.5 rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] cursor-pointer"
-                      />
-                      <label htmlFor="terms" className="text-xs text-muted-foreground leading-snug cursor-pointer hover:text-foreground transition-colors">
-                        {isAr ? (
-                          <>بإنشاء حساب، توافق على{" "}<Link href="/terms" className="underline hover:text-foreground font-medium text-foreground">شروط الخدمة</Link> و<Link href="/privacy-policy" className="underline hover:text-foreground font-medium text-foreground">سياسة الخصوصية</Link>.</>
-                        ) : (
-                          <>By creating an account you agree to our{" "}<Link href="/terms" className="underline hover:text-foreground font-medium text-foreground">Terms</Link> and{" "}<Link href="/privacy-policy" className="underline hover:text-foreground font-medium text-foreground">Privacy Policy</Link>.</>
                         )}
-                      </label>
-                    </div>
-                    {!termsAccepted && <p className="text-xs text-red-600 dark:text-red-400 mb-4">{isAr ? "يجب قبول الشروط والأحكام" : "You must accept the Terms and Privacy Policy"}</p>}
 
-                    <button type="submit" disabled={authLoading || !canSubmit}
-                      className="flex items-center justify-center gap-2 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 py-3.5 rounded-lg font-medium transition-colors text-white">
-                      {authLoading ? <Loader2 size={16} className="animate-spin" /> : (isAr ? "إنشاء الحساب" : "Create account")}
-                    </button>
-                  </form>
+                        <form onSubmit={createAccount} className="flex flex-col gap-5">
+                          <div>
+                            <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "البريد الإلكتروني" : "Email address"}</label>
+                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                              placeholder={isAr ? "you@example.com" : "you@example.com"} required
+                              className={`w-full bg-background border rounded-lg px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${email.length > 0 ? (emailValid ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
+                            />
+                            {email.length > 0 && !emailValid && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{isAr ? "أدخل بريداً إلكترونياً صحيحاً" : "Enter a valid email address"}</p>}
+                          </div>
 
-                  <button onClick={() => setStep(2)} className="flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-400 mt-4 w-full transition-colors">
-                    {isAr ? "العودة لمعاينة النشاط" : "Back to business preview"}
-                  </button>
+                          <div>
+                            <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "كلمة المرور" : "Password"}</label>
+                            <div className="relative">
+                              <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
+                                placeholder={isAr ? "8 أحرف على الأقل" : "At least 8 characters"} required
+                                className="w-full bg-background border border-input rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
+                              />
+                              <button type="button" onClick={() => setShowPw((v) => !v)}
+                                className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                                {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
+                              </button>
+                            </div>
+                            {password.length > 0 && (
+                              <div className="mt-2">
+                                <div className="flex gap-1 mb-1">
+                                  {[0,1,2,3].map((i) => <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i < pwStrength ? strengthColor[pwStrength] : "bg-border"}`} />)}
+                                </div>
+                                <p className="text-xs text-gray-500">{strengthLabel[pwStrength]}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "تأكيد كلمة المرور" : "Confirm password"}</label>
+                            <div className="relative">
+                              <input type={showConfirmPw ? "text" : "password"} value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
+                                placeholder={isAr ? "كرّر كلمة المرور" : "Repeat your password"} required
+                                className={`w-full bg-background border rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${confirmPw.length > 0 ? (pwMatch ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
+                              />
+                              <button type="button" onClick={() => setShowConfirmPw((v) => !v)}
+                                className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                                {showConfirmPw ? <EyeOff size={17} /> : <Eye size={17} />}
+                              </button>
+                            </div>
+                            {confirmPw.length > 0 && !pwMatch && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{isAr ? "كلمتا المرور غير متطابقتين" : "Passwords do not match"}</p>}
+                          </div>
+
+                          <div className="flex items-start gap-2.5 mb-2">
+                            <input
+                              type="checkbox"
+                              id="terms"
+                              checked={termsAccepted}
+                              onChange={(e) => setTermsAccepted(e.target.checked)}
+                              className="w-4 h-4 mt-0.5 rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] cursor-pointer"
+                            />
+                            <label htmlFor="terms" className="text-xs text-muted-foreground leading-snug cursor-pointer hover:text-foreground transition-colors">
+                              {isAr ? (
+                                <>بإنشاء حساب، توافق على{" "}<Link href="/terms" className="underline hover:text-foreground font-medium text-foreground">شروط الخدمة</Link> و<Link href="/privacy-policy" className="underline hover:text-foreground font-medium text-foreground">سياسة الخصوصية</Link>.</>
+                              ) : (
+                                <>By creating an account you agree to our{" "}<Link href="/terms" className="underline hover:text-foreground font-medium text-foreground">Terms</Link> and{" "}<Link href="/privacy-policy" className="underline hover:text-foreground font-medium text-foreground">Privacy Policy</Link>.</>
+                              )}
+                            </label>
+                          </div>
+                          {!termsAccepted && <p className="text-xs text-red-600 dark:text-red-400 mb-4">{isAr ? "يجب قبول الشروط والأحكام" : "You must accept the Terms and Privacy Policy"}</p>}
+
+                          <button type="submit" disabled={authLoading || !canSubmit}
+                            className="flex items-center justify-center gap-2 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 py-3.5 rounded-lg font-medium transition-colors text-white">
+                            {authLoading ? <Loader2 size={16} className="animate-spin" /> : (isAr ? "إنشاء الحساب" : "Create account")}
+                          </button>
+                        </form>
+
+                        <button onClick={() => setStep(2)} className="flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-400 mt-4 w-full transition-colors">
+                          {isAr ? "العودة لمعاينة النشاط" : "Back to business preview"}
+                        </button>
+                      </motion.div>
+                    ) : (
+                      <motion.div key="otp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+                        <h1 className="text-3xl font-bold mb-2">{isAr ? "تحقق من بريدك" : "Verify your email"}</h1>
+                        <p className="text-muted-foreground mb-8">{isAr ? `أدخل الرمز المرسل إلى ${email}` : `Enter the 6-digit code sent to ${email}`}</p>
+
+                        <div className="flex gap-2 justify-center mb-6">
+                          {otpCodes.map((code, index) => (
+                            <input
+                              key={index}
+                              ref={(el) => {
+                                otpInputRefs.current[index] = el;
+                              }}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={1}
+                              value={code}
+                              onChange={(e) => handleOtpInputChange(index, e.target.value)}
+                              onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                              placeholder="0"
+                              disabled={otpLoading}
+                              className="w-12 h-12 text-center text-2xl font-bold border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                            />
+                          ))}
+                        </div>
+
+                        {otpError && <p className="text-red-500 text-sm text-center mb-6">{otpError}</p>}
+
+                        <button
+                          onClick={verifyOtpAndCreateAccount}
+                          disabled={otpLoading || otpCodes.join("").length !== 6}
+                          className="w-full px-4 py-3 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                        >
+                          {otpLoading ? <Loader2 size={16} className="animate-spin" /> : (isAr ? "تحقق والإنشاء" : "Verify & Create")}
+                        </button>
+
+                        <div className="mt-6 text-center">
+                          <button
+                            onClick={handleResendOtp}
+                            disabled={resendCountdown > 0 || otpLoading}
+                            className="text-[#0066cc] hover:text-[#0071e3] disabled:text-gray-400 font-medium text-sm transition-colors"
+                          >
+                            {resendCountdown > 0
+                              ? `${isAr ? "إعادة الإرسال خلال" : "Resend in"} ${resendCountdown}s`
+                              : isAr
+                                ? "إعادة الإرسال"
+                                : "Resend code"}
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               )}
 
