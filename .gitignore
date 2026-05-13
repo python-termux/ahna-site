@@ -1,4 +1,6 @@
-# ── Dependencies ──────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# Dependencies
+# ═══════════════════════════════════════════════════════════════════════════════
 node_modules/
 .pnp
 .pnp.*
@@ -7,59 +9,277 @@ node_modules/
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
 
-# ── Next.js ───────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# Next.js
+# ═══════════════════════════════════════════════════════════════════════════════
 .next/
 out/
 build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+.turbo/
+.turbopack/
+turbo.json
 
-# ── Environment variables ─────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# Environment Variables (NEVER commit these!)
+# ═══════════════════════════════════════════════════════════════════════════════
 .env
 .env.local
+.env.*.local
 .env.development
 .env.development.local
 .env.test
 .env.test.local
 .env.production
 .env.production.local
-.env*.local
+.env.*.local
+.env.*.example
+!.env.local.example
 
-# ── TypeScript ────────────────────────────────────────────────────────────────
-*.tsbuildinfo
-next-env.d.ts
-
-# ── Testing ───────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# Testing
+# ═══════════════════════════════════════════════════════════════════════════════
 coverage/
 .nyc_output/
+.jest/
+.coverage/
+junit.xml
+*.lcov
 
-# ── Debug logs ────────────────────────────────────────────────────────────────
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-*.log
-
-# ── OS files ──────────────────────────────────────────────────────────────────
-.DS_Store
-.DS_Store?
-._*
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# ── Editor / IDE ──────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# IDE & Editor
+# ═══════════════════════════════════════════════════════════════════════════════
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+!.vscode/launch.json
 .idea/
+.DS_Store
+.AppleDouble
+.LSOverride
 *.swp
 *.swo
 *~
+.vim/
+.emacs.d/
+*.sublime-project
+*.sublime-workspace
+.vs/
+.vscode-test/
+vscode-test/
 
-# ── Vercel ────────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# Logs
+# ═══════════════════════════════════════════════════════════════════════════════
+npm-debug.log*
+npm-error.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+pnpm-error.log*
+lerna-debug.log*
+*.log
+logs/
+*.log.*
+debug/
+.server_debug
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# OS Files
+# ═══════════════════════════════════════════════════════════════════════════════
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.stackdump
+[Dd]esktop.ini
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Vercel
+# ═══════════════════════════════════════════════════════════════════════════════
 .vercel/
+.vercelignore
 
-# ── Misc ──────────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# Deployment & Build
+# ═══════════════════════════════════════════════════════════════════════════════
+# Vercel
+.vercel
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Misc
+# ═══════════════════════════════════════════════════════════════════════════════
 *.pem
+*.key
+*.crt
+*.cert
 .cache/
-dist/
+.contentlayer/
+.eslintcache
+*.bak
+*.tmp
+*.temp
+*.old
+.env.*.backup
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Local development
+# ═══════════════════════════════════════════════════════════════════════════════
+.local/
+.devcontainer/.devcontainer.json
+.env.local.dev
+.claude/
+dev.log
+test.log
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Browser & Runtime
+# ═══════════════════════════════════════════════════════════════════════════════
+*.crx
+*.xpi
+*.exe
+*.msi
+.cache/
+.parcel-cache
+.eslintcache
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Credentials & Secrets (CRITICAL!)
+# ═══════════════════════════════════════════════════════════════════════════════
+credentials.json
+credentials.*.json
+secret*.json
+private*.json
+.credentials/
+aws.json
+gcloud-*.json
+.aws/
+.gcp/
+*.pem
+*.key
+*.pfx
+*.p12
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Generated Files (keep up-to-date with code)
+# ═══════════════════════════════════════════════════════════════════════════════
+src/types/database.ts.generated
+generated/
+codegen/
+.graphql-config.json.cache
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Platform-specific
+# ═══════════════════════════════════════════════════════════════════════════════
+# macOS
+.AppleDouble
+.LSOverride
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+.Spotlight-V100
+.Trashes
+
+# Linux
+.directory
+.Trash-*
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Docker
+# ═══════════════════════════════════════════════════════════════════════════════
+docker-compose.override.yml
+.dockerignore
+Dockerfile.dev
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CI/CD
+# ═══════════════════════════════════════════════════════════════════════════════
+.github/workflows/*.local.yml
+.gitlab-ci.local.yml
+.circleci/local.yml
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Development Tools
+# ═══════════════════════════════════════════════════════════════════════════════
+.husky/
+.lint-staged
+.prettierignore
+.prettierrc.local.json
+.eslintignore
+.eslintrc.local.json
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Temporary Files
+# ═══════════════════════════════════════════════════════════════════════════════
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.#*
+*.orig
+.merge_file_*
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Database
+# ═══════════════════════════════════════════════════════════════════════════════
+*.db
+*.sqlite
+*.sqlite3
+.postgres/
+pgdata/
+dump.sql
+backup.sql
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Uploads & User Content
+# ═══════════════════════════════════════════════════════════════════════════════
+uploads/
+public/uploads/
+tmp/
+temp/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IDE Plugins & Extensions
+# ═══════════════════════════════════════════════════════════════════════════════
+.vscode/extensions
+.vscode-test/
+extensions.json
+node_modules/.bin/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Keep These Files (Exceptions to ignore rules)
+# ═══════════════════════════════════════════════════════════════════════════════
+!.gitkeep
+!.gitignore
+!.gitattributes
+!.github/
+!.editorconfig
+!CHANGELOG.md
+!README.md
+!LICENSE
+!.env.local.example
+!.npmrc
+!next.config.ts
+!tsconfig.json
+!tailwind.config.ts
+!vercel.json
