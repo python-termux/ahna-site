@@ -4,10 +4,41 @@ const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
 const APP_SUBDOMAINS = new Set(["app", "www", "api", "dashboard", "mail", "smtp"]);
 
 function securityHeaders(res: NextResponse): NextResponse {
+  // Prevent MIME type sniffing
   res.headers.set("X-Content-Type-Options", "nosniff");
+
+  // Control referrer information
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  res.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+
+  // Disable dangerous APIs
+  res.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
+
+  // Prevent DNS prefetch which can leak hostnames
   res.headers.set("X-DNS-Prefetch-Control", "off");
+
+  // XSS protection for older browsers
+  res.headers.set("X-XSS-Protection", "1; mode=block");
+
+  // Prevent clickjacking attacks
+  res.headers.set("X-Frame-Options", "SAMEORIGIN");
+
+  // Content Security Policy - strict but allows necessary resources
+  res.headers.set(
+    "Content-Security-Policy",
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel.app cdn.jsdelivr.net; " +
+    "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; " +
+    "img-src 'self' data: https:; " +
+    "font-src 'self' data:; " +
+    "connect-src 'self' https:; " +
+    "frame-ancestors 'self'; " +
+    "base-uri 'self'; " +
+    "form-action 'self';"
+  );
+
+  // Strict Transport Security
+  res.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+
   return res;
 }
 

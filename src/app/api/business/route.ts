@@ -3,13 +3,11 @@ import { getHeroImage, getImagesForCategory } from "@/lib/images";
 import { generateWhyUs } from "@/lib/why-us";
 import { NextResponse } from "next/server";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { sanitizeInput, validatePhoneNumber, validateWebsiteUrl, validateThemeColor } from "@/lib/validation";
 
 // Strip control characters and null bytes, enforce max length
 function clean(v: unknown, max = 500): string {
-  return String(v ?? "")
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
-    .trim()
-    .slice(0, max);
+  return sanitizeInput(v, max);
 }
 
 // Fields the client is allowed to update via PATCH — nothing else touches the DB
@@ -30,6 +28,24 @@ export async function POST(request: Request) {
   const name = clean(body.name, 100);
   const category = clean(body.category, 100) || "Other";
   if (!name) return NextResponse.json({ error: "name is required" }, { status: 400 });
+
+  // Validate phone if provided
+  const phone = clean(body.phone, 30);
+  if (phone) {
+    const phoneValidation = validatePhoneNumber(phone);
+    if (!phoneValidation.valid) {
+      return NextResponse.json({ error: phoneValidation.error || "Invalid phone number" }, { status: 400 });
+    }
+  }
+
+  // Validate website if provided
+  const website = clean(body.website, 500);
+  if (website) {
+    const websiteValidation = validateWebsiteUrl(website);
+    if (!websiteValidation.valid) {
+      return NextResponse.json({ error: websiteValidation.error || "Invalid website URL" }, { status: 400 });
+    }
+  }
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -102,6 +118,24 @@ export async function PATCH(request: Request) {
     if (key in body) {
       if (typeof body[key] === "string") {
         fields[key] = clean(body[key], 500);
+
+        // Additional validation for specific fields
+        if (key === "phone") {
+          const validation = validatePhoneNumber(fields[key] as string);
+          if (!validation.valid) {
+            return NextResponse.json({ error: validation.error || "Invalid phone number" }, { status: 400 });
+          }
+        } else if (key === "website") {
+          const validation = validateWebsiteUrl(fields[key] as string);
+          if (!validation.valid) {
+            return NextResponse.json({ error: validation.error || "Invalid website URL" }, { status: 400 });
+          }
+        } else if (key === "theme_color") {
+          const validation = validateThemeColor(fields[key] as string);
+          if (!validation.valid) {
+            return NextResponse.json({ error: validation.error || "Invalid theme color" }, { status: 400 });
+          }
+        }
       } else {
         fields[key] = body[key];
       }

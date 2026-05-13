@@ -15,6 +15,7 @@ import type { PlaceResult } from "@/lib/places";
 import { useLanguage } from "@/lib/language";
 import { ThemeToggle } from "@/components/ThemeProvider";
 import { DotmSquare12 } from "@/components/ui/dotm-square-12";
+import { validateGoogleMapsUrl, validateEmail, validatePassword } from "@/lib/validation";
 
 const FB_APP_ID = "1463790922054350";
 
@@ -100,15 +101,10 @@ const fbReasoningPool = [
   "Fetching follower stats...", "Almost there...",
 ];
 
+// Use strict validation from validation library
 function isValidGoogleMapsUrl(url: string): boolean {
-  if (!url || !url.trim()) return false;
-  const patterns = [
-    /^https:\/\/(www\.)?google\.com\/maps\/place\/.+/i,
-    /^https:\/\/(www\.)?google\.com\/maps\/@.+/i,
-    /^https:\/\/maps\.app\.goo\.gl\/[A-Za-z0-9]+/i,
-    /^https:\/\/(www\.)?google\.com\/maps\/search\/.+/i,
-  ];
-  return patterns.some((p) => p.test(url.trim()));
+  const validation = validateGoogleMapsUrl(url);
+  return validation.valid;
 }
 
 function ImageSlider({ images }: { images: string[] }) {
@@ -237,22 +233,24 @@ function FBIcon({ size = 16, className = "" }: { size?: number; className?: stri
 function DotMatrixLoading({ step, steps, isAr }: { step: number; steps: string[]; isAr: boolean }) {
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden mt-2">
-      <div className="border border-[#0066cc]/30 rounded-[6px] bg-[#0066cc]/5 dark:bg-[#0066cc]/10 overflow-hidden">
-        <div className="flex items-center gap-1.5 px-4 py-2 border-b border-[#0066cc]/30 bg-[#0066cc]/8 dark:bg-[#0066cc]/15">
-       <div className="shrink-0" style={{ transform: "scale(0.5)", width: 12, height: 12 }}>
-        <DotmSquare12 />
-         </div>
-          <motion.span className="text-xs font-medium text-[#0066cc] dark:text-[#2997ff]" animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }}>
+      <div className="border border-blue-500/20 dark:border-blue-500/30 rounded-[6px] bg-blue-50/50 dark:bg-blue-950/20 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-blue-500/20 dark:border-blue-500/30 bg-blue-50/80 dark:bg-blue-950/30">
+          <div className="shrink-0 flex items-center justify-center" style={{ width: 16, height: 16 }}>
+            <div style={{ transform: "scale(0.65)", width: 12, height: 12, transformOrigin: "center" }}>
+              <DotmSquare12 />
+            </div>
+          </div>
+          <motion.span className="text-xs font-semibold text-blue-600 dark:text-blue-400" animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.5, repeat: Infinity }}>
             {isAr ? "الذكاء الاصطناعي يفكر" : "AI is thinking"}
           </motion.span>
-          <div className="flex gap-1 ml-auto">
+          <div className="flex gap-1.5 ml-auto">
             {[0, 0.2, 0.4].map((d, i) => (
-              <motion.span key={i} className="w-1 h-1 bg-[#2997ff] rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d }} />
+              <motion.span key={i} className="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d }} />
             ))}
           </div>
         </div>
-        <div className="px-4 py-3">
-          <motion.p key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="text-sm text-foreground">
+        <div className="px-4 py-3 bg-white dark:bg-gray-950">
+          <motion.p key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="text-sm text-gray-700 dark:text-gray-300">
             {steps[step]}
           </motion.p>
         </div>
@@ -444,7 +442,24 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!canSubmit || !place) return;
     setAuthLoading(true); setAuthError("");
-    const { error: authErr } = await supabase.auth.signUp({ email, password });
+
+    // Validate email format
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      setAuthError(emailValidation.error || "Invalid email");
+      setAuthLoading(false);
+      return;
+    }
+
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      setAuthError(passwordValidation.error || "Invalid password");
+      setAuthLoading(false);
+      return;
+    }
+
+    const { error: authErr } = await supabase.auth.signUp({ email: email.trim(), password });
     if (authErr) { setAuthError(authErr.message); setAuthLoading(false); return; }
     const bizRes = await fetch("/api/business", {
       method: "POST",

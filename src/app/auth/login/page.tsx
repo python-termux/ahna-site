@@ -8,6 +8,7 @@ import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/lib/language";
 import { ThemeToggle } from "@/components/ThemeProvider";
+import { validateEmail, validatePassword } from "@/lib/validation";
 
 export default function LoginPage() {
   const supabase = createClient();
@@ -24,8 +25,25 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    // Validate email format
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      setError(emailValidation.error || "Invalid email");
+      setLoading(false);
+      return;
+    }
+
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      setError(passwordValidation.error || "Invalid password");
+      setLoading(false);
+      return;
+    }
+
     const id = toast.loading(t.login.loggingIn);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) {
       toast.error(error.message, { id });
       setError(error.message);

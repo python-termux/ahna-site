@@ -46,7 +46,7 @@ const SITE_I18N = {
     statYears:      "Years",
     statReviews:    "Reviews",
     statRating:     "Rating",
-    poweredBy:      "Powered by Syria Flow",
+    byBrand:        "by Syria Flow",
   },
   ar: {
     navServices:    "خدماتنا",
@@ -77,7 +77,7 @@ const SITE_I18N = {
     statYears:      "سنوات",
     statReviews:    "تقييمات",
     statRating:     "التقييم",
-    poweredBy:      "مدعوم بـ سيريا فلو",
+    byBrand:        "بـ سيريا فلو",
   },
 };
 
@@ -587,16 +587,26 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className={`h-px mb-5 ${T.isLight ? "bg-gray-200" : "bg-gray-800"}`} />
         </div>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-start">
           <span className={`text-sm ${T.faint}`}>
             <a href="#hero" className={`font-semibold ${T.accentText}`}>{biz.name}</a>
             {" "}© {new Date().getFullYear()}
           </span>
-          <span className={`text-xs ${T.faint}`}>
-            <Link href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`} className={`hover:underline ${T.accentText}`}>{i18n.poweredBy}</Link>
-          </span>
         </div>
       </footer>
+
+      {/* ── FLOATING BY BRAND BADGE ── */}
+      <Link
+        href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`}
+        className={`fixed bottom-4 right-4 z-10 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-80 ${
+          T.isLight
+            ? "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300"
+            : "bg-gray-900 text-gray-400 hover:bg-gray-800 border border-gray-800"
+        }`}
+        title="Made with Syria Flow"
+      >
+        {i18n.byBrand}
+      </Link>
 
     </div>
   );

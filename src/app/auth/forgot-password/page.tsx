@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { Mail, Loader2 } from "lucide-react";
 import { useLanguage } from "@/lib/language";
+import { validateEmail } from "@/lib/validation";
 
 export default function ForgotPasswordPage() {
   const supabase = createClient();
@@ -19,7 +20,16 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+
+    // Validate email format
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      setError(emailValidation.error || "Invalid email");
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     });
     setLoading(false);

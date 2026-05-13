@@ -3,8 +3,7 @@ import { fetchPlaceFromUrl } from "@/lib/places";
 import { generateWhyUs } from "@/lib/why-us";
 import { NextResponse } from "next/server";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
-
-const MAPS_URL_RE = /^https:\/\/(maps\.app\.goo\.gl|maps\.google\.com|www\.google\.com\/maps|goo\.gl\/maps)\//;
+import { validateGoogleMapsUrl } from "@/lib/validation";
 
 // POST /api/places
 export async function POST(request: Request) {
@@ -23,14 +22,13 @@ export async function POST(request: Request) {
 
   const mapsUrl = typeof body.mapsUrl === "string" ? body.mapsUrl.trim() : "";
 
-  if (!mapsUrl) {
-    return NextResponse.json({ error: "mapsUrl is required" }, { status: 400 });
-  }
-  if (mapsUrl.length > 500) {
-    return NextResponse.json({ error: "URL too long" }, { status: 400 });
-  }
-  if (!MAPS_URL_RE.test(mapsUrl)) {
-    return NextResponse.json({ error: "Must be a valid Google Maps URL" }, { status: 400 });
+  // Strict Google Maps URL validation
+  const validation = validateGoogleMapsUrl(mapsUrl);
+  if (!validation.valid) {
+    return NextResponse.json(
+      { error: validation.error || "Must be a valid Google Maps URL" },
+      { status: 400 }
+    );
   }
 
   let place;

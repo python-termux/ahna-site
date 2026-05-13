@@ -10,7 +10,7 @@ import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
   MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
   BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User as UserIcon, Link2,
-  Search, RefreshCw,
+  Search, RefreshCw, HelpCircle,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
@@ -39,6 +39,7 @@ const DAYS_AR: Record<string, string> = {
 const ACCENT_THEMES = ["indigo","violet","rose","orange","emerald","sky","amber"];
 
 const NAV = [
+  { id: "guide",     icon: HelpCircle },
   { id: "branding",  icon: Type      },
   { id: "theme",     icon: Palette   },
   { id: "images",    icon: Images    },
@@ -52,6 +53,7 @@ const NAV = [
 ] as const;
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
+  guide:    { en: "Guide",     ar: "الدليل"           },
   branding: { en: "Branding",  ar: "العلامة التجارية" },
   theme:    { en: "Theme",     ar: "المظهر"           },
   images:   { en: "Images",    ar: "الصور"            },
@@ -65,6 +67,7 @@ const NAV_LABELS: Record<string, { en: string; ar: string }> = {
 };
 
 const NAV_DESCS: Record<string, { en: string; ar: string }> = {
+  guide:    { en: "Learn how to use this dashboard",      ar: "تعلم كيفية استخدام لوحة التحكم" },
   branding: { en: "Name, tagline & description",  ar: "الاسم والشعار والوصف"           },
   theme:    { en: "Colors and corner style",       ar: "الألوان وشكل الزوايا"          },
   images:   { en: "Gallery & about photo",         ar: "المعرض وصورة من نحن"           },
@@ -806,6 +809,439 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
         {/* ── Content ── */}
         <main className="flex-1 min-w-0">
           <div className="w-full max-w-2xl flex flex-col gap-5">
+
+            {/* GUIDE */}
+            {active === "guide" && <>
+              <div className="space-y-6">
+                {isAr ? (
+                  <>
+                    <div>
+                      <h2 className="text-xl font-bold mb-3">مرحباً بك في دليل الاستخدام</h2>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        هذا الدليل سيساعدك على فهم كل جزء من لوحة التحكم. اقرأ الأقسام أدناه لتتعلم كيفية استخدام أداتنا بشكل صحيح.
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">1</span> العلامة التجارية
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        هنا تضع معلومات أساسية عن نشاطك التجاري:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li><strong>اسم النشاط:</strong> اسم نشاطك التجاري الذي سيظهر في أعلى الصفحة (مثل: "مطعم الذوق")</li>
+                        <li><strong>الشعار:</strong> جملة جذابة تصف نشاطك بشكل مختصر (مثل: "أفضل الأطباق الشرقية الأصيلة")</li>
+                        <li><strong>الوصف:</strong> فقرة تفصيلية عن نشاطك وتاريخك وقيمتك</li>
+                        <li><strong>الفئة:</strong> تُحدد تلقائياً من خلال Google، تخبر العملاء نوع نشاطك</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> استخدم زر "✨" لتوليد النصوص بالذكاء الاصطناعي إذا كنت بحاجة لمساعدة
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">2</span> المظهر
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        خصص مظهر موقعك لينعكس هويتك التجارية:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li><strong>الوضع الفاتح أو الداكن:</strong> اختر إما خلفية بيضاء أو سوداء</li>
+                        <li><strong>لون الأساس:</strong> اختر لوناً يمثل علامتك التجارية (أزرق، برتقالي، وردي، إلخ)</li>
+                        <li><strong>شكل الزوايا:</strong> اجعل الزوايا حادة أو مستديرة حسب ذوقك</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> الألوان الدافئة مثل البرتقالي تشعر الناس بالراحة والمرح، والألوان الهادئة مثل الأزرق تبدو احترافية وموثوقة
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">3</span> الصور
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        أضف صوراً تعرض نشاطك بشكل احترافي:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li><strong>صورة البطل (الغلاف):</strong> الصورة الكبيرة التي تظهر في الأعلى عند فتح موقعك</li>
+                        <li><strong>المعرض:</strong> ألبوم من الصور يعرض منتجاتك أو خدماتك أو الديكور (حتى 5 صور)</li>
+                        <li><strong>صورة "من نحن":</strong> صورتك أنت أو فريقك أو مقر النشاط - تبني الثقة مع العملاء</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> استخدم صوراً واضحة وعالية الجودة. يمكنك البحث عن صور مجانية في مكتبتنا أو رفع صورك الخاصة
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">4</span> الخدمات أو المنتجات
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        أضف قائمة بما تقدمه (خدمات، أطباق، منتجات):
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li><strong>إذا كان نشاطك مطعماً:</strong> أضف الأطباق والمشروبات التي تقدمها</li>
+                        <li><strong>إذا كان نشاطك متجراً:</strong> أضف المنتجات التي تبيعها</li>
+                        <li><strong>إذا كان نشاطك خدمات:</strong> أضف أنواع الخدمات التي تقدمها</li>
+                        <li><strong>لكل عنصر:</strong> اسم واضح + وصف قصير يشرح الفائدة</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> وصف صغير جذاب يزيد من رغبة العملاء في الشراء أو الطلب
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">5</span> التواصل
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        معلومات الاتصال حتى يتمكن العملاء من الوصول إليك:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li><strong>الهاتف:</strong> رقمك أو أرقام نشاطك</li>
+                        <li><strong>البريد الإلكتروني:</strong> بريدك للاستفسارات والطلبات</li>
+                        <li><strong>العنوان:</strong> موقع نشاطك حتى يجدك الناس على الخريطة</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> تأكد من أن جميع المعلومات صحيحة ومحدثة
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">6</span> الإحصائيات
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        أرقام مثيرة تبني الثقة مع العملاء الجدد:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li><strong>سنوات الخبرة:</strong> كم عاماً أنت في هذا المجال؟</li>
+                        <li><strong>عدد العملاء:</strong> كم عميل خدمت حتى الآن؟</li>
+                        <li><strong>المشاريع المنجزة:</strong> كم مشروع أو عملية بيع أكملت؟</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> أرقام حقيقية وصادقة تزيد الثقة أكثر من أرقام مبالغ فيها
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">7</span> أوقات العمل
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        متى يكون نشاطك مفتوحاً؟
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li>حدد أوقات فتح وإغلاق النشاط لكل يوم من أيام الأسبوع</li>
+                        <li>يمكنك تحديد أيام إجازة أو إغلاق كامل</li>
+                        <li>العملاء سيرون هذه الأوقات قبل محاولة الاتصال بك</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> حدّث الأوقات عند أي تغيير مهم (عطلات، موسم مشغول، إلخ)
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">8</span> التواصل الاجتماعي
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        ربط وسائل التواصل الخاصة بك:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li><strong>إنستغرام:</strong> معرض صورك وقصصك اليومية</li>
+                        <li><strong>فيسبوك:</strong> صفحتك على فيسبوك للعملاء المحليين</li>
+                        <li><strong>تويتر:</strong> آخر أخبار ومشاركات متسارعة</li>
+                        <li><strong>تيك توك:</strong> فيديوهات قصيرة وعصرية</li>
+                        <li><strong>واتس آب:</strong> للتواصل المباشر مع العملاء</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> أضف الروابط التي تستخدمها فعلاً. الوسائل الفارغة تبدو غير احترافية
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">9</span> التقييمات
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        عرض تقييمات عملائك من Google:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li>التقييمات الحقيقية من عملاء سابقين تبني ثقة كبيرة</li>
+                        <li>كل تقييم يشمل النجوم (من 1 إلى 5) والتعليق</li>
+                        <li>تظهر على موقعك لتشجيع عملاء جدد</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> اطلب من عملائك الراضين أن يتركوا تقييماً على Google
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">10</span> الحساب
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        إدارة حسابك وأمانك:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 mr-4">
+                        <li><strong>تغيير كلمة المرور:</strong> استخدمها إذا شعرت أن حسابك قد لا يكون آمناً</li>
+                        <li><strong>حذف الحساب:</strong> خيار آخر إذا أردت حذف كل شيء (حذر: لا يمكن التراجع عنه)</li>
+                        <li>تغييرات هنا تؤثر على أمان حسابك الشخصي</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>نصيحة:</strong> استخدم كلمة مرور قوية (مزيج من الأحرف والأرقام والرموز)
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3">✅ الخطوات الأساسية للبدء:</h3>
+                      <ol className="text-sm text-muted-foreground space-y-2 mr-4 list-decimal">
+                        <li>ابدأ بـ "العلامة التجارية" - أضف اسمك والشعار</li>
+                        <li>أضف صوراً في قسم "الصور"</li>
+                        <li>اختر المظهر الذي تحب في قسم "المظهر"</li>
+                        <li>أضف أوقات العمل في قسم "أوقات العمل"</li>
+                        <li>أكمل باقي الأقسام حسب نشاطك</li>
+                        <li>اضغط "حفظ" عند الانتهاء من كل قسم</li>
+                      </ol>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3">❓ أسئلة شائعة:</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-sm font-medium mb-1">متى تظهر التغييرات على موقعي؟</p>
+                          <p className="text-sm text-muted-foreground">فوراً! عند الضغط على "حفظ"، التغييرات تظهر على الفور على موقعك</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium mb-1">هل يمكنني تغيير كل شيء لاحقاً؟</p>
+                          <p className="text-sm text-muted-foreground">نعم، في أي وقت! يمكنك العودة وتعديل أي شيء متى شئت</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium mb-1">هل يوجد رسوم إضافية؟</p>
+                          <p className="text-sm text-muted-foreground">لا، كل شيء مجاني. موقعك سيكون متاحاً دائماً</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <h2 className="text-xl font-bold mb-3">Welcome to Your Guide</h2>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        This guide will help you understand every part of your dashboard. Read the sections below to learn how to use our tool properly.
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">1</span> Branding
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Add basic information about your business:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li><strong>Business Name:</strong> Your business name shown at the top of your site (e.g., "Joe's Pizzeria")</li>
+                        <li><strong>Tagline:</strong> A catchy phrase describing your business (e.g., "Authentic Italian pizzas since 2010")</li>
+                        <li><strong>Description:</strong> A detailed paragraph about your business, history, and values</li>
+                        <li><strong>Category:</strong> Auto-set from Google, tells customers what type of business you are</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> Click the "✨" button to generate text with AI if you need help
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">2</span> Theme
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Customize your site's appearance to reflect your brand:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li><strong>Light or Dark Mode:</strong> Choose a white or black background</li>
+                        <li><strong>Accent Color:</strong> Pick a color that represents your brand (blue, orange, pink, etc.)</li>
+                        <li><strong>Corner Style:</strong> Make corners sharp or rounded based on your preference</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> Warm colors like orange feel friendly and fun, while cool colors like blue feel professional and trustworthy
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">3</span> Images
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Add professional photos that showcase your business:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li><strong>Hero Image:</strong> The large photo shown at the top when visitors first see your site</li>
+                        <li><strong>Gallery:</strong> A collection of photos showing your products, services, or décor (up to 5 photos)</li>
+                        <li><strong>About Image:</strong> A photo of you, your team, or your location - builds trust with customers</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> Use clear, high-quality photos. You can search for free images in our library or upload your own
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">4</span> Services or Products
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Add a list of what you offer:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li><strong>For Restaurants:</strong> Add dishes and drinks you serve</li>
+                        <li><strong>For Shops:</strong> Add products you sell</li>
+                        <li><strong>For Service Businesses:</strong> Add types of services you provide</li>
+                        <li><strong>For Each Item:</strong> Clear name + short description explaining the benefit</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> A compelling description increases the chance customers will buy or contact you
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">5</span> Contact
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Ways for customers to reach you:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li><strong>Phone:</strong> Your phone number or business numbers</li>
+                        <li><strong>Email:</strong> Your email for inquiries and orders</li>
+                        <li><strong>Address:</strong> Your business location so customers can find you on maps</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> Make sure all information is correct and up to date
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">6</span> Stats
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Impressive numbers that build trust with new customers:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li><strong>Years in Business:</strong> How many years have you been doing this?</li>
+                        <li><strong>Clients Served:</strong> How many customers have you served?</li>
+                        <li><strong>Projects Completed:</strong> How many projects or sales have you completed?</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> Real and honest numbers build trust better than exaggerated claims
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">7</span> Hours
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        When is your business open?
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li>Set opening and closing times for each day of the week</li>
+                        <li>Mark holiday closures or special hours</li>
+                        <li>Customers will see these hours before trying to contact you</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> Update your hours whenever they change (holidays, busy seasons, etc.)
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">8</span> Social Media
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Connect your social media profiles:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li><strong>Instagram:</strong> Your photo gallery and daily stories</li>
+                        <li><strong>Facebook:</strong> Your Facebook page for local customers</li>
+                        <li><strong>Twitter:</strong> Latest news and quick updates</li>
+                        <li><strong>TikTok:</strong> Short, trendy videos</li>
+                        <li><strong>WhatsApp:</strong> Direct messaging with customers</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> Only add links to accounts you actually use. Empty ones look unprofessional
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">9</span> Reviews
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Display customer reviews from Google:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li>Real reviews from past customers build strong trust</li>
+                        <li>Each review shows stars (1-5) and customer comments</li>
+                        <li>Display them on your site to encourage new customers</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> Ask satisfied customers to leave a review on Google
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-blue-500">10</span> Account
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Manage your account and security:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                        <li><strong>Change Password:</strong> Use this if you feel your account might not be secure</li>
+                        <li><strong>Delete Account:</strong> Another option if you want to delete everything (warning: cannot be undone)</li>
+                        <li>Changes here affect your personal account security</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3 bg-secondary/50 p-2 rounded">
+                        💡 <strong>Tip:</strong> Use a strong password with a mix of letters, numbers, and symbols
+                      </p>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3">✅ Basic Steps to Get Started:</h3>
+                      <ol className="text-sm text-muted-foreground space-y-2 ml-4 list-decimal">
+                        <li>Start with "Branding" - add your name and tagline</li>
+                        <li>Add photos in the "Images" section</li>
+                        <li>Choose your style in the "Theme" section</li>
+                        <li>Add business hours in the "Hours" section</li>
+                        <li>Complete the remaining sections as needed for your business</li>
+                        <li>Click "Save" when done with each section</li>
+                      </ol>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold mb-3">❓ Frequently Asked Questions:</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-sm font-medium mb-1">When do changes appear on my site?</p>
+                          <p className="text-sm text-muted-foreground">Instantly! When you click "Save", your changes appear immediately on your site</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium mb-1">Can I change everything later?</p>
+                          <p className="text-sm text-muted-foreground">Yes, anytime! You can come back and edit anything whenever you want</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium mb-1">Are there any additional fees?</p>
+                          <p className="text-sm text-muted-foreground">No, everything is free. Your site will always be available</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </>}
 
             {/* BRANDING */}
             {active === "branding" && <>
