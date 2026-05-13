@@ -482,13 +482,29 @@ export default function RegisterPage() {
       setAuthError(d.error ?? "Account created but failed to save business");
       setAuthLoading(false); return;
     }
-    // Send welcome email (fire-and-forget)
-    fetch("/api/auth/welcome-email", {
+
+    // Send OTP for verification before dashboard
+    const otpRes = await fetch("/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ businessName: place.name }),
-    }).catch(() => {});
-    router.push("/dashboard");
+      body: JSON.stringify({ email: email.trim(), purpose: "login" }),
+    });
+
+    if (!otpRes.ok) {
+      // OTP send failed — graceful degradation
+      fetch("/api/auth/welcome-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessName: place.name }),
+      }).catch(() => {});
+      router.push("/dashboard");
+      return;
+    }
+
+    // Redirect to OTP verification
+    router.push(
+      `/auth/verify-otp?email=${encodeURIComponent(email.trim())}&purpose=login`
+    );
   }
 
   return (

@@ -51,6 +51,10 @@ export async function verifyOtp(
 ): Promise<boolean> {
   const supabase = createAdminClient();
 
+  // Normalize the code: trim and ensure it's 6 digits
+  const normalizedCode = submittedCode.trim().replace(/\D/g, "").slice(0, 6);
+  if (normalizedCode.length !== 6) return false;
+
   // Clean up expired and used OTPs
   const now = new Date().toISOString();
   await supabase
@@ -73,7 +77,7 @@ export async function verifyOtp(
   if (error || !data) return false;
   if (new Date(data.expires_at) < new Date()) return false;
 
-  const hashed = await hashOtp(submittedCode);
+  const hashed = await hashOtp(normalizedCode);
   if (hashed !== data.code) return false;
 
   // Mark OTP as used
