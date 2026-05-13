@@ -234,16 +234,16 @@ function DotMatrixLoading({ step, steps, isAr }: { step: number; steps: string[]
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden mt-2">
       <div className="border border-blue-500/20 dark:border-blue-500/30 rounded-[6px] bg-blue-50/50 dark:bg-blue-950/20 overflow-hidden">
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-blue-500/20 dark:border-blue-500/30 bg-blue-50/80 dark:bg-blue-950/30">
-          <div className="shrink-0 flex items-center justify-center" style={{ width: 16, height: 16 }}>
-            <div style={{ transform: "scale(0.65)", width: 12, height: 12, transformOrigin: "center" }}>
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-blue-500/20 dark:border-blue-500/30 bg-blue-50/80 dark:bg-blue-950/30 min-h-[44px]">
+          <div className="shrink-0 flex items-center justify-center w-6 h-6">
+            <div style={{ transform: "scale(0.6)", width: 12, height: 12, transformOrigin: "center" }}>
               <DotmSquare12 />
             </div>
           </div>
-          <motion.span className="text-xs font-semibold text-blue-600 dark:text-blue-400" animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.5, repeat: Infinity }}>
+          <motion.span className="text-xs font-semibold text-blue-600 dark:text-blue-400 flex-1" animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.5, repeat: Infinity }}>
             {isAr ? "الذكاء الاصطناعي يفكر" : "AI is thinking"}
           </motion.span>
-          <div className="flex gap-1.5 ml-auto">
+          <div className="flex gap-1.5 shrink-0">
             {[0, 0.2, 0.4].map((d, i) => (
               <motion.span key={i} className="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d }} />
             ))}
@@ -294,6 +294,7 @@ export default function RegisterPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   function getRandomSteps(pool: string[]) {
     const shuffled = [...pool];
@@ -436,7 +437,7 @@ export default function RegisterPage() {
   const pwStrength = strength(password);
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const pwMatch = password === confirmPw && confirmPw.length > 0;
-  const canSubmit = emailValid && pwStrength >= 2 && pwMatch;
+  const canSubmit = emailValid && pwStrength >= 2 && pwMatch && termsAccepted;
 
   async function createAccount(e: React.FormEvent) {
     e.preventDefault();
@@ -791,13 +792,23 @@ export default function RegisterPage() {
                       {confirmPw.length > 0 && !pwMatch && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{isAr ? "كلمتا المرور غير متطابقتين" : "Passwords do not match"}</p>}
                     </div>
 
-                    <p className="text-xs text-muted-foreground text-center">
-                      {isAr ? (
-                        <>بإنشاء حساب، توافق على{" "}<Link href="/terms" className="underline hover:text-foreground">شروط الخدمة</Link> و<Link href="/privacy-policy" className="underline hover:text-foreground">سياسة الخصوصية</Link>.</>
-                      ) : (
-                        <>By creating an account you agree to our{" "}<Link href="/terms" className="underline hover:text-foreground">Terms</Link> and{" "}<Link href="/privacy-policy" className="underline hover:text-foreground">Privacy Policy</Link>.</>
-                      )}
-                    </p>
+                    <div className="flex items-start gap-2.5 mb-2">
+                      <input
+                        type="checkbox"
+                        id="terms"
+                        checked={termsAccepted}
+                        onChange={(e) => setTermsAccepted(e.target.checked)}
+                        className="w-4 h-4 mt-0.5 rounded border-gray-300 text-[#0066cc] focus:ring-[#0066cc] cursor-pointer"
+                      />
+                      <label htmlFor="terms" className="text-xs text-muted-foreground leading-snug cursor-pointer hover:text-foreground transition-colors">
+                        {isAr ? (
+                          <>بإنشاء حساب، توافق على{" "}<Link href="/terms" className="underline hover:text-foreground font-medium text-foreground">شروط الخدمة</Link> و<Link href="/privacy-policy" className="underline hover:text-foreground font-medium text-foreground">سياسة الخصوصية</Link>.</>
+                        ) : (
+                          <>By creating an account you agree to our{" "}<Link href="/terms" className="underline hover:text-foreground font-medium text-foreground">Terms</Link> and{" "}<Link href="/privacy-policy" className="underline hover:text-foreground font-medium text-foreground">Privacy Policy</Link>.</>
+                        )}
+                      </label>
+                    </div>
+                    {!termsAccepted && <p className="text-xs text-red-600 dark:text-red-400 mb-4">{isAr ? "يجب قبول الشروط والأحكام" : "You must accept the Terms and Privacy Policy"}</p>}
 
                     <button type="submit" disabled={authLoading || !canSubmit}
                       className="flex items-center justify-center gap-2 bg-[#0066cc] hover:bg-[#0071e3] disabled:opacity-50 py-3.5 rounded-lg font-medium transition-colors text-white">

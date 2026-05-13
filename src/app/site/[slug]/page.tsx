@@ -77,7 +77,7 @@ const SITE_I18N = {
     statYears:      "سنوات",
     statReviews:    "تقييمات",
     statRating:     "التقييم",
-    byBrand:        "بـ سيريا فلو",
+    byBrand:        "بـ سوريا فلو",
   },
 };
 
@@ -587,11 +587,24 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className={`h-px mb-5 ${T.isLight ? "bg-gray-200" : "bg-gray-800"}`} />
         </div>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-start">
-          <span className={`text-sm ${T.faint}`}>
-            <a href="#hero" className={`font-semibold ${T.accentText}`}>{biz.name}</a>
-            {" "}© {new Date().getFullYear()}
-          </span>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          {/* Desktop: Left and Right */}
+          <div className="hidden sm:flex items-center justify-between">
+            <span className={`text-sm ${T.faint}`}>
+              <a href="#hero" className={`font-semibold ${T.accentText}`}>{biz.name}</a>
+            </span>
+            <span className={`text-sm ${T.faint}`}>
+              © {new Date().getFullYear()}
+            </span>
+          </div>
+
+          {/* Mobile: Centered, One Line */}
+          <div className="flex sm:hidden items-center justify-center">
+            <span className={`text-xs ${T.faint} text-center`}>
+              <a href="#hero" className={`font-semibold ${T.accentText}`}>{biz.name}</a>
+              {" "}© {new Date().getFullYear()}
+            </span>
+          </div>
         </div>
       </footer>
 

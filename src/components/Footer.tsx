@@ -5,7 +5,7 @@ import { useLanguage } from "@/lib/language";
 
 export default function Footer() {
   const { t, lang } = useLanguage();
-  const brandName = lang === "ar" ? "سيريا فلو" : "Syria Flow";
+  const brandName = lang === "ar" ? "سوريا فلو" : "Syria Flow";
 
   return (
     <footer className="mt-auto">
