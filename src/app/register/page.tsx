@@ -8,7 +8,7 @@ import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Loader2, Star, Phone, Globe, Eye, EyeOff, Image,
-  ChevronRight,
+  ChevronRight, Check,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { PlaceResult } from "@/lib/places";
@@ -303,6 +303,7 @@ export default function RegisterPage() {
   const [otpError, setOtpError] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
+  const [otpSentMessage, setOtpSentMessage] = useState("");
 
   function getRandomSteps(pool: string[]) {
     const shuffled = [...pool];
@@ -486,8 +487,12 @@ export default function RegisterPage() {
     setShowOtpVerification(true);
     setOtpCodes(["", "", "", "", "", ""]);
     setOtpError("");
+    setOtpSentMessage(isAr ? "✓ تم إرسال الرمز. يرجى التحقق من بريدك أو مجلد البريد العشوائي" : "✓ Code sent. Check your inbox or spam folder");
     setResendCountdown(60);
     setAuthLoading(false);
+    setTimeout(() => {
+      setOtpSentMessage("");
+    }, 10000);
     setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
   }
 
@@ -965,7 +970,14 @@ export default function RegisterPage() {
                         <h1 className="text-3xl font-bold mb-2">{isAr ? "تحقق من بريدك" : "Verify your email"}</h1>
                         <p className="text-muted-foreground mb-8">{isAr ? `أدخل الرمز المرسل إلى ${email}` : `Enter the 6-digit code sent to ${email}`}</p>
 
-                        <div className="flex gap-2 justify-center mb-6">
+                        {otpSentMessage && (
+                          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="mb-6 p-3 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg flex items-start gap-3">
+                            <Check size={18} className="text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
+                            <p className="text-green-700 dark:text-green-300 text-sm">{otpSentMessage}</p>
+                          </motion.div>
+                        )}
+
+                        <div className="flex gap-2 mb-6">
                           {otpCodes.map((code, index) => (
                             <input
                               key={index}
@@ -985,7 +997,18 @@ export default function RegisterPage() {
                           ))}
                         </div>
 
-                        {otpError && <p className="text-red-500 text-sm text-center mb-6">{otpError}</p>}
+                        {otpError && (
+                          <div className="mb-6 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg">
+                            <p className="text-red-600 dark:text-red-400 text-sm text-center mb-3">{otpError}</p>
+                            <button
+                              onClick={handleResendOtp}
+                              disabled={otpLoading}
+                              className="w-full text-[#0066cc] hover:text-[#0071e3] disabled:text-gray-400 font-medium text-sm transition-colors"
+                            >
+                              {isAr ? "طلب رمز جديد" : "Request new code"}
+                            </button>
+                          </div>
+                        )}
 
                         <button
                           onClick={verifyOtpAndCreateAccount}

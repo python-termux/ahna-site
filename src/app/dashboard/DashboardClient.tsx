@@ -394,6 +394,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [copied, setCopied] = useState(false);
   const [discardModal, setDiscardModal] = useState<{ onConfirm: () => void } | null>(null);
   const { isLimited, label: rlLabel, handle429 } = useRateLimit();
@@ -426,7 +427,8 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
     if (error) {
       toast.error(isAr ? "فشل إرسال رابط إعادة التعيين" : "Failed to send reset link");
     } else {
-      toast.success(isAr ? "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني" : "Password reset link sent to your email");
+      setResetSent(true);
+      setTimeout(() => setResetSent(false), 10000);
     }
   }
 
@@ -1564,22 +1566,38 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                 </div>
 
                 {/* Reset password */}
-                <div className="bg-card border border-border rounded-[8px] p-5">
+                <div className={`rounded-[8px] p-5 border ${resetSent ? "bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-800" : "bg-card border-border"}`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="font-medium text-sm text-foreground">{isAr ? "إعادة تعيين كلمة المرور" : "Reset password"}</p>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        {isAr ? "سيتم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني" : "A reset link will be sent to your email address"}
-                      </p>
+                      {resetSent ? (
+                        <>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Check size={14} className="text-green-600 dark:text-green-400 shrink-0" />
+                            <p className="font-medium text-sm text-green-700 dark:text-green-300">{isAr ? "تم إرسال الرابط" : "Link sent"}</p>
+                          </div>
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-1 leading-relaxed">
+                            {isAr ? "تم إرسال رابط إعادة تعيين كلمة المرور. يرجى التحقق من بريدك الإلكتروني أو مجلد البريد العشوائي." : "Password reset link sent. Check your inbox or spam folder."}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-medium text-sm text-foreground">{isAr ? "إعادة تعيين كلمة المرور" : "Reset password"}</p>
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                            {isAr ? "سيتم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني" : "A reset link will be sent to your email address"}
+                          </p>
+                        </>
+                      )}
                     </div>
-                    <button
-                      onClick={resetPassword}
-                      disabled={resetLoading}
-                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-border rounded-[6px] text-foreground hover:bg-secondary transition-colors whitespace-nowrap disabled:opacity-50 shrink-0"
-                    >
-                      {resetLoading ? <Loader2 size={12} className="animate-spin" /> : <KeyRound size={12} />}
-                      {isAr ? "إرسال رابط" : "Send link"}
-                    </button>
+                    {!resetSent && (
+                      <button
+                        onClick={resetPassword}
+                        disabled={resetLoading}
+                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-border rounded-[6px] text-foreground hover:bg-secondary transition-colors whitespace-nowrap disabled:opacity-50 shrink-0"
+                      >
+                        {resetLoading ? <Loader2 size={12} className="animate-spin" /> : <KeyRound size={12} />}
+                        {isAr ? "إرسال رابط" : "Send link"}
+                      </button>
+                    )}
                   </div>
                 </div>
 
