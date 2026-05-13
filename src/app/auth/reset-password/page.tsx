@@ -31,15 +31,27 @@ function ResetPasswordContent() {
       // If code is provided (from Supabase forgot-password link)
       if (code) {
         try {
+          // First check if there's already a session from the email link
+          const { data: { session } } = await supabase.auth.getSession();
+
+          if (session && session.user) {
+            // Session already established from email link
+            setStep("password_form");
+            return;
+          }
+
+          // If no session, try to verify the code
           const { error: err } = await supabase.auth.verifyOtp({
             token_hash: code,
             type: "recovery",
           });
+
           if (err) {
             setError(isAr ? "الرمز غير صالح أو انتهى" : "Invalid or expired code");
             setStep("error");
             return;
           }
+
           setStep("password_form");
         } catch (err) {
           setError(isAr ? "حدث خطأ" : "Error occurred");
