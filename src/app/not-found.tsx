@@ -3,11 +3,17 @@ import { Home } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-4">
+      <style>{`
+        .arabic-text {
+          font-family: 'Almarai', sans-serif;
+        }
+      `}</style>
+
       <div className="max-w-md w-full text-center">
         {/* Icon */}
         <div className="mb-6 flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
             <svg
               className="w-8 h-8 text-gray-400"
               fill="none"
@@ -25,10 +31,10 @@ export default function NotFound() {
         </div>
 
         {/* English Section */}
-        <div className="mb-8 pb-8 border-b border-gray-200 dark:border-gray-800">
+        <div className="mb-8 pb-8 border-b border-gray-200">
           <h1 className="text-5xl font-bold mb-2 text-[#0066cc]">404</h1>
           <h2 className="text-2xl font-semibold mb-3">Page Not Found</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
+          <p className="text-gray-600 mb-8">
             Sorry, the page you are looking for does not exist.
           </p>
 
@@ -43,10 +49,10 @@ export default function NotFound() {
         </div>
 
         {/* Arabic Section */}
-        <div dir="rtl">
+        <div dir="rtl" className="arabic-text">
           <h1 className="text-5xl font-bold mb-2 text-[#0066cc]">404</h1>
           <h2 className="text-2xl font-semibold mb-3">الصفحة غير موجودة</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
+          <p className="text-gray-600 mb-8">
             عذراً، الصفحة التي تبحث عنها غير موجودة.
           </p>
 

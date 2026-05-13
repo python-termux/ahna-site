@@ -3,11 +3,17 @@ import { Home, LogIn, UserPlus } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-4">
+      <style>{`
+        .arabic-text {
+          font-family: 'Almarai', sans-serif;
+        }
+      `}</style>
+
       <div className="max-w-md w-full text-center">
         {/* Icon */}
         <div className="mb-6 flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
             <svg
               className="w-8 h-8 text-gray-400"
               fill="none"
@@ -25,12 +31,12 @@ export default function NotFound() {
         </div>
 
         {/* English Section */}
-        <div className="mb-8 pb-8 border-b border-gray-200 dark:border-gray-800">
+        <div className="mb-8 pb-8 border-b border-gray-200">
           <h1 className="text-4xl font-bold mb-3">Site Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-600 mb-6">
             The site you are looking for either not active or removed by site owner.
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mb-8">
+          <p className="text-sm text-gray-500 mb-8">
             If you are owner of this site, login to activate or register if you wish to take this domain.
           </p>
 
@@ -45,7 +51,7 @@ export default function NotFound() {
             </Link>
             <Link
               href="https://app.syrflow.com/register"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 font-medium rounded-lg transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition-colors"
             >
               <UserPlus size={18} />
               Register Domain
@@ -54,12 +60,12 @@ export default function NotFound() {
         </div>
 
         {/* Arabic Section */}
-        <div dir="rtl">
+        <div dir="rtl" className="arabic-text">
           <h1 className="text-4xl font-bold mb-3">الموقع غير موجود</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-600 mb-6">
             الموقع الذي تبحث عنه إما غير نشط أو تم حذفه من قبل مالك الموقع.
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mb-8">
+          <p className="text-sm text-gray-500 mb-8">
             إذا كنت مالك هذا الموقع، قم بتسجيل الدخول لتفعيله أو سجل إذا كنت تريد الحصول على هذا النطاق.
           </p>
 
@@ -74,7 +80,7 @@ export default function NotFound() {
             </Link>
             <Link
               href="https://app.syrflow.com/register"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 font-medium rounded-lg transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition-colors"
             >
               <UserPlus size={18} />
               تسجيل النطاق
