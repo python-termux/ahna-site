@@ -139,7 +139,7 @@ function VerifyOtpContent() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 6 OTP Input Boxes */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-center">
             {codes.map((code, index) => (
               <input
                 key={index}
