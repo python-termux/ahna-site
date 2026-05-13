@@ -632,13 +632,15 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
       {/* ── FLOATING BY BRAND BADGE ── */}
       <Link
         href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`}
-        className={`fixed bottom-4 right-4 z-10 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-80 ${
+        className={`fixed bottom-4 right-4 z-10 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-80 flex items-center gap-1.5 ${
           T.isLight
             ? "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300"
             : "bg-gray-900 text-gray-400 hover:bg-gray-800 border border-gray-800"
         }`}
         title="Made with Syria Flow"
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/syr.webp" alt="Syria Flow" height={14} width={14} className="object-contain" />
         {i18n.byBrand}
       </Link>
 
