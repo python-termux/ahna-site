@@ -1,4 +1,3 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
@@ -12,13 +11,13 @@ function securityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const hostWithoutPort = host.split(":")[0];
   const { pathname } = request.nextUrl;
 
   const isApex = hostWithoutPort === ROOT_DOMAIN || hostWithoutPort === `www.${ROOT_DOMAIN}`;
-  const isApp  = hostWithoutPort === `app.${ROOT_DOMAIN}`;
+  const isApp = hostWithoutPort === `app.${ROOT_DOMAIN}`;
   const isLocal = hostWithoutPort === "localhost" || hostWithoutPort === "127.0.0.1";
 
   // ── Subdomain routing (user sites) ────────────────────────────────────────
@@ -29,9 +28,8 @@ export async function middleware(request: NextRequest) {
       url.pathname = `/site/${slug}${pathname === "/" ? "" : pathname}`;
       const res = NextResponse.rewrite(url);
       securityHeaders(res);
-      return res; // ✅ early return, skip auth guard
+      return res;
     }
-    // any other subdomain — skip auth guard
     const res = NextResponse.next({ request });
     securityHeaders(res);
     return res;
@@ -63,42 +61,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // ── Demo bypass ────────────────────────────────────────────────────────────
-  if (request.cookies.get("shirka_demo")?.value === "1") {
-    return NextResponse.next({ request });
-  }
-
-  // ── Supabase session + auth guard ──────────────────────────────────────────
-  let supabaseResponse = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (pathname.startsWith("/dashboard") && !user) {
-    const url = request.nextUrl.clone();
-    url.hostname = `app.${ROOT_DOMAIN}`;
-    url.pathname = "/auth/login";
-    return NextResponse.redirect(url);
-  }
-
-  securityHeaders(supabaseResponse);
-  return supabaseResponse;
+  const res = NextResponse.next({ request });
+  securityHeaders(res);
+  return res;
 }
 
 export const config = {
