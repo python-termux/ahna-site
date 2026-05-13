@@ -182,7 +182,7 @@ export async function PATCH(request: Request) {
           const { changesLiveEmailHtml } = await import("@/lib/email/templates/changes-live");
           await sendMail(
             user.email!,
-            "تغييراتك أصبحت مباشرة — syrflow.com",
+            "Your Changes Are Live | تغييراتك أصبحت مباشرة - syrflow.com",
             changesLiveEmailHtml({ businessName: biz.name, siteUrl })
           );
         }

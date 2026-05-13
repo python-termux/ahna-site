@@ -9,67 +9,53 @@ export function welcomeEmailHtml({ businessName }: { businessName: string }): st
 <style>
   * { margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f5f7; color: #1c1c1e; line-height: 1.6; }
-  .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
-  .header { padding: 24px 32px; border-bottom: 1px solid #e0e0e5; display: flex; justify-content: space-between; align-items: center; }
-  .logo-en { font-size: 16px; font-weight: 700; color: #0066cc; }
-  .logo-ar { font-size: 16px; font-weight: 700; color: #0066cc; }
-  .content { display: flex; }
-  .col { flex: 1; padding: 32px; }
-  .col-en { text-align: left; border-right: 1px solid #f0f0f0; direction: ltr; }
-  .col-ar { text-align: right; border-left: 1px solid #f0f0f0; direction: rtl; }
-  .title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #1c1c1e; }
-  .body-text { font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.6; }
-  .strong { font-weight: 600; color: #1c1c1e; }
+  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+  .section { background: #ffffff; border-radius: 6px; padding: 32px; margin-bottom: 16px; border-top: 1px solid #e0e0e5; }
+  .section-ar { direction: rtl; text-align: right; }
+  .section-en { direction: ltr; text-align: left; }
+  .logo { font-size: 16px; font-weight: 700; color: #0066cc; margin-bottom: 24px; }
+  .title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #1c1c1e; }
+  .subtitle { font-size: 13px; color: #0066cc; font-weight: 600; margin-bottom: 16px; }
+  .body-text { font-size: 14px; color: #666; margin-bottom: 16px; line-height: 1.6; }
+  .strong { color: #1c1c1e; font-weight: 600; }
   .link { color: #0066cc; text-decoration: underline; font-weight: 500; }
   .link:hover { color: #0071e3; }
-  .footer { padding: 20px 32px; border-top: 1px solid #e0e0e5; text-align: center; font-size: 12px; color: #999; }
-  .support { font-size: 11px; }
+  .footer-text { font-size: 11px; color: #999; margin-top: 24px; border-top: 1px solid #f0f0f0; padding-top: 16px; }
   @media (prefers-color-scheme: dark) {
-    body { background: #1c1c1e; color: #f5f5f7; }
-    .container { background: #2c2c2e; }
-    .header { border-bottom-color: #424245; }
-    .col-en, .col-ar { border-color: #424245; }
-    .col-en { border-right-color: #424245; }
-    .col-ar { border-left-color: #424245; }
+    body { background: #1c1c1e; }
+    .section { background: #2c2c2e; border-top-color: #424245; }
     .body-text { color: #a0a0a5; }
     .strong { color: #f5f5f7; }
     .link { color: #2997ff; }
     .link:hover { color: #0066cc; }
-    .footer { border-top-color: #424245; color: #666; }
+    .footer-text { color: #666; border-top-color: #424245; }
   }
 </style>
 </head>
 <body>
 <div class="container">
-  <!-- Header -->
-  <div class="header">
-    <div class="logo-en">Syria Flow</div>
-    <div class="logo-ar">سوريا فلو</div>
+  <!-- Arabic Section -->
+  <div class="section section-ar">
+    <div class="logo">سوريا فلو</div>
+    <h2 class="title">مرحباً بك في سوريا فلو</h2>
+    <p class="subtitle">حسابك جاهز للاستخدام</p>
+    <p class="body-text">تم إنشاء صفحة نشاطك التجاري <span class="strong">${safeName}</span> بنجاح وهي جاهزة الآن.</p>
+    <p class="body-text">انتقل إلى لوحة التحكم لتخصيص صفحتك وإضافة خدماتك والصور والتفاصيل الخاصة بك.</p>
+    <p class="body-text">يمكنك إطلاق موقعك مباشرة بدون الحاجة إلى معرفة برمجية.</p>
+    <p class="body-text"><a href="https://app.syrflow.com/dashboard" class="link">انتقل إلى لوحة التحكم</a></p>
+    <p class="footer-text">© 2026 syrflow.com | team@syrflow.com</p>
   </div>
 
-  <!-- Content -->
-  <div class="content">
-    <!-- English Column -->
-    <div class="col col-en">
-      <h2 class="title">Welcome to SyrFlow</h2>
-      <p class="body-text">Your business page <span class="strong">${safeName}</span> has been created successfully.</p>
-      <p class="body-text">Start customizing your site, add your services, and go live in minutes. No coding required.</p>
-      <p class="body-text"><a href="https://app.syrflow.com/dashboard" class="link">Go to Dashboard</a></p>
-    </div>
-
-    <!-- Arabic Column -->
-    <div class="col col-ar">
-      <h2 class="title">مرحباً بك في سوريا فلو</h2>
-      <p class="body-text">تم إنشاء صفحة نشاطك <span class="strong">${safeName}</span> بنجاح.</p>
-      <p class="body-text">ابدأ بتخصيص موقعك وأضف خدماتك واعرضه مباشرة في دقائق. بدون برمجة.</p>
-      <p class="body-text"><a href="https://app.syrflow.com/dashboard" class="link">انتقل إلى لوحة التحكم</a></p>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <div class="footer">
-    <div>© 2026 syrflow.com</div>
-    <div class="support">For support: <strong>team@syrflow.com</strong></div>
+  <!-- English Section -->
+  <div class="section section-en">
+    <div class="logo">Syria Flow</div>
+    <h2 class="title">Welcome to Syria Flow</h2>
+    <p class="subtitle">Your account is ready to use</p>
+    <p class="body-text">Your business page for <span class="strong">${safeName}</span> has been created successfully and is ready to go.</p>
+    <p class="body-text">Go to your dashboard to customize your page, add your services, photos, and all your business details.</p>
+    <p class="body-text">You can launch your site live right away without any coding knowledge required.</p>
+    <p class="body-text"><a href="https://app.syrflow.com/dashboard" class="link">Go to Dashboard</a></p>
+    <p class="footer-text">© 2026 syrflow.com | team@syrflow.com</p>
   </div>
 </div>
 </body>

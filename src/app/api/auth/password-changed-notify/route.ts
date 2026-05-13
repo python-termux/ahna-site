@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   try {
     await sendMail(
       user.email!,
-      "تم تغيير كلمة المرور — syrflow.com",
+      "Your Password Changed | تم تغيير كلمة المرور - syrflow.com",
       passwordChangedEmailHtml({ userEmail: user.email! })
     );
     return NextResponse.json({ ok: true });

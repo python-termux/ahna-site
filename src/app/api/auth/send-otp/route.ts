@@ -43,8 +43,8 @@ export async function POST(request: Request) {
     const code = await issueOtp(email, purpose as OtpPurpose);
     const subject =
       purpose === "login"
-        ? "رمز التحقق — syrflow.com"
-        : "رمز تغيير كلمة المرور — syrflow.com";
+        ? "Verify Your Login | تحقق من تسجيل الدخول - syrflow.com"
+        : "Verify Password Change | تحقق من تغيير كلمة المرور - syrflow.com";
     await sendMail(email, subject, otpEmailHtml({ code, purpose: purpose as OtpPurpose }));
     return NextResponse.json({ ok: true });
   } catch (error) {

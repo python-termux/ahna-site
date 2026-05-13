@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     typeof body?.businessName === "string" ? body.businessName.slice(0, 100) : "";
 
   try {
-    await sendMail(user.email!, "مرحباً بك في syrflow.com", welcomeEmailHtml({ businessName }));
+    await sendMail(user.email!, "Welcome to Syria Flow | مرحباً بك في سوريا فلو", welcomeEmailHtml({ businessName }));
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Error sending welcome email:", error);
