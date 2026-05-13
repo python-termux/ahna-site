@@ -420,7 +420,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
     setResetLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.syrflow.com"}/auth/reset-password`,
     });
     setResetLoading(false);
     if (error) {

@@ -39,10 +39,7 @@ export function otpEmailHtml({
   .code { font-size: 32px; font-weight: 700; letter-spacing: 4px; font-family: 'Courier New', Courier, monospace; color: #0066cc; }
   .expiry { font-size: 12px; color: #999; margin-top: 16px; }
   .footer { padding: 20px 32px; border-top: 1px solid #e0e0e5; text-align: center; font-size: 12px; color: #999; }
-  .footer-links { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-  .footer-left { text-align: left; }
-  .footer-right { text-align: right; direction: rtl; }
-  .support { margin-top: 12px; font-size: 11px; }
+  .support { font-size: 11px; }
   @media (prefers-color-scheme: dark) {
     body { background: #1c1c1e; color: #f5f5f7; }
     .container { background: #2c2c2e; }
@@ -90,10 +87,7 @@ export function otpEmailHtml({
 
   <!-- Footer -->
   <div class="footer">
-    <div class="footer-links">
-      <div class="footer-left">© 2026 syrflow.com</div>
-      <div class="footer-right">© 2026 syrflow.com</div>
-    </div>
+    <div>© 2026 syrflow.com</div>
     <div class="support">For support: <strong>team@syrflow.com</strong></div>
   </div>
 </div>

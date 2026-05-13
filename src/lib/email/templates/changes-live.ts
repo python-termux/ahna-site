@@ -28,13 +28,10 @@ export function changesLiveEmailHtml({
   .body-text { font-size: 14px; color: #666; margin-bottom: 16px; line-height: 1.6; }
   .strong { font-weight: 600; color: #1c1c1e; }
   .url-box { background: #f5f5f7; border-left: 3px solid #0066cc; padding: 12px; border-radius: 4px; font-size: 12px; font-family: 'Courier New', Courier, monospace; color: #666; margin-bottom: 16px; word-break: break-all; }
-  .button { display: inline-block; padding: 10px 20px; background: #0066cc; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600; }
-  .button:hover { background: #0071e3; }
+  .link { color: #0066cc; text-decoration: underline; font-weight: 500; }
+  .link:hover { color: #0071e3; }
   .footer { padding: 20px 32px; border-top: 1px solid #e0e0e5; text-align: center; font-size: 12px; color: #999; }
-  .footer-links { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-  .footer-left { text-align: left; }
-  .footer-right { text-align: right; direction: rtl; }
-  .support { margin-top: 12px; font-size: 11px; }
+  .support { font-size: 11px; }
   @media (prefers-color-scheme: dark) {
     body { background: #1c1c1e; color: #f5f5f7; }
     .container { background: #2c2c2e; }
@@ -45,8 +42,8 @@ export function changesLiveEmailHtml({
     .body-text { color: #a0a0a5; }
     .strong { color: #f5f5f7; }
     .url-box { background: #1a3a5c; border-left-color: #2997ff; color: #a0a0a5; }
-    .button { background: #2997ff; }
-    .button:hover { background: #0066cc; }
+    .link { color: #2997ff; }
+    .link:hover { color: #0066cc; }
     .footer { border-top-color: #424245; color: #666; }
   }
 </style>
@@ -67,7 +64,7 @@ export function changesLiveEmailHtml({
       <p class="body-text">Your updates for <span class="strong">${safeName}</span> have been published successfully.</p>
       <p class="body-text">Visit your site to see the changes:</p>
       <div class="url-box">${safeUrl}</div>
-      <a href="${safeUrl}" class="button">View Site</a>
+      <p class="body-text"><a href="${safeUrl}" class="link">View Site</a></p>
     </div>
 
     <!-- Arabic Column -->
@@ -76,16 +73,13 @@ export function changesLiveEmailHtml({
       <p class="body-text">تم نشر تحديثاتك لـ <span class="strong">${safeName}</span> بنجاح.</p>
       <p class="body-text">اعرض موقعك لترى التغييرات:</p>
       <div class="url-box">${safeUrl}</div>
-      <a href="${safeUrl}" class="button">اعرض الموقع</a>
+      <p class="body-text"><a href="${safeUrl}" class="link">اعرض الموقع</a></p>
     </div>
   </div>
 
   <!-- Footer -->
   <div class="footer">
-    <div class="footer-links">
-      <div class="footer-left">© 2026 syrflow.com</div>
-      <div class="footer-right">© 2026 syrflow.com</div>
-    </div>
+    <div>© 2026 syrflow.com</div>
     <div class="support">For support: <strong>team@syrflow.com</strong></div>
   </div>
 </div>

@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.syrflow.com"}/auth/reset-password`,
     });
     setLoading(false);
     if (error) {
