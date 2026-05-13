@@ -4,59 +4,81 @@ export function passwordChangedEmailHtml({
   userEmail: string;
 }): string {
   return `<!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-  body { margin:0; padding:0; background:#f5f5f7; font-family:'Segoe UI',Tahoma,Arial,sans-serif; }
-  .card { background:#ffffff; }
-  .text-main { color:#1c1c1e; }
-  .muted { color:#6e6e73; }
-  .divider { border-color:#e0e0e5; }
-  .warning { color:#d70015; }
+  * { margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f5f7; color: #1c1c1e; line-height: 1.6; }
+  .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+  .header { padding: 24px 32px; border-bottom: 1px solid #e0e0e5; display: flex; justify-content: space-between; align-items: center; }
+  .logo-en { font-size: 16px; font-weight: 700; color: #0066cc; }
+  .logo-ar { font-size: 16px; font-weight: 700; color: #0066cc; }
+  .content { display: flex; }
+  .col { flex: 1; padding: 32px; }
+  .col-en { text-align: left; border-right: 1px solid #f0f0f0; direction: ltr; }
+  .col-ar { text-align: right; border-left: 1px solid #f0f0f0; direction: rtl; }
+  .title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #1c1c1e; }
+  .body-text { font-size: 14px; color: #666; margin-bottom: 16px; line-height: 1.6; }
+  .warning { padding: 12px; background: #fff3cd; border-left: 3px solid #ffc107; border-radius: 4px; font-size: 13px; color: #856404; margin-top: 16px; }
+  .warning-ar { border-left: 0; border-right: 3px solid #ffc107; }
+  .footer { padding: 20px 32px; border-top: 1px solid #e0e0e5; text-align: center; font-size: 12px; color: #999; }
+  .footer-links { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .footer-left { text-align: left; }
+  .footer-right { text-align: right; direction: rtl; }
+  .support { margin-top: 12px; font-size: 11px; }
   @media (prefers-color-scheme: dark) {
-    body { background:#1c1c1e !important; }
-    .card { background:#2c2c2e !important; }
-    .text-main { color:#f5f5f7 !important; }
-    .muted { color:#98989d !important; }
-    .divider { border-color:#38383a !important; }
-    .warning { color:#ff453a !important; }
+    body { background: #1c1c1e; color: #f5f5f7; }
+    .container { background: #2c2c2e; }
+    .header { border-bottom-color: #424245; }
+    .col-en, .col-ar { border-color: #424245; }
+    .col-en { border-right-color: #424245; }
+    .col-ar { border-left-color: #424245; }
+    .body-text { color: #a0a0a5; }
+    .warning { background: #664d03; border-left-color: #ffc107; color: #ffecb5; }
+    .footer { border-top-color: #424245; color: #666; }
   }
 </style>
 </head>
 <body>
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-<tr><td align="center" style="padding:32px 16px">
-<table class="card" width="520" cellpadding="0" cellspacing="0" role="presentation" style="max-width:520px;width:100%;border-radius:8px;overflow:hidden;border:1px solid #e0e0e5">
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-en">Syria Flow</div>
+    <div class="logo-ar">سوريا فلو</div>
+  </div>
 
-  <tr><td style="padding:24px 32px 0;text-align:center">
-    <span style="font-size:18px;font-weight:700;letter-spacing:-0.3px" class="text-main">syrflow</span>
-  </td></tr>
+  <!-- Content -->
+  <div class="content">
+    <!-- English Column -->
+    <div class="col col-en">
+      <h2 class="title">Password Changed</h2>
+      <p class="body-text">Your account password was changed successfully.</p>
+      <div class="warning">
+        <strong>Security Notice:</strong> If you didn't make this change, contact us immediately at team@syrflow.com
+      </div>
+    </div>
 
-  <tr><td dir="rtl" style="padding:28px 32px 24px;text-align:right">
-    <p style="margin:0 0 6px;font-size:18px;font-weight:700" class="text-main">تم تغيير كلمة المرور</p>
-    <p style="margin:0 0 12px;font-size:14px;line-height:1.6" class="muted">تم تغيير كلمة المرور الخاصة بحسابك بنجاح.</p>
-    <p style="margin:0;font-size:14px;line-height:1.6" class="warning"><strong>إذا لم تكن أنت من قام بذلك، يُرجى التواصل معنا فوراً عبر team@syrflow.com</strong></p>
-  </td></tr>
+    <!-- Arabic Column -->
+    <div class="col col-ar">
+      <h2 class="title">تم تغيير كلمة المرور</h2>
+      <p class="body-text">تم تغيير كلمة المرور الخاصة بحسابك بنجاح.</p>
+      <div class="warning warning-ar">
+        <strong>تنبيه أمان:</strong> إذا لم تقم بهذا التغيير، تواصل معنا فوراً على team@syrflow.com
+      </div>
+    </div>
+  </div>
 
-  <tr><td style="padding:0 32px">
-    <hr class="divider" style="border:none;border-top:1px solid #e0e0e5;margin:0">
-  </td></tr>
-
-  <tr><td dir="ltr" style="padding:24px 32px 28px;text-align:left">
-    <p style="margin:0 0 6px;font-size:18px;font-weight:700" class="text-main">Password Changed</p>
-    <p style="margin:0 0 12px;font-size:14px;line-height:1.6" class="muted">Your account password was changed successfully.</p>
-    <p style="margin:0;font-size:14px;line-height:1.6" class="warning"><strong>If this wasn't you, contact us immediately at team@syrflow.com</strong></p>
-  </td></tr>
-
-  <tr><td style="padding:16px 32px 24px;text-align:center;border-top:1px solid #e0e0e5">
-    <p style="margin:0;font-size:11px" class="muted">syrflow.com — Automated message, do not reply.</p>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-links">
+      <div class="footer-left">© 2026 syrflow.com</div>
+      <div class="footer-right">© 2026 syrflow.com</div>
+    </div>
+    <div class="support">For support: <strong>team@syrflow.com</strong></div>
+  </div>
+</div>
 </body>
 </html>`;
 }
