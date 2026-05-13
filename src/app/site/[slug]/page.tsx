@@ -146,8 +146,29 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const supabase = await createClient();
   const { data } = await supabase.from("businesses").select("name,tagline,category,theme_color").eq("slug", slug).single();
   if (!data) return { title: "Business" };
+
   const isLight = data.theme_color === "white" || String(data.theme_color).startsWith("white-");
-  const themeColor = isLight ? "#f9fafb" : "#030712";
+
+  // Map accent colors to their hex values for browser safe area
+  const ACCENT_COLORS: Record<string, { light: string; dark: string }> = {
+    indigo:  { light: "#f0f4ff", dark: "#1e1b4b" },
+    violet:  { light: "#faf5ff", dark: "#2d1b69" },
+    rose:    { light: "#fff1f5", dark: "#500724" },
+    orange:  { light: "#fff7ed", dark: "#431407" },
+    emerald: { light: "#f0fdf4", dark: "#052e16" },
+    sky:     { light: "#f0f9ff", dark: "#082f49" },
+    amber:   { light: "#fffbeb", dark: "#451a03" },
+  };
+
+  const accentKey = data.theme_color.startsWith("white-")
+    ? data.theme_color.slice(6)
+    : data.theme_color === "white"
+    ? "indigo"
+    : data.theme_color;
+
+  const accentColors = ACCENT_COLORS[accentKey as keyof typeof ACCENT_COLORS] ?? ACCENT_COLORS.indigo;
+  const themeColor = isLight ? accentColors.light : accentColors.dark;
+
   return {
     title: data.name,
     description: data.tagline || data.category,
@@ -207,7 +228,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
       `}</style>
 
       {/* ── HEADER ── */}
-      <SlideDownHeader className={`sticky top-0 z-40 relative backdrop-blur-md sm:backdrop-blur-none ${T.isLight ? "bg-white/90 sm:bg-transparent" : "bg-gray-950/90 sm:bg-transparent"}`}>
+      <SlideDownHeader className={`sm:sticky sm:top-0 z-40 relative backdrop-blur-md sm:backdrop-blur-none ${T.isLight ? "bg-white/90 sm:bg-transparent" : "bg-gray-950/90 sm:bg-transparent"}`}>
         {/* Desktop only: faded background */}
         <div
           className={`absolute inset-0 hidden sm:block backdrop-blur-md ${T.isLight ? "bg-white/90" : "bg-gray-950/90"}`}
