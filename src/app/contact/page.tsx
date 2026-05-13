@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Phone, ChevronDown } from "lucide-react";
+import { Mail, ChevronDown } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { useLanguage } from "@/lib/language";
@@ -49,19 +49,8 @@ export default function ContactPage() {
                   <h3 className="font-semibold">{t.contact.emailTitle}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">{t.contact.emailSub}</p>
-                <a href="mailto:support@shirka.io" className="text-sm text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] transition-colors">
-                  support@shirka.io
-                </a>
-              </div>
-
-              <div className="bg-card rounded-[6px] p-5 border border-border">
-                <div className="flex items-center gap-3 mb-2">
-                  <Phone size={20} className="text-[#0066cc] dark:text-[#2997ff]" />
-                  <h3 className="font-semibold">{t.contact.phoneTitle}</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">{t.contact.phoneSub}</p>
-                <a href="tel:+971123456789" className="text-sm text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] transition-colors">
-                  +971 2 123 4567
+                <a href="mailto:team@syrflow.com" className="text-sm text-[#0066cc] dark:text-[#2997ff] hover:text-[#2997ff] transition-colors">
+                  team@syrflow.com
                 </a>
               </div>
             </div>

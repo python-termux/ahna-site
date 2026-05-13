@@ -8,9 +8,12 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/lib/language";
 
 export const metadata: Metadata = {
-  title: "syrflow.com — Your Business, One Page",
-  description:
-    "Turn your Google Maps listing into a beautiful one-page website in seconds.",
+  metadataBase: new URL("https://syrflow.com"),
+  title: {
+    template: "%s | syrflow.com",
+    default: "syrflow.com — Turn Your Business Into a Website",
+  },
+  description: "Create a professional one-page website from your Google Maps listing in under 5 minutes. No coding. Plans from $1/month.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -24,6 +27,18 @@ export const metadata: Metadata = {
     ],
   },
   manifest: "/site.webmanifest",
+  openGraph: {
+    type: "website",
+    siteName: "syrflow.com",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

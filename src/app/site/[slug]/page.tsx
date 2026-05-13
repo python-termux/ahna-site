@@ -144,10 +144,12 @@ function buildTheme(themeColor: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const supabase = await createClient();
-  const { data } = await supabase.from("businesses").select("name,tagline,category,theme_color").eq("slug", slug).single();
+  const { data } = await supabase.from("businesses").select("name,tagline,description,category,theme_color,hero_image").eq("slug", slug).single();
   if (!data) return { title: "Business" };
 
   const isLight = data.theme_color === "white" || String(data.theme_color).startsWith("white-");
+  const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
+  const url = `https://${slug}.${ROOT_DOMAIN}`;
 
   // Map accent colors to their hex values for browser safe area
   const ACCENT_COLORS: Record<string, { light: string; dark: string }> = {
@@ -169,10 +171,33 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const accentColors = ACCENT_COLORS[accentKey as keyof typeof ACCENT_COLORS] ?? ACCENT_COLORS.indigo;
   const themeColor = isLight ? accentColors.light : accentColors.dark;
 
+  const metaDescription = data.description || data.tagline || data.category;
+
   return {
     title: data.name,
-    description: data.tagline || data.category,
+    description: metaDescription,
     themeColor,
+    openGraph: {
+      title: data.name,
+      description: metaDescription,
+      url,
+      siteName: data.name,
+      images: data.hero_image ? [{ url: data.hero_image, width: 1200, height: 630, alt: data.name }] : [],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: data.name,
+      description: metaDescription,
+      images: data.hero_image ? [data.hero_image] : [],
+    },
+    alternates: {
+      canonical: url,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
   };
 }
 
@@ -226,6 +251,39 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
         .site-card{border-radius:${cr.card}!important}
         .site-icon{border-radius:${cr.icon}!important}
       `}</style>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: biz.name,
+            description: biz.description || biz.tagline,
+            url: `https://${biz.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`,
+            telephone: biz.phone || undefined,
+            email: biz.email || undefined,
+            address: biz.address ? {
+              "@type": "PostalAddress",
+              streetAddress: biz.address,
+            } : undefined,
+            image: biz.hero_image || undefined,
+            ...(biz.testimonials?.length > 0 && {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: (biz.testimonials.reduce((s, r) => s + r.rating, 0) / biz.testimonials.length).toFixed(1),
+                reviewCount: biz.testimonials.length,
+              },
+            }),
+            sameAs: [
+              biz.social?.instagram,
+              biz.social?.facebook,
+              biz.social?.twitter,
+              biz.social?.tiktok,
+            ].filter(Boolean),
+          }),
+        }}
+      />
 
       {/* ── HEADER ── */}
       <SlideDownHeader className={`sm:sticky sm:top-0 z-40 relative backdrop-blur-md sm:backdrop-blur-none ${T.isLight ? "bg-white/90 sm:bg-transparent" : "bg-gray-950/90 sm:bg-transparent"}`}>
