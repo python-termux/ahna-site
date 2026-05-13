@@ -36,6 +36,17 @@ interface Translations {
     returnHome: string; welcome: string; sub: string;
     email: string; password: string; forgot: string;
     submit: string; noAccount: string; register: string; loggingIn: string;
+    otpSent?: string;
+  };
+  otp: {
+    title: string; subtitle: (email: string) => string; placeholder: string;
+    submit: string; resend: string; resendIn: (s: number) => string;
+    invalid: string; verifying: string;
+  };
+  resetPassword: {
+    title: string; newPassword: string; confirmPassword: string;
+    submit: string; updating: string; success: string;
+    goToDashboard: string;
   };
   forgot: {
     returnHome: string; title: string; sub: string;
@@ -170,7 +181,16 @@ const T: Record<Lang, Translations> = {
       sub: "Log in to manage your business page.",
       email: "Email", password: "Password", forgot: "Forgot password?",
       submit: "Log in", noAccount: "Don't have an account?",
-      register: "Register now", loggingIn: "Logging in…",
+      register: "Register now", loggingIn: "Logging in…", otpSent: "Verification code sent",
+    },
+    otp: {
+      title: "Verify Code", subtitle: (email: string) => `We sent a code to ${email}`,
+      placeholder: "000000", submit: "Verify", resend: "Resend code",
+      resendIn: (s) => `Resend in ${s}s`, invalid: "Invalid or expired code", verifying: "Verifying…",
+    },
+    resetPassword: {
+      title: "New Password", newPassword: "New Password", confirmPassword: "Confirm Password",
+      submit: "Update", updating: "Updating…", success: "Success", goToDashboard: "Go to Dashboard",
     },
     forgot: {
       returnHome: "Return to home", title: "Reset your password",
@@ -303,7 +323,16 @@ const T: Record<Lang, Translations> = {
       sub: "سجّل دخولك لإدارة صفحة أعمالك",
       email: "البريد الإلكتروني", password: "كلمة المرور", forgot: "نسيت كلمة المرور؟",
       submit: "تسجيل الدخول", noAccount: "لا تملك حساباً؟",
-      register: "إنشاء حساب", loggingIn: "جارٍ تسجيل الدخول…",
+      register: "إنشاء حساب", loggingIn: "جارٍ تسجيل الدخول…", otpSent: "تم إرسال رمز التحقق",
+    },
+    otp: {
+      title: "التحقق من الرمز", subtitle: (email: string) => `أرسلنا رمزاً إلى ${email}`,
+      placeholder: "000000", submit: "تحقق", resend: "إعادة الإرسال",
+      resendIn: (s) => `إعادة الإرسال خلال ${s}ث`, invalid: "رمز غير صحيح أو منتهي الصلاحية", verifying: "جارٍ التحقق…",
+    },
+    resetPassword: {
+      title: "كلمة مرور جديدة", newPassword: "كلمة المرور الجديدة", confirmPassword: "تأكيد كلمة المرور",
+      submit: "تحديث", updating: "جارٍ التحديث…", success: "تم بنجاح", goToDashboard: "انتقل إلى لوحة التحكم",
     },
     forgot: {
       returnHome: "العودة للرئيسية", title: "استعادة كلمة المرور",
@@ -384,12 +413,14 @@ interface LanguageContextValue {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: Translations;
+  isAr?: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextValue>({
   lang: "en",
   setLang: () => {},
   t: T.en,
+  isAr: false,
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
@@ -418,7 +449,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t: T[lang] }}>
+    <LanguageContext.Provider value={{ lang, setLang, t: T[lang], isAr: lang === "ar" }}>
       {children}
     </LanguageContext.Provider>
   );

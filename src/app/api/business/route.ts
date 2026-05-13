@@ -163,6 +163,35 @@ export async function PATCH(request: Request) {
     .eq("user_id", user.id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Send "changes live" email (fire-and-forget, throttled to 1/hr)
+  const emailRl = rateLimit(`changes-live-email:${user.id}`, 1, 3600);
+  if (emailRl.ok) {
+    (async () => {
+      try {
+        const { data: biz } = await supabase
+          .from("businesses")
+          .select("name, slug")
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .single();
+
+        if (biz && biz.slug && !biz.slug.startsWith("_tmp_")) {
+          const siteUrl = `https://${biz.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`;
+          const { sendMail } = await import("@/lib/email/mailer");
+          const { changesLiveEmailHtml } = await import("@/lib/email/templates/changes-live");
+          await sendMail(
+            user.email!,
+            "تغييراتك أصبحت مباشرة — syrflow.com",
+            changesLiveEmailHtml({ businessName: biz.name, siteUrl })
+          );
+        }
+      } catch (err) {
+        console.error("Error sending changes-live email:", err);
+      }
+    })();
+  }
+
   return NextResponse.json({ ok: true });
 }
 

@@ -482,6 +482,12 @@ export default function RegisterPage() {
       setAuthError(d.error ?? "Account created but failed to save business");
       setAuthLoading(false); return;
     }
+    // Send welcome email (fire-and-forget)
+    fetch("/api/auth/welcome-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ businessName: place.name }),
+    }).catch(() => {});
     router.push("/dashboard");
   }
 

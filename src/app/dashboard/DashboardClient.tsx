@@ -418,13 +418,18 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
 
   async function resetPassword() {
     setResetLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+    const res = await fetch("/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userEmail, purpose: "password_change" }),
     });
     setResetLoading(false);
-    if (error) toast.error(isAr ? "فشل إرسال رابط إعادة التعيين" : "Failed to send reset link");
-    else toast.success(isAr ? "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني" : "Password reset link sent to your email");
+    if (!res.ok) {
+      toast.error(isAr ? "فشل إرسال رمز التحقق" : "Failed to send verification code");
+    } else {
+      toast.success(isAr ? "تم إرسال رمز التحقق إلى بريدك الإلكتروني" : "Verification code sent to your email");
+      window.location.href = `/auth/reset-password?otp=true&email=${encodeURIComponent(userEmail)}`;
+    }
   }
 
   async function deleteR2Image(url: string) {
