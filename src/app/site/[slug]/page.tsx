@@ -640,7 +640,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
         title="Made with Syria Flow"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/syr.webp" alt="Syria Flow" height={14} width={14} className="object-contain" />
+        <img src="/favicon.ico" alt="Syria Flow" height={14} width={14} className="object-contain rounded-sm" />
         {i18n.byBrand}
       </Link>
 
