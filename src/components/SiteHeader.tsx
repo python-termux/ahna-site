@@ -113,7 +113,6 @@ export default function SiteHeader() {
       children: [
         { label: t.nav.terms,   href: "/terms" },
         { label: t.nav.privacy, href: "/privacy-policy" },
-        { label: t.nav.refund,  href: "/refund" },
       ],
     },
   ];

@@ -14,7 +14,6 @@ import { createClient } from "@/lib/supabase/client";
 import type { PlaceResult } from "@/lib/places";
 import { useLanguage } from "@/lib/language";
 import { ThemeToggle } from "@/components/ThemeProvider";
-import { DotmSquare12 } from "@/components/ui/dotm-square-12";
 import { validateGoogleMapsUrl, validateEmail, validatePassword } from "@/lib/validation";
 
 const FB_APP_ID = "1463790922054350";
@@ -235,11 +234,6 @@ function DotMatrixLoading({ step, steps, isAr }: { step: number; steps: string[]
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden mt-2">
       <div className="border border-blue-500/20 dark:border-blue-500/30 rounded-[6px] bg-blue-50/50 dark:bg-blue-950/20 overflow-hidden">
         <div className="flex items-center gap-2.5 px-4 py-3 border-b border-blue-500/20 dark:border-blue-500/30 bg-blue-50/80 dark:bg-blue-950/30 min-h-[44px]">
-          <div className="shrink-0 flex items-center justify-center w-6 h-6">
-            <div style={{ transform: "scale(0.6)", width: 12, height: 12, transformOrigin: "center" }}>
-              <DotmSquare12 />
-            </div>
-          </div>
           <motion.span className="text-xs font-semibold text-blue-600 dark:text-blue-400 flex-1" animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.5, repeat: Infinity }}>
             {isAr ? "الذكاء الاصطناعي يفكر" : "AI is thinking"}
           </motion.span>
@@ -470,30 +464,66 @@ export default function RegisterPage() {
       return;
     }
 
-    // Step 1: Send OTP (do NOT create account yet)
-    const otpRes = await fetch("/api/auth/send-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim(), purpose: "login" }),
+    // Create the account directly (no OTP step)
+    const { error: authErr } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
     });
 
-    if (!otpRes.ok) {
-      setAuthError(isAr ? "فشل إرسال رمز التحقق" : "Failed to send verification code");
+    if (authErr) {
+      setAuthError(authErr.message);
       setAuthLoading(false);
       return;
     }
 
-    // Show OTP verification UI
-    setShowOtpVerification(true);
-    setOtpCodes(["", "", "", "", "", ""]);
-    setOtpError("");
-    setOtpSentMessage(isAr ? "✓ تم إرسال الرمز. يرجى التحقق من بريدك أو مجلد البريد العشوائي" : "✓ Code sent. Check your inbox or spam folder");
-    setResendCountdown(60);
-    setAuthLoading(false);
-    setTimeout(() => {
-      setOtpSentMessage("");
-    }, 10000);
-    setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+    // Create business
+    const bizRes = await fetch("/api/business", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: place.name,
+        tagline: "",
+        description: place.description,
+        category: place.category,
+        phone: place.phone,
+        email: "",
+        address: place.address,
+        maps_url: place.mapsUrl || "",
+        website: place.website,
+        hero_image: "",
+        gallery: place.images,
+        hours: place.hours,
+        services: [],
+        testimonials: place.reviews.map((r) => ({
+          author: r.author,
+          role: "",
+          text: r.text,
+          rating: r.rating,
+        })),
+        social: {},
+        theme_color: "white-emerald",
+        stat_years: "",
+        stat_clients: place.reviewCount ? `${place.reviewCount.toLocaleString()}+` : "",
+        stat_projects: place.rating ? `${place.rating} ★` : "",
+      }),
+    });
+
+    if (!bizRes.ok) {
+      const d = await bizRes.json();
+      setAuthError(d.error ?? "Failed to create business");
+      setAuthLoading(false);
+      return;
+    }
+
+    // Send welcome email (fire-and-forget)
+    fetch("/api/auth/welcome-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ businessName: place.name }),
+    }).catch(() => {});
+
+    // Success! Redirect to dashboard
+    router.push("/dashboard");
   }
 
   async function verifyOtpAndCreateAccount() {

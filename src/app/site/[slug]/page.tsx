@@ -84,13 +84,21 @@ const SITE_I18N = {
 interface Service { title: string; description: string }
 interface Testimonial { author: string; role: string; text: string; rating: number }
 interface Business {
-  id: string; slug: string; name: string; tagline: string; description: string;
+  id: string; user_id: string; slug: string; name: string; tagline: string; description: string;
   category: string; phone: string; email: string; address: string; maps_url: string; website: string;
   hero_image: string; gallery: string[]; about_image: string; hours: Record<string, string>;
   services: Service[]; testimonials: Testimonial[];
   why_us: { title: string; description: string }[];
   social: { instagram?: string; facebook?: string; twitter?: string; tiktok?: string; whatsapp?: string };
   theme_color: string; corner_radius: string; stat_years: string; stat_clients: string; stat_projects: string;
+  published: boolean; published_until: string | null;
+}
+
+// A site is publicly live only when published and not past its expiry date.
+function isLive(b: { published?: boolean; published_until?: string | null }): boolean {
+  if (!b.published) return false;
+  if (b.published_until && new Date(b.published_until).getTime() <= Date.now()) return false;
+  return true;
 }
 
 // ── Scrollbar accent colors (hex) ────────────────────────────────────────────
@@ -144,8 +152,13 @@ function buildTheme(themeColor: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const supabase = await createClient();
-  const { data } = await supabase.from("businesses").select("name,tagline,description,category,theme_color,hero_image").eq("slug", slug).single();
+  const { data } = await supabase.from("businesses").select("name,tagline,description,category,theme_color,hero_image,published,published_until").eq("slug", slug).single();
   if (!data) return { title: "Business" };
+
+  // Offline (unpublished or expired) sites must not be indexed.
+  if (!isLive(data)) {
+    return { title: "Site unavailable", robots: { index: false, follow: false } };
+  }
 
   const isLight = data.theme_color === "white" || String(data.theme_color).startsWith("white-");
   const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
@@ -213,6 +226,14 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   const supabase = await createClient();
   const { data: biz } = await supabase.from("businesses").select("*").eq("slug", slug).single<Business>();
   if (!biz) notFound();
+
+  // Gate: unpublished/expired sites are hidden from the public, but the owner
+  // (logged in) can always preview their own page.
+  if (!isLive(biz)) {
+    const { data: { user } } = await supabase.auth.getUser();
+    const isOwner = !!user && user.id === biz.user_id;
+    if (!isOwner) return <SiteUnavailable isRtl={isRtl} />;
+  }
 
   const T = buildTheme(biz.theme_color);
   const accentKey = biz.theme_color.startsWith("white-") ? biz.theme_color.slice(6) : biz.theme_color === "white" ? "indigo" : biz.theme_color;
@@ -702,6 +723,39 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
         {i18n.byBrand}
       </Link>
 
+    </div>
+  );
+}
+
+// ── Unavailable (unpublished / expired) site ──────────────────────────────────
+function SiteUnavailable({ isRtl }: { isRtl: boolean }) {
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
+  const t = isRtl
+    ? { title: "هذا الموقع غير متاح حالياً", body: "هذا الموقع غير منشور في الوقت الحالي.", cta: "أنشئ موقعك مع سوريا فلو" }
+    : { title: "This site is not currently available", body: "This website is not published at the moment.", cta: "Create your site with Syria Flow" };
+  return (
+    <div
+      dir={isRtl ? "rtl" : "ltr"}
+      className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-4"
+      style={{ fontFamily: isRtl ? "'Almarai', sans-serif" : "'GoogleSans', sans-serif" }}
+    >
+      <div className="max-w-md w-full text-center">
+        <div className="mb-6 flex justify-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+          </div>
+        </div>
+        <h1 className="text-2xl font-bold mb-3">{t.title}</h1>
+        <p className="text-gray-600 mb-8">{t.body}</p>
+        <a
+          href={`https://${rootDomain}`}
+          className="inline-flex items-center justify-center px-5 py-3 bg-[#0066cc] hover:bg-[#0071e3] text-white font-medium rounded-lg transition-colors"
+        >
+          {t.cta}
+        </a>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { useLanguage } from "@/lib/language";
@@ -34,7 +33,7 @@ export default function TermsPage() {
                 <p>تحكم شروط الخدمة هذه ("الشروط") وصولك إلى منصة <strong className="text-foreground">syrflow.com</strong> واستخدامك لها. بإنشاء حساب أو استخدام المنصة، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق، فلا تستخدم المنصة.</p>
               </Section>
               <Section title="٢. وصف الخدمة">
-                <p>syrflow.com هي منصة تتيح للشركات والأفراد في سوريا والمنطقة العربية إنشاء موقع ويب احترافي من صفحة واحدة عن طريق استيراد البيانات من ملفهم التجاري على Google. تُقدَّم الخدمة على أساس الاشتراك بدءاً من دولار واحد شهرياً.</p>
+                <p>syrflow.com هي منصة تتيح للشركات والأفراد في سوريا والمنطقة العربية إنشاء موقع ويب احترافي من صفحة واحدة عن طريق استيراد البيانات من ملفهم التجاري على Google. تُقدَّم الخدمة على أساس الاشتراك بدءاً من دولارين شهرياً.</p>
               </Section>
               <Section title="٣. الاشتراكات والدفع">
                 <p>تُقدَّم الخدمة على أساس اشتراك متكرر (شهري أو سنوي).</p>
@@ -45,7 +44,7 @@ export default function TermsPage() {
                 <p>يمكنك إلغاء اشتراكك في أي وقت بمراسلتنا على <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>. يسري الإلغاء في نهاية فترة الفوترة الحالية، وتحتفظ بحق الوصول إلى الخدمة حتى ذلك الحين.</p>
               </Section>
               <Section title="٥. استرداد المبالغ">
-                <p>يُرجى مراجعة <Link href="/refund" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">سياسة الاسترداد</Link> للاطلاع على التفاصيل الكاملة. باختصار: إذا حصل موقعك على أقل من 100 زيارة خلال أول 7 أيام من الاشتراك، يحق لك طلب استرداد كامل خلال تلك الفترة.</p>
+                <p>إذا حصل موقعك على أقل من 100 زيارة خلال أول 7 أيام من الاشتراك، يحق لك طلب استرداد كامل خلال تلك الفترة.</p>
               </Section>
               <Section title="٦. حسابات المستخدمين">
                 <ul className="list-disc pl-5 space-y-1.5">
@@ -96,7 +95,7 @@ export default function TermsPage() {
                 <p>These Terms of Service ("Terms") govern your access to and use of the platform at <strong className="text-foreground">syrflow.com</strong> ("Platform", "Service", "we", "us"). By creating an account or using the Platform you agree to be bound by these Terms. If you do not agree, do not use the Platform.</p>
               </Section>
               <Section title="2. Description of Service">
-                <p>syrflow.com is a platform that allows businesses and individuals in Syria and the Arab world to create a professional one-page website by importing data from their Google Business Profile. The Service is offered on a subscription basis starting from $1/month.</p>
+                <p>syrflow.com is a platform that allows businesses and individuals in Syria and the Arab world to create a professional one-page website by importing data from their Google Business Profile. The Service is offered on a subscription basis starting from $2/month.</p>
               </Section>
               <Section title="3. Subscriptions and Payment">
                 <p>The Service is offered on a recurring subscription basis (monthly or annually).</p>
@@ -107,7 +106,7 @@ export default function TermsPage() {
                 <p>You may cancel your subscription at any time by emailing <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>. Cancellation takes effect at the end of the current billing period. You retain access to the Service until then.</p>
               </Section>
               <Section title="5. Refunds">
-                <p>Please see our <Link href="/refund" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">Refund Policy</Link> for full details. In summary: if your website receives fewer than 100 visitors in the first 7 days of your subscription, you are eligible for a full refund within that window.</p>
+                <p>If your website receives fewer than 100 visitors in the first 7 days of your subscription, you are eligible for a full refund within that window.</p>
               </Section>
               <Section title="6. User Accounts">
                 <ul className="list-disc pl-5 space-y-1.5">

@@ -25,12 +25,11 @@ export default function Footer() {
               <Link href="/register"       className="hover:text-foreground transition-colors">{t.footer.register}</Link>
               <Link href="/terms"          className="hover:text-foreground transition-colors">{t.footer.terms}</Link>
               <Link href="/privacy-policy" className="hover:text-foreground transition-colors">{t.footer.privacy}</Link>
-              <Link href="/refund"         className="hover:text-foreground transition-colors">{t.footer.refunds}</Link>
               <Link href="/contact"        className="hover:text-foreground transition-colors">{t.footer.contact}</Link>
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} {brandName}. {t.footer.copyright}
+            © {new Date().getFullYear()} {brandName}
           </p>
         </div>
       </div>

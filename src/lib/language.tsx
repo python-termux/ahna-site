@@ -7,13 +7,13 @@ export type Lang = "en" | "ar";
 interface Translations {
   nav: {
     pricing: string; contact: string; legal: string;
-    terms: string; privacy: string; refund: string;
+    terms: string; privacy: string;
     login: string; getStarted: string;
   };
   footer: {
     copyright: string; pricing: string; login: string;
     register: string; terms: string; privacy: string;
-    refunds: string; contact: string;
+    contact: string;
   };
   home: {
     badge: string; h1a: string; h1b: string; hero: string; cta: string;
@@ -55,7 +55,6 @@ interface Translations {
   };
   terms:   { title: string; updated: string };
   privacy: { title: string; updated: string };
-  refund:  { title: string; updated: string };
   dataDeletion: {
     title: string; whatTitle: string; whatBody: string;
     howTitle: string; howIntro: string;
@@ -125,19 +124,19 @@ const T: Record<Lang, Translations> = {
   en: {
     nav: {
       pricing: "Pricing", contact: "Contact", legal: "Legal",
-      terms: "Terms of Service", privacy: "Privacy Policy", refund: "Refund Policy",
+      terms: "Terms of Service", privacy: "Privacy Policy",
       login: "Log in", getStarted: "Get started",
     },
     footer: {
       copyright: "All rights reserved.",
       pricing: "Pricing", login: "Login", register: "Register",
-      terms: "Terms", privacy: "Privacy", refunds: "Refunds", contact: "Contact",
+      terms: "Terms", privacy: "Privacy", contact: "Contact",
     },
     home: {
       badge: "No coding. No Hosting. No Fuss.",
       h1a: "Turn Google Maps Links",
       h1b: "into a stunning website",
-      hero: "Build your website in minutes. No coding, no complexity, a fast professional presence starting at $1/month, cheaper than a pizza, with Arabic support so you can grow in Syria.",
+      hero: "Build your website in minutes. No coding, no complexity, a fast professional presence starting at $2/month, cheaper than a pizza, with Arabic support so you can grow in Syria.",
       cta: "Get started Now",
       features: [
         { title: "Ready in Minutes", desc: "Paste your Google Maps link and your website is live instantly. No developers needed." },
@@ -145,7 +144,7 @@ const T: Record<Lang, Translations> = {
         { title: "Arabic Interface", desc: "Full Arabic support with RTL layout so you can grow your business in Syria." },
         { title: "No Coding Required", desc: "Change any text, image, service, or contact detail from your dashboard anytime." },
         { title: "AI Powered Content", desc: "Generate professional headings, taglines, and descriptions instantly with one click." },
-        { title: "Affordable Pricing", desc: "Get a proper business website starting at just $1/month. Cheaper than a pizza." },
+        { title: "Affordable Pricing", desc: "Get a proper business website starting at just $2/month. Cheaper than a pizza." },
         { title: "Auto SEO Optimization", desc: "Every website created with SyrFlow gets optimized for search engines automatically." },
         { title: "Fast & Lightweight", desc: "Pages load in under a second. Built for speed on any connection." },
         { title: "Free Subdomain", desc: "Your business gets a free subdomain (yourbiz.syrflow.com) to start immediately." },
@@ -155,7 +154,7 @@ const T: Record<Lang, Translations> = {
       whyUsSub: "Everything you need, nothing you don't.",
       whyUs: [
         { title: "No Hidden Domain Costs", desc: "Your subdomain is free forever. No surprise domain renewal bills. What you see is what you pay." },
-        { title: "Unbeatable Pricing", desc: "Starting at $1/month, SyrFlow is the most affordable business website solution in Syria." },
+        { title: "Unbeatable Pricing", desc: "Starting at $2/month, SyrFlow is the most affordable business website solution in Syria." },
         { title: "AI Built-In", desc: "AI writes your content, optimizes your SEO, and fills your website — all automatically." },
         { title: "Super Easy", desc: "If you have a Google Maps link, you're 3 minutes away from a live professional website." },
       ],
@@ -200,7 +199,6 @@ const T: Record<Lang, Translations> = {
     },
     terms:   { title: "Terms of Service",   updated: "Last updated: May 1, 2026" },
     privacy: { title: "Privacy Policy",     updated: "Last updated: May 1, 2026" },
-    refund:  { title: "Refund Policy",      updated: "Last updated: May 1, 2026" },
     dataDeletion: {
       title: "Data Deletion Request",
       whatTitle: "What data we store",
@@ -267,19 +265,19 @@ const T: Record<Lang, Translations> = {
   ar: {
     nav: {
       pricing: "الأسعار", contact: "تواصل معنا", legal: "قانوني",
-      terms: "شروط الخدمة", privacy: "سياسة الخصوصية", refund: "سياسة الاسترداد",
+      terms: "شروط الخدمة", privacy: "سياسة الخصوصية",
       login: "تسجيل الدخول", getStarted: "ابدأ الآن",
     },
     footer: {
       copyright: "جميع الحقوق محفوظة.",
       pricing: "الأسعار", login: "تسجيل الدخول", register: "إنشاء حساب",
-      terms: "الشروط", privacy: "الخصوصية", refunds: "الاسترداد", contact: "تواصل",
+      terms: "الشروط", privacy: "الخصوصية", contact: "تواصل",
     },
     home: {
       badge: "بدون برمجة. بدون استضافة. بدون تعقيد.",
       h1a: "حوّل رابط خرائط جوجل",
       h1b: "إلى موقع ويب مذهل",
-      hero: "أنشئ موقعك في دقائق. بدون برمجة، بدون تعقيد، حضور احترافي سريع بدءاً من دولار واحد شهرياً، أرخص من بيتزا، مع دعم عربي لتنمو أعمالك في سوريا.",
+      hero: "أنشئ موقعك في دقائق. بدون برمجة، بدون تعقيد، حضور احترافي سريع بدءاً من دولارين شهرياً، أرخص من بيتزا، مع دعم عربي لتنمو أعمالك في سوريا.",
       cta: "ابدأ الآن",
       features: [
         { title: "جاهز في دقائق", desc: "الصق رابط Google Maps وسيكون موقعك حياً فوراً. بدون الحاجة لمطورين." },
@@ -287,7 +285,7 @@ const T: Record<Lang, Translations> = {
         { title: "واجهة عربية", desc: "دعم عربي كامل مع تخطيط RTL لتنمو أعمالك في سوريا." },
         { title: "لا برمجة مطلوبة", desc: "غيّر أي نص أو صورة أو خدمة أو معلومات اتصال من لوحة التحكم في أي وقت." },
         { title: "محتوى بالذكاء الاصطناعي", desc: "أنشئ عناوين وشعارات وأوصافاً احترافية بنقرة واحدة." },
-        { title: "أسعار في متناول الجميع", desc: "احصل على موقع تجاري احترافي بأقل من دولار شهرياً. أرخص من بيتزا." },
+        { title: "أسعار في متناول الجميع", desc: "احصل على موقع تجاري احترافي بدءاً من دولارين شهرياً. أرخص من بيتزا." },
         { title: "تحسين آلي لمحركات البحث", desc: "أي موقع يُنشأ عبر سوريا فلو يُحسَّن لمحركات البحث تلقائياً." },
         { title: "سريع وخفيف الحجم", desc: "تحميل الصفحات في أقل من ثانية. مصمم للسرعة على أي اتصال." },
         { title: "نطاق فرعي مجاني", desc: "يحصل نشاطك على نطاق فرعي مجاني (yourbiz.syrflow.com) للبدء فوراً." },
@@ -297,7 +295,7 @@ const T: Record<Lang, Translations> = {
       whyUsSub: "كل ما تحتاجه، لا شيء زائد.",
       whyUs: [
         { title: "لا تكاليف نطاق خفية", desc: "نطاقك الفرعي مجاني للأبد. لا فواتير مفاجئة لتجديد النطاق. ما تراه هو ما تدفعه." },
-        { title: "أسعار لا تُضاهى", desc: "بدءاً من دولار واحد شهرياً، سوريا فلو هو أكثر حلول مواقع الأعمال توفراً في سوريا." },
+        { title: "أسعار لا تُضاهى", desc: "بدءاً من دولارين شهرياً، سوريا فلو هو أكثر حلول مواقع الأعمال توفراً في سوريا." },
         { title: "ذكاء اصطناعي مدمج", desc: "يكتب الذكاء الاصطناعي محتواك ويحسّن SEO الخاص بك ويملأ موقعك — كل ذلك تلقائياً." },
         { title: "سهل للغاية", desc: "إذا كان لديك رابط Google Maps، فأنت على بُعد 3 دقائق من موقع احترافي حي." },
       ],
@@ -342,7 +340,6 @@ const T: Record<Lang, Translations> = {
     },
     terms:   { title: "شروط الخدمة",       updated: "آخر تحديث: 1 مايو 2026" },
     privacy: { title: "سياسة الخصوصية",   updated: "آخر تحديث: 1 مايو 2026" },
-    refund:  { title: "سياسة الاسترداد",  updated: "آخر تحديث: 1 مايو 2026" },
     dataDeletion: {
       title: "طلب حذف البيانات",
       whatTitle: "البيانات التي نخزّنها",

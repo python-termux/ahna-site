@@ -22,10 +22,9 @@ const baseEn = [
   { name: "Multiple Theme Changes",  included: true,  value: "Yes" },
   { name: "Multi-language Support",  included: true,  value: "Yes" },
   { name: "Unlimited Image Search",  included: true,  value: "Yes" },
-  { name: "Custom domain",           included: true,  value: "Yes" },
+  { name: "Free Subdomain",          included: true,  value: "yourbiz.syrflow.com" },
   { name: "Ai Auto Fill",            included: true,  value: "Yes" },
   { name: "Syrflow Badge",           included: true,  value: "Footer" },
-  { name: "Syrflow Popup",           included: true,  value: "5 min Inactivity" },
   { name: "Online Support",          included: true,  value: "Email" },
   { name: "Website Views Counter",   included: false, value: "No" },
 ];
@@ -36,19 +35,19 @@ const telegramFeaturesEn = [{ name: "Telegram Channel Export", included: true, v
 
 const plansEn = [
   {
-    name: "With Google Link", price: 1, period: "monthly", yearlyPrice: 12,
+    name: "With Google Link", price: 2, period: "monthly", yearlyPrice: 20,
     description: "Perfect for businesses that have a Google Business profile.",
     icon: "/pricing/star-94.png", buttonText: "Get started", popular: false, comingSoon: false,
     features: googleFeaturesEn,
   },
   {
-    name: "With Facebook", price: 1, period: "monthly", yearlyPrice: 12,
+    name: "With Facebook", price: 2, period: "monthly", yearlyPrice: 20,
     description: "Import your business directly from your Facebook Page. Coming soon.",
     icon: "/pricing/fire-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
     features: facebookFeaturesEn,
   },
   {
-    name: "With Telegram", price: 1, period: "monthly", yearlyPrice: 12,
+    name: "With Telegram", price: 2, period: "monthly", yearlyPrice: 20,
     description: "Import your business from your Telegram channel or group. Coming soon.",
     icon: "/pricing/crown-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
     features: telegramFeaturesEn,
@@ -61,10 +60,9 @@ const baseAr = [
   { name: "تغيير الثيمات المتعددة",                included: true,  value: "نعم" },
   { name: "دعم متعدد اللغات",                      included: true,  value: "نعم" },
   { name: "بحث صور غير محدود",                    included: true,  value: "نعم" },
-  { name: "نطاق مخصص",                            included: true,  value: "نعم" },
+  { name: "نطاق فرعي مجاني",                       included: true,  value: "yourbiz.syrflow.com" },
   { name: "التعبئة التلقائية بالذكاء الاصطناعي",  included: true,  value: "نعم" },
   { name: "شارة Syrflow",                         included: true,  value: "تذييل الصفحة" },
-  { name: "نافذة Syrflow المنبثقة",                included: true,  value: "5 دقائق خمول" },
   { name: "الدعم الإلكتروني",                      included: true,  value: "البريد الإلكتروني" },
   { name: "عداد مشاهدات الموقع",                  included: false, value: "لا" },
 ];
@@ -75,19 +73,19 @@ const telegramFeaturesAr = [{ name: "تصدير قناة تيليجرام",    i
 
 const plansAr = [
   {
-    name: "مع رابط جوجل", price: 1, period: "شهرياً", yearlyPrice: 12,
+    name: "مع رابط جوجل", price: 2, period: "شهرياً", yearlyPrice: 20,
     description: "مثالي للأعمال التي لديها ملف تجاري على Google.",
     icon: "/pricing/star-94.png", buttonText: "ابدأ الآن", popular: false, comingSoon: false,
     features: googleFeaturesAr,
   },
   {
-    name: "مع فيسبوك", price: 1, period: "شهرياً", yearlyPrice: 12,
+    name: "مع فيسبوك", price: 2, period: "شهرياً", yearlyPrice: 20,
     description: "استورد نشاطك التجاري مباشرة من صفحة Facebook الخاصة بك. قريباً.",
     icon: "/pricing/fire-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
     features: facebookFeaturesAr,
   },
   {
-    name: "مع تيليجرام", price: 1, period: "شهرياً", yearlyPrice: 12,
+    name: "مع تيليجرام", price: 2, period: "شهرياً", yearlyPrice: 20,
     description: "استورد نشاطك التجاري من قناة أو مجموعة Telegram. قريباً.",
     icon: "/pricing/crown-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
     features: telegramFeaturesAr,
@@ -97,26 +95,26 @@ const plansAr = [
 const faqsEn = [
   { question: "What is SyrFlow?", answer: "SyrFlow is a platform that turns your Google Maps business link into a professional one-page website in minutes. No coding or design skills required — just paste your link and you're live." },
   { question: "How does it work?", answer: "Paste your Google Maps link, choose your free subdomain (yourbiz.syrflow.com), and your website is live. We automatically import your business name, photos, reviews, opening hours, and contact info." },
-  { question: "How much does it cost?", answer: "Plans start from $1/month — cheaper than a pizza and cheaper than any website developer. See the pricing table above for full plan details." },
+  { question: "How much does it cost?", answer: "Plans start from $2/month — cheaper than a pizza and cheaper than any website developer. See the pricing table above for full plan details." },
   { question: "What payment methods do you accept?", answer: "We accept Sham Cash and Syrian bank transfer. Contact us at team@syrflow.com to complete your payment and our team will activate your account within 24 hours." },
   { question: "Does SyrFlow support Arabic?", answer: "Yes! Full Arabic support with RTL layout is built in on all plans. You can switch between Arabic and English at any time, and your visitors can do the same." },
   { question: "Will my website appear on Google?", answer: "Yes. Every website created with SyrFlow is automatically optimized for search engines (SEO) so customers can find your business on Google without any extra work from you." },
   { question: "Do I need to buy a domain?", answer: "No. You get a free subdomain (yourbiz.syrflow.com) immediately at no cost. Custom domain support (like yourbusiness.com) is available on Pro and Enterprise plans." },
   { question: "Can I edit my website after it's created?", answer: "Yes. You can update text, images, services, hours, and contact details anytime from your easy-to-use dashboard. No technical skills needed. All plans include unlimited edits." },
-  { question: "What if I'm not satisfied?", answer: "If your website receives fewer than 100 visitors in the first 7 days of your subscription, you are eligible for a full refund within that 7-day window. See our Refund Policy for full details." },
+  { question: "What if I'm not satisfied?", answer: "If your website receives fewer than 100 visitors in the first 7 days of your subscription, you are eligible for a full refund within that 7-day window." },
   { question: "How do I get started?", answer: "Register at syrflow.com, paste your Google Maps link, choose your subdomain, and you're live in under 3 minutes. No credit card required to sign up." },
 ];
 
 const faqsAr = [
   { question: "ما هو سوريا فلو؟", answer: "سوريا فلو هي منصة تحوّل رابط نشاطك التجاري على Google Maps إلى موقع احترافي من صفحة واحدة في دقائق. لا حاجة لبرمجة أو تصميم — الصق رابطك وموقعك حي." },
   { question: "كيف تعمل المنصة؟", answer: "الصق رابط Google Maps، اختر نطاقك الفرعي المجاني (yourbiz.syrflow.com)، وسيكون موقعك حياً. نستورد تلقائياً اسم نشاطك والصور والتقييمات وساعات العمل ومعلومات الاتصال." },
-  { question: "كم تكلف الخدمة؟", answer: "تبدأ الخطط من دولار واحد شهرياً — أرخص من بيتزا وأرخص من أي مطور مواقع. اطلع على جدول الأسعار أعلاه للتفاصيل الكاملة." },
+  { question: "كم تكلف الخدمة؟", answer: "تبدأ الخطط من دولارين شهرياً — أرخص من بيتزا وأرخص من أي مطور مواقع. اطلع على جدول الأسعار أعلاه للتفاصيل الكاملة." },
   { question: "ما طرق الدفع المتاحة؟", answer: "نقبل Sham Cash والتحويل البنكي السوري. تواصل معنا على team@syrflow.com لإتمام الدفع وسيفعّل فريقنا حسابك خلال 24 ساعة." },
   { question: "هل تدعم المنصة اللغة العربية؟", answer: "نعم! الدعم العربي الكامل مع تخطيط RTL مدمج في جميع الخطط. يمكنك ولزوارك التبديل بين العربية والإنجليزية في أي وقت." },
   { question: "هل سيظهر موقعي على Google؟", answer: "نعم. كل موقع يُنشأ مع سوريا فلو يُحسَّن تلقائياً لمحركات البحث (SEO) حتى يجدك العملاء على Google دون أي جهد إضافي منك." },
   { question: "هل أحتاج إلى شراء نطاق؟", answer: "لا. تحصل على نطاق فرعي مجاني (yourbiz.syrflow.com) فوراً بدون تكلفة. دعم النطاقات المخصصة (مثل yourbusiness.com) متاح في خطط Pro وEnterprise." },
   { question: "هل يمكنني تعديل موقعي بعد إنشائه؟", answer: "نعم. يمكنك تحديث النصوص والصور والخدمات وساعات العمل ومعلومات الاتصال في أي وقت من لوحة التحكم. لا تتطلب مهارات تقنية. جميع الخطط تشمل تعديلات غير محدودة." },
-  { question: "ماذا لو لم أكن راضياً؟", answer: "إذا حصل موقعك على أقل من 100 زيارة في أول 7 أيام من اشتراكك، يحق لك طلب استرداد كامل خلال تلك الفترة. اطلع على سياسة الاسترداد للتفاصيل الكاملة." },
+  { question: "ماذا لو لم أكن راضياً؟", answer: "إذا حصل موقعك على أقل من 100 زيارة في أول 7 أيام من اشتراكك، يحق لك طلب استرداد كامل خلال تلك الفترة." },
   { question: "كيف أبدأ؟", answer: "سجّل في syrflow.com، الصق رابط Google Maps، اختر نطاقك الفرعي، وستكون حياً في أقل من 3 دقائق. لا يتطلب الاشتراك بطاقة ائتمانية." },
 ];
 

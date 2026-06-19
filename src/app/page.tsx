@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Zap, Link2, Globe, Code, Bot, DollarSign, Search, Gauge, AtSign, Share2, Shield, Gem, Sparkles, Star, Pizza } from "lucide-react";
+import { Zap, Link2, Globe, Code, Bot, DollarSign, Search, Gauge, AtSign, Share2, Shield, Gem, Sparkles, Pizza } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import InView from "@/components/InView";
@@ -61,7 +61,6 @@ export default function Home() {
             style={{ backgroundColor: "#0066cc", borderRadius: 8 }}
           >
             {t.home.cta}
-            <Star size={16} />
           </Link>
         </div>
       </section>

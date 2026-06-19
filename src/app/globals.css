@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+/* @import "shadcn/tailwind.css"; */
 
 /* ── Google Sans English font ─────────────────────────────────────────────── */
 @font-face { font-family: 'GoogleSans'; src: url('/fonts/english-fonts/GoogleSans-Regular.ttf')        format('truetype'); font-weight: 400; font-style: normal;  font-display: swap; }

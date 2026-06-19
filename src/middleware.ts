@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
-const APP_SUBDOMAINS = new Set(["app", "www", "api", "dashboard", "mail", "smtp"]);
+const APP_SUBDOMAINS = new Set(["app", "www", "api", "dashboard", "mail", "smtp", "admin"]);
 
 function securityHeaders(res: NextResponse): NextResponse {
   // Prevent MIME type sniffing
@@ -49,7 +49,23 @@ export function middleware(request: NextRequest) {
 
   const isApex = hostWithoutPort === ROOT_DOMAIN || hostWithoutPort === `www.${ROOT_DOMAIN}`;
   const isApp = hostWithoutPort === `app.${ROOT_DOMAIN}`;
+  const isAdminHost = hostWithoutPort === `admin.${ROOT_DOMAIN}`;
   const isLocal = hostWithoutPort === "localhost" || hostWithoutPort === "127.0.0.1";
+
+  // ── admin.syrflow.com → /admin/* ──────────────────────────────────────────
+  if (isAdminHost) {
+    // Let API routes pass through untouched; rewrite everything else under /admin.
+    if (!pathname.startsWith("/admin") && !pathname.startsWith("/api")) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/admin${pathname === "/" ? "" : pathname}`;
+      const res = NextResponse.rewrite(url);
+      securityHeaders(res);
+      return res;
+    }
+    const res = NextResponse.next({ request });
+    securityHeaders(res);
+    return res;
+  }
 
   // ── Subdomain routing (user sites) ────────────────────────────────────────
   if (!isApex && !isApp && !isLocal && hostWithoutPort.endsWith(`.${ROOT_DOMAIN}`)) {
