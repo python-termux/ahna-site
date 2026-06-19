@@ -433,7 +433,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
   }
 
   async function deleteR2Image(url: string) {
-    if (!url.startsWith(process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? "https://pub-90d3e7f40c0c4f5d8a8289b088e8d7f7.r2.dev")) return;
+    if (!url.startsWith(process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? "https://pub-8ab476b6e28b4ad8a273b409b80d8dc4.r2.dev")) return;
     await fetch("/api/delete-image", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
   }
 
@@ -514,7 +514,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
     }
   }
 
-  const R2_BASE = process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? "https://pub-90d3e7f40c0c4f5d8a8289b088e8d7f7.r2.dev";
+  const R2_BASE = process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? "https://pub-8ab476b6e28b4ad8a273b409b80d8dc4.r2.dev";
   const uploadedImageCount = data.gallery.filter((u) => u.startsWith(R2_BASE)).length;
 
   async function handleGalleryUpload(files: FileList | null) {
