@@ -14,26 +14,29 @@ export default async function AdminPage() {
   if (!user) redirect("/admin/login");
   if (!isAdminEmail(user.email)) return <AdminDenied email={user.email ?? ""} />;
 
-  const admin = createAdminClient();
-
-  // All businesses. Use select("*") so a missing column (e.g. if the
-  // publish migration hasn't run yet) never breaks the whole listing.
-  const { data: businesses } = await admin
+  // Read the site list with the public-read client — works regardless of the
+  // service-role key, so the admin always sees every site.
+  const { data: businesses } = await supabase
     .from("businesses")
     .select("*")
     .order("created_at", { ascending: false });
 
-  // Map user_id → { email, created_at } via the auth admin API (paginated)
+  // Map user_id → { email, created_at } via the auth admin API (needs the
+  // service-role key). Best-effort: if the key is missing/wrong, emails just
+  // show "—" instead of crashing the page.
   const emailById = new Map<string, { email: string; createdAt: string }>();
-  let page = 1;
-  // Fetch up to ~10k users (200 per page × 50 pages) — plenty for now
-  for (; page <= 50; page++) {
-    const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-    const users = list?.users ?? [];
-    for (const u of users) {
-      if (u.email) emailById.set(u.id, { email: u.email, createdAt: u.created_at });
+  try {
+    const admin = createAdminClient();
+    for (let page = 1; page <= 50; page++) {
+      const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+      const users = list?.users ?? [];
+      for (const u of users) {
+        if (u.email) emailById.set(u.id, { email: u.email, createdAt: u.created_at });
+      }
+      if (users.length < 200) break;
     }
-    if (users.length < 200) break;
+  } catch {
+    // service-role key not usable — fall back to "—" emails
   }
 
   const rows: AdminRow[] = (businesses ?? []).map((b) => {
