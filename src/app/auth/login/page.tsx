@@ -51,27 +51,9 @@ export default function LoginPage() {
       return;
     }
 
-    // Send OTP
-    toast.dismiss(id);
-    const otpRes = await fetch("/api/auth/send-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim(), purpose: "login" }),
-    });
-
-    if (!otpRes.ok) {
-      // OTP send failed — graceful degradation
-      toast.success("Welcome back!", { id: toast.loading("") });
-      router.push("/dashboard");
-      router.refresh();
-      setLoading(false);
-      return;
-    }
-
-    // Set OTP pending cookie
-    document.cookie = `otp_pending=${encodeURIComponent(email.trim())}; path=/; max-age=600; SameSite=Strict`;
-    toast.success(t.login.otpSent || "Verification code sent", { id });
-    router.push(`/auth/verify-otp?email=${encodeURIComponent(email.trim())}&purpose=login`);
+    toast.success("Welcome back!", { id });
+    router.push("/dashboard");
+    router.refresh();
     setLoading(false);
   }
 

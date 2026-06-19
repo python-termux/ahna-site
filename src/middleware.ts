@@ -92,18 +92,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // ── OTP gate: block /dashboard if otp_pending cookie exists ───────────────
-  if ((isApp || isLocal) && pathname.startsWith("/dashboard")) {
-    const otpPending = request.cookies.get("otp_pending")?.value;
-    if (otpPending) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/auth/verify-otp";
-      url.searchParams.set("email", otpPending);
-      url.searchParams.set("purpose", "login");
-      return NextResponse.redirect(url);
-    }
-  }
-
   const res = NextResponse.next({ request });
   securityHeaders(res);
   return res;
