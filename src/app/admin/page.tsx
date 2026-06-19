@@ -16,10 +16,11 @@ export default async function AdminPage() {
 
   const admin = createAdminClient();
 
-  // All businesses
+  // All businesses. Use select("*") so a missing column (e.g. if the
+  // publish migration hasn't run yet) never breaks the whole listing.
   const { data: businesses } = await admin
     .from("businesses")
-    .select("id, name, slug, user_id, created_at, published, published_until")
+    .select("*")
     .order("created_at", { ascending: false });
 
   // Map user_id → { email, created_at } via the auth admin API (paginated)
@@ -44,8 +45,8 @@ export default async function AdminPage() {
       slug: isTmp ? "" : b.slug,
       email: u?.email ?? "—",
       registeredAt: u?.createdAt ?? b.created_at,
-      published: b.published,
-      publishedUntil: b.published_until,
+      published: b.published ?? false,
+      publishedUntil: b.published_until ?? null,
       isTmp,
     };
   });
