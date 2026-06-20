@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
 const APP_SUBDOMAINS = new Set(["app", "www", "api", "dashboard", "mail", "smtp", "admin"]);
@@ -42,7 +43,7 @@ function securityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const hostWithoutPort = host.split(":")[0];
   const { pathname } = request.nextUrl;
@@ -52,19 +53,57 @@ export function proxy(request: NextRequest) {
   const isAdminHost = hostWithoutPort === `admin.${ROOT_DOMAIN}`;
   const isLocal = hostWithoutPort === "localhost" || hostWithoutPort === "127.0.0.1";
 
+  // Share the auth cookie across *.syrflow.com so login persists on subdomains.
+  const cookieDomain =
+    hostWithoutPort === ROOT_DOMAIN || hostWithoutPort.endsWith(`.${ROOT_DOMAIN}`)
+      ? `.${ROOT_DOMAIN}`
+      : undefined;
+
+  // ── Refresh the Supabase session on every request ─────────────────────────
+  // Token refresh can't be persisted from a Server Component render, so we do it
+  // here (middleware) where Set-Cookie is allowed. This keeps the session alive
+  // and prevents stale-token "Unauthorized" errors on API routes / page loads.
+  const refreshedCookies: { name: string; value: string; options: CookieOptions }[] = [];
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (supabaseUrl && supabaseKey) {
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            refreshedCookies.push({ name, value, options });
+          });
+        },
+      },
+    });
+    try {
+      await supabase.auth.getUser();
+    } catch {
+      // Network/refresh errors must not break routing.
+    }
+  }
+
+  // Apply refreshed auth cookies + security headers to any outgoing response.
+  function finalize(res: NextResponse): NextResponse {
+    refreshedCookies.forEach(({ name, value, options }) =>
+      res.cookies.set(name, value, cookieDomain ? { ...options, domain: cookieDomain } : options)
+    );
+    return securityHeaders(res);
+  }
+
   // ── admin.syrflow.com → /admin/* ──────────────────────────────────────────
   if (isAdminHost) {
     // Let API routes pass through untouched; rewrite everything else under /admin.
     if (!pathname.startsWith("/admin") && !pathname.startsWith("/api")) {
       const url = request.nextUrl.clone();
       url.pathname = `/admin${pathname === "/" ? "" : pathname}`;
-      const res = NextResponse.rewrite(url);
-      securityHeaders(res);
-      return res;
+      return finalize(NextResponse.rewrite(url, { request }));
     }
-    const res = NextResponse.next({ request });
-    securityHeaders(res);
-    return res;
+    return finalize(NextResponse.next({ request }));
   }
 
   // ── Subdomain routing (user sites) ────────────────────────────────────────
@@ -73,20 +112,16 @@ export function proxy(request: NextRequest) {
     if (slug && !APP_SUBDOMAINS.has(slug) && !pathname.startsWith("/site/")) {
       const url = request.nextUrl.clone();
       url.pathname = `/site/${slug}${pathname === "/" ? "" : pathname}`;
-      const res = NextResponse.rewrite(url);
-      securityHeaders(res);
-      return res;
+      return finalize(NextResponse.rewrite(url, { request }));
     }
-    const res = NextResponse.next({ request });
-    securityHeaders(res);
-    return res;
+    return finalize(NextResponse.next({ request }));
   }
 
   // ── app.syrflow.com root → /dashboard ─────────────────────────────────────
   if (isApp && pathname === "/") {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    return finalize(NextResponse.redirect(url));
   }
 
   // ── Redirect /site/[slug] → [slug].syrflow.com ────────────────────────────
@@ -96,7 +131,7 @@ export function proxy(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.hostname = `${slug}.${ROOT_DOMAIN}`;
       url.pathname = "/";
-      return NextResponse.redirect(url);
+      return finalize(NextResponse.redirect(url));
     }
   }
 
@@ -105,12 +140,10 @@ export function proxy(request: NextRequest) {
   if (isApex && APP_ROUTES.some((r) => pathname.startsWith(r))) {
     const url = request.nextUrl.clone();
     url.hostname = `app.${ROOT_DOMAIN}`;
-    return NextResponse.redirect(url);
+    return finalize(NextResponse.redirect(url));
   }
 
-  const res = NextResponse.next({ request });
-  securityHeaders(res);
-  return res;
+  return finalize(NextResponse.next({ request }));
 }
 
 export const config = {
