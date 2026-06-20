@@ -51,7 +51,7 @@ export default function LoginPage() {
       return;
     }
 
-    toast.success("Welcome back!", { id });
+    toast.success(t.login.welcomeBack ?? "Welcome back!", { id });
     router.push("/dashboard");
     router.refresh();
     setLoading(false);

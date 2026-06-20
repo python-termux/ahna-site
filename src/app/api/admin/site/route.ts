@@ -37,6 +37,42 @@ export async function POST(request: Request) {
       .eq("id", id);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Best-effort "site activated" email to the owner (never blocks the response).
+    (async () => {
+      try {
+        const { data: biz } = await admin
+          .from("businesses")
+          .select("name, slug, user_id")
+          .eq("id", id)
+          .single();
+        if (!biz || !biz.slug || biz.slug.startsWith("_tmp_")) return;
+
+        const { data: userRes } = await admin.auth.admin.getUserById(biz.user_id);
+        const ownerEmail = userRes?.user?.email;
+        if (!ownerEmail) return;
+
+        const siteUrl = `https://${biz.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`;
+        const fmt = (iso: string) =>
+          new Date(iso).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
+
+        const { sendMail } = await import("@/lib/email/mailer");
+        const { siteActivatedEmailHtml } = await import("@/lib/email/templates/site-activated");
+        await sendMail(
+          ownerEmail,
+          "Your Site Is Now Live | موقعك أصبح مباشراً - syrflow.com",
+          siteActivatedEmailHtml({
+            businessName: biz.name,
+            siteUrl,
+            startDate: fmt(new Date().toISOString()),
+            expiryDate: publishedUntil ? fmt(publishedUntil) : null,
+          })
+        );
+      } catch (err) {
+        console.error("Error sending site-activated email:", err);
+      }
+    })();
+
     return NextResponse.json({ ok: true, publishedUntil });
   }
 

@@ -10,7 +10,7 @@ import {
   LogOut, ExternalLink, Pencil, Check, X, Loader2, Trash2, Plus, Sparkles,
   MoreVertical, AlertTriangle, Type, Palette, Images, Layers, Phone,
   BarChart2, Clock, Share2, Star, Upload, ArrowLeft, ArrowRight, KeyRound, User as UserIcon, Link2,
-  Search, RefreshCw, HelpCircle,
+  Search, RefreshCw, HelpCircle, Lock, ShieldCheck,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
@@ -29,6 +29,20 @@ interface Business {
   hero_image: string; gallery: string[]; about_image: string; hours: Hours; services: { title: string; description: string }[];
   testimonials: Testimonial[]; social: Social; theme_color: string; corner_radius: string;
   stat_years: string; stat_clients: string; stat_projects: string;
+  published?: boolean; published_until?: string | null;
+}
+
+// Stable, human-readable account ID derived deterministically from the immutable
+// auth user id. Generated implicitly at register time and never changes.
+function accountIdFrom(userId: string): string {
+  let h1 = 0x811c9dc5, h2 = 0x1000193;
+  for (let i = 0; i < userId.length; i++) {
+    const c = userId.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 ^ c, 0x85ebca6b) >>> 0;
+  }
+  const chunk = (n: number) => n.toString(36).toUpperCase().padStart(7, "0").slice(-7);
+  return `AHNA-${chunk(h1)}-${chunk(h2)}`;
 }
 
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
@@ -173,6 +187,7 @@ export default function DashboardClient({ user, businesses }: {
       <EditForm
         biz={activeBiz}
         userEmail={user.email ?? ""}
+        userId={user.id}
         onBack={businesses.length > 1 ? () => setActiveBiz(null) : undefined}
         onLogout={logout}
       />
@@ -375,9 +390,10 @@ function NoPagesState() {
 }
 
 // ─── EDIT FORM ────────────────────────────────────────────────────────────────
-function EditForm({ biz, userEmail, onBack, onLogout }: {
+function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
   biz: Business;
   userEmail: string;
+  userId: string;
   onBack?: () => void;
   onLogout: () => void;
 }) {
@@ -396,8 +412,108 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [idCopied, setIdCopied] = useState(false);
   const [discardModal, setDiscardModal] = useState<{ onConfirm: () => void } | null>(null);
+
+  const accountId = accountIdFrom(userId);
+  const SUPPORT_PHONE = "+963 962 711 141";
+  const isSiteActive =
+    data.published === true &&
+    (!data.published_until || new Date(data.published_until).getTime() > Date.now());
   const { isLimited, label: rlLabel, handle429 } = useRateLimit();
+
+  // Site status + Account ID — shared by the desktop Account section and the
+  // dedicated mobile "status" screen (opened from the settings grid card).
+  const statusBlock = (
+    <>
+      {isSiteActive ? (
+        <div className="relative overflow-hidden rounded-[12px] border border-emerald-200 dark:border-emerald-800/70 bg-gradient-to-br from-emerald-50 to-emerald-100/40 dark:from-emerald-950/50 dark:to-emerald-900/20 p-5">
+          <div className="absolute -top-8 -end-8 h-24 w-24 rounded-full bg-emerald-400/20 blur-2xl" />
+          <div className="relative flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <ShieldCheck size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="font-semibold text-[15px] text-emerald-800 dark:text-emerald-200">
+                  {isAr ? "موقعك نشط ومتاح للعامة" : "Your site is live & public"}
+                </p>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                <Clock size={12} />
+                {data.published_until ? (
+                  <>
+                    {isAr ? "ينتهي في " : "Until "}
+                    <bdi dir="ltr" className="font-semibold">
+                      {new Date(data.published_until).toLocaleDateString(isAr ? "ar" : "en-GB", { year: "numeric", month: "long", day: "numeric" })}
+                    </bdi>
+                  </>
+                ) : (
+                  isAr ? "بدون تاريخ انتهاء" : "No expiry date"
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="relative overflow-hidden rounded-[12px] border border-amber-200 dark:border-amber-800/60 bg-gradient-to-br from-amber-50 to-orange-100/30 dark:from-amber-950/40 dark:to-amber-900/10 p-5">
+          <div className="absolute -top-8 -end-8 h-24 w-24 rounded-full bg-amber-400/20 blur-2xl" />
+          <div className="relative flex items-start gap-3 mb-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              <Lock size={18} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-[15px] text-amber-800 dark:text-amber-200 mb-0.5">
+                {isAr ? "موقعك غير منشور للعامة" : "Your site is not public yet"}
+              </p>
+              <p className="text-xs text-amber-700/80 dark:text-amber-300/80 leading-relaxed">
+                {isAr
+                  ? "موقعك متاح لك فقط أثناء تسجيل دخولك. لتفعيله للعامة، يُرجى دفع الرسوم 20 دولاراً لمدة سنة واحدة. اضغط على الزر أدناه للدفع."
+                  : "Your site is only visible to you while you're logged in. To activate it publicly, please pay the fee of $20 for 1 year. Click the button below for payment."}
+              </p>
+            </div>
+          </div>
+          <a
+            href={`https://wa.me/${SUPPORT_PHONE.replace(/\D/g, "")}?text=${encodeURIComponent(
+              `مرحباً،\n\nلقد قمت بالتسجيل في الموقع (${data.name || data.slug}). وهذا هو رقم الحساب الخاص بي: ${accountId}.\n\nيرجى تزويدي برقم شام كاش حتى أتمكن من إرسال المبلغ، ويقوم فريقكم بتفعيل حسابي.\n\nشكراً لكم.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative inline-flex items-center gap-1.5 rounded-[6px] bg-amber-500 hover:bg-amber-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors"
+          >
+            <ExternalLink size={13} />
+            {isAr ? "الدفع والتفعيل" : "Pay & activate"}
+          </a>
+        </div>
+      )}
+
+      {/* Account ID */}
+      <div className="bg-secondary/50 border border-border/40 rounded-[8px] px-4 py-3">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+          {isAr ? "معرّف الحساب" : "Account ID"}
+        </p>
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-mono text-sm text-foreground truncate" dir="ltr">{accountId}</span>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(accountId).then(() => {
+                setIdCopied(true);
+                setTimeout(() => setIdCopied(false), 2000);
+              });
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border border-border rounded-[6px] text-foreground hover:bg-secondary transition-colors shrink-0"
+          >
+            {idCopied ? <Check size={12} className="text-emerald-500" /> : <Link2 size={12} />}
+            {idCopied ? (isAr ? "تم النسخ" : "Copied") : (isAr ? "نسخ" : "Copy")}
+          </button>
+        </div>
+      </div>
+    </>
+  );
 
   const isDirty = JSON.stringify(data) !== savedSnapshot.current;
 
@@ -501,14 +617,14 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename: file.name, contentType: file.type, size: file.size }),
       });
-      if (!res.ok) { const err = await res.json(); toast.error(err.error ?? "Upload failed"); return; }
+      if (!res.ok) { const err = await res.json(); toast.error(err.error ?? (isAr ? "فشل الرفع" : "Upload failed")); return; }
       const { presignedUrl, publicUrl } = await res.json();
       const putRes = await fetch(presignedUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-      if (!putRes.ok) { toast.error(`Upload failed (${putRes.status})`); return; }
+      if (!putRes.ok) { toast.error(isAr ? `فشل الرفع (${putRes.status})` : `Upload failed (${putRes.status})`); return; }
       if (data.about_image) deleteR2Image(data.about_image);
       update("about_image", publicUrl);
     } catch (e) {
-      toast.error(`Upload error: ${e instanceof Error ? e.message : "unknown"}`);
+      toast.error(isAr ? `خطأ في الرفع: ${e instanceof Error ? e.message : "غير معروف"}` : `Upload error: ${e instanceof Error ? e.message : "unknown"}`);
     } finally {
       setAboutUploading(false);
     }
@@ -535,18 +651,18 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
         });
         if (!res.ok) {
           const err = await res.json();
-          toast.error(err.error ?? "Upload failed");
+          toast.error(err.error ?? (isAr ? "فشل الرفع" : "Upload failed"));
           continue;
         }
         const { presignedUrl, publicUrl } = await res.json();
         const putRes = await fetch(presignedUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
         if (!putRes.ok) {
-          toast.error(`Failed to upload ${file.name} (${putRes.status})`);
+          toast.error(isAr ? `فشل رفع ${file.name} (${putRes.status})` : `Failed to upload ${file.name} (${putRes.status})`);
           continue;
         }
         uploaded.push(publicUrl);
       } catch (e) {
-        toast.error(`Upload error: ${e instanceof Error ? e.message : "unknown"}`);
+        toast.error(isAr ? `خطأ في الرفع: ${e instanceof Error ? e.message : "غير معروف"}` : `Upload error: ${e instanceof Error ? e.message : "unknown"}`);
       }
     }
     if (uploaded.length > 0) update("gallery", [...data.gallery, ...uploaded]);
@@ -567,7 +683,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
         toast.error(isAr ? `محاولات كثيرة — انتظر ${rlLabel}` : `AI rate limited — wait ${rlLabel}`);
         return;
       }
-      if (!res.ok) { toast.error(json.error ?? "AI failed"); return; }
+      if (!res.ok) { toast.error(json.error ?? (isAr ? "فشل الذكاء الاصطناعي" : "AI failed")); return; }
       return json.value as string;
     } catch {
       toast.error(isAr ? "فشل الاتصال بالخادم" : "Request failed");
@@ -649,7 +765,9 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                 className="md:hidden flex items-center gap-1.5 text-sm font-semibold text-foreground truncate max-w-[200px]"
               >
                 {isAr ? <ArrowRight size={16} className="shrink-0" /> : <ArrowLeft size={16} className="shrink-0" />}
-                {active === "services" ? sectionLang.label : NAV_LABELS[active]?.[isAr ? "ar" : "en"]}
+                {active === "services" ? sectionLang.label
+                  : active === "status" ? (isAr ? "حالة الموقع" : "Site status")
+                  : NAV_LABELS[active]?.[isAr ? "ar" : "en"]}
               </button>
             )}
             {/* Desktop + mobile list view — business name */}
@@ -757,8 +875,46 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
           </p>
           <div className="grid grid-cols-2 gap-3">
             {NAV.map(({ id, icon: Icon }) => (
+              <React.Fragment key={id}>
+              {id === "account" && (
+                <button
+                  onClick={() => { setActive("status"); setMobileView("section"); }}
+                  className={`rounded-[8px] border p-4 flex flex-col gap-3 text-start transition-all active:scale-[0.97] ${
+                  isSiteActive
+                    ? "border-emerald-200 dark:border-emerald-800/70 bg-emerald-50 dark:bg-emerald-950/40 hover:border-emerald-300 dark:hover:border-emerald-700"
+                    : "border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/30 hover:border-amber-300 dark:hover:border-amber-700"
+                }`}>
+                  <div className={`w-9 h-9 rounded-[6px] flex items-center justify-center shrink-0 ${
+                    isSiteActive ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                  }`}>
+                    {isSiteActive ? <ShieldCheck size={18} /> : <Lock size={18} />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`font-semibold text-sm ${isSiteActive ? "text-emerald-800 dark:text-emerald-200" : "text-amber-800 dark:text-amber-200"}`}>
+                      {isSiteActive
+                        ? (isAr ? "الموقع نشط ومتاح للعامة" : "Site is live & public")
+                        : (isAr ? "الموقع غير منشور للعامة" : "Site is not public yet")}
+                    </p>
+                    <p className={`text-[11px] mt-0.5 leading-snug ${isSiteActive ? "text-emerald-600 dark:text-emerald-400" : "text-amber-700/80 dark:text-amber-300/80"}`}>
+                      {isSiteActive ? (
+                        data.published_until ? (
+                          <>
+                            {isAr ? "ينتهي في " : "Until "}
+                            <bdi dir="ltr" className="font-semibold">
+                              {new Date(data.published_until).toLocaleDateString(isAr ? "ar" : "en-GB", { year: "numeric", month: "long", day: "numeric" })}
+                            </bdi>
+                          </>
+                        ) : (
+                          isAr ? "بدون تاريخ انتهاء" : "No expiry date"
+                        )
+                      ) : (
+                        isAr ? "افتح قسم الحساب للتفعيل" : "Open the Account section to activate"
+                      )}
+                    </p>
+                  </div>
+                </button>
+              )}
               <button
-                key={id}
                 onClick={() => { setActive(id); setMobileView("section"); }}
                 className={`bg-card border rounded-[8px] p-4 text-start flex flex-col gap-3 transition-all active:scale-[0.97] ${
                   id === "account"
@@ -780,6 +936,7 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
                   </p>
                 </div>
               </button>
+              </React.Fragment>
             ))}
           </div>
         </div>
@@ -1556,9 +1713,21 @@ function EditForm({ biz, userEmail, onBack, onLogout }: {
               </div>
             )}
 
+            {/* SITE STATUS (mobile-only dedicated screen) */}
+            {active === "status" && (
+              <div className="flex flex-col gap-4 md:hidden">
+                {statusBlock}
+              </div>
+            )}
+
             {/* ACCOUNT */}
             {active === "account" && (
               <div className="flex flex-col gap-4">
+                {/* Site status + Account ID — desktop only (mobile uses the status screen) */}
+                <div className="hidden md:flex flex-col gap-4">
+                  {statusBlock}
+                </div>
+
                 {/* Email info */}
                 <div className="bg-secondary/50 border border-border/40 rounded-[8px] px-4 py-3 flex items-center gap-2">
                   <UserIcon size={14} className="text-muted-foreground shrink-0" />

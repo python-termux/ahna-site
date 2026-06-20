@@ -36,7 +36,7 @@ interface Translations {
     returnHome: string; welcome: string; sub: string;
     email: string; password: string; forgot: string;
     submit: string; noAccount: string; register: string; loggingIn: string;
-    otpSent?: string;
+    otpSent?: string; welcomeBack?: string;
   };
   otp: {
     title: string; subtitle: (email: string) => string; placeholder: string;
@@ -181,6 +181,7 @@ const T: Record<Lang, Translations> = {
       email: "Email", password: "Password", forgot: "Forgot password?",
       submit: "Log in", noAccount: "Don't have an account?",
       register: "Register now", loggingIn: "Logging in…", otpSent: "Verification code sent",
+      welcomeBack: "Welcome back!",
     },
     otp: {
       title: "Verify Code", subtitle: (email: string) => `We sent a code to ${email}`,
@@ -322,6 +323,7 @@ const T: Record<Lang, Translations> = {
       email: "البريد الإلكتروني", password: "كلمة المرور", forgot: "نسيت كلمة المرور؟",
       submit: "تسجيل الدخول", noAccount: "لا تملك حساباً؟",
       register: "إنشاء حساب", loggingIn: "جارٍ تسجيل الدخول…", otpSent: "تم إرسال رمز التحقق",
+      welcomeBack: "مرحباً بعودتك!",
     },
     otp: {
       title: "التحقق من الرمز", subtitle: (email: string) => `أرسلنا رمزاً إلى ${email}`,

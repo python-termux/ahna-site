@@ -66,6 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {children}
             <Toaster
               position="bottom-right"
+              dir={lang === "ar" ? "rtl" : "ltr"}
               toastOptions={{
                 style: { background: "oklch(0.2795 0.0368 260.0310)", border: "1px solid oklch(0.4461 0.0263 256.8018)", color: "oklch(0.9288 0.0126 255.5078)" },
               }}

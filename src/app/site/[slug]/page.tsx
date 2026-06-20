@@ -711,7 +711,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
       {/* ── FLOATING BY BRAND BADGE ── */}
       <Link
         href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`}
-        className={`fixed bottom-4 right-4 z-10 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-80 flex items-center gap-1.5 ${
+        className={`fixed bottom-4 ${isRtl ? "left-4" : "right-4"} z-10 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-80 flex items-center gap-1.5 ${
           T.isLight
             ? "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300"
             : "bg-gray-900 text-gray-400 hover:bg-gray-800 border border-gray-800"
@@ -729,10 +729,10 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
 
 // ── Unavailable (unpublished / expired) site ──────────────────────────────────
 function SiteUnavailable({ isRtl }: { isRtl: boolean }) {
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com";
+  const phone = "+963 962 711 141";
   const t = isRtl
-    ? { title: "هذا الموقع غير متاح حالياً", body: "هذا الموقع غير منشور في الوقت الحالي.", cta: "أنشئ موقعك مع سوريا فلو" }
-    : { title: "This site is not currently available", body: "This website is not published at the moment.", cta: "Create your site with Syria Flow" };
+    ? { title: "هذا الموقع غير متاح حالياً", body: "هذا الموقع مسجّل ولكنه غير منشور بعد. إذا كنت مالك الموقع، يرجى التواصل عبر الرقم" }
+    : { title: "This site is not currently available", body: "This site is registered but not live yet. If you are the owner of this site, please contact" };
   return (
     <div
       dir={isRtl ? "rtl" : "ltr"}
@@ -748,13 +748,12 @@ function SiteUnavailable({ isRtl }: { isRtl: boolean }) {
           </div>
         </div>
         <h1 className="text-2xl font-bold mb-3">{t.title}</h1>
-        <p className="text-gray-600 mb-8">{t.body}</p>
-        <a
-          href={`https://${rootDomain}`}
-          className="inline-flex items-center justify-center px-5 py-3 bg-[#0066cc] hover:bg-[#0071e3] text-white font-medium rounded-lg transition-colors"
-        >
-          {t.cta}
-        </a>
+        <p className="text-gray-600">
+          {t.body}{" "}
+          <a href={`tel:${phone.replace(/\s/g, "")}`} className="font-semibold text-[#0066cc] hover:underline whitespace-nowrap">
+            <bdi dir="ltr">{phone}</bdi>
+          </a>
+        </p>
       </div>
     </div>
   );
