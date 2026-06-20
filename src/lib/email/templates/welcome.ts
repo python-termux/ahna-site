@@ -51,6 +51,7 @@ export function welcomeEmailHtml({ businessName }: { businessName: string }): st
     <div class="notice">
       <p class="notice-title">موقعك غير منشور للعامة بعد</p>
       <p class="notice-text">موقعك متاح لك فقط أثناء تسجيل دخولك. لتفعيله للعامة، يُرجى دفع الرسوم 20 دولاراً لمدة سنة واحدة. اضغط على الزر أدناه للدفع.</p>
+      <p class="notice-text" style="color:#c0392b;font-weight:600;margin-top:8px;">سيتم حذف الحسابات غير المدفوعة خلال 7 أيام دون إشعار مسبق.</p>
       <a href="https://app.syrflow.com/dashboard" class="btn">الدفع والتفعيل</a>
     </div>
     <p class="body-text"><a href="https://app.syrflow.com/dashboard" class="link">انتقل إلى لوحة التحكم</a></p>
@@ -68,6 +69,7 @@ export function welcomeEmailHtml({ businessName }: { businessName: string }): st
     <div class="notice">
       <p class="notice-title">Your site is not public yet</p>
       <p class="notice-text">Your site is only visible to you while you're logged in. To activate it publicly, please pay the fee of $20 for 1 year. Click the button below for payment.</p>
+      <p class="notice-text" style="color:#c0392b;font-weight:600;margin-top:8px;">Unpaid accounts will be deleted within 7 days without prior notice.</p>
       <a href="https://app.syrflow.com/dashboard" class="btn">Pay &amp; activate</a>
     </div>
     <p class="body-text"><a href="https://app.syrflow.com/dashboard" class="link">Go to Dashboard</a></p>
