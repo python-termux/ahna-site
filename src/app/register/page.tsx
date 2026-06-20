@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRateLimit } from "@/lib/use-rate-limit";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
@@ -254,7 +253,6 @@ function DotMatrixLoading({ step, steps, isAr }: { step: number; steps: string[]
 }
 
 export default function RegisterPage() {
-  const router = useRouter();
   const supabase = createClient();
   const { lang } = useLanguage();
   const isAr = lang === "ar";
@@ -465,7 +463,7 @@ export default function RegisterPage() {
     }
 
     // Create the account directly (no OTP step)
-    const { error: authErr } = await supabase.auth.signUp({
+    const { data: signUpData, error: authErr } = await supabase.auth.signUp({
       email: email.trim(),
       password,
     });
@@ -474,6 +472,20 @@ export default function RegisterPage() {
       setAuthError(authErr.message);
       setAuthLoading(false);
       return;
+    }
+
+    // Guarantee an active session before any authenticated request. If signUp
+    // didn't return one, sign in explicitly so the cookie is definitely set.
+    if (!signUpData.session) {
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (signInErr) {
+        setAuthError(signInErr.message);
+        setAuthLoading(false);
+        return;
+      }
     }
 
     // Create business
@@ -522,8 +534,9 @@ export default function RegisterPage() {
       body: JSON.stringify({ businessName: place.name }),
     }).catch(() => {});
 
-    // Success! Redirect to dashboard
-    router.push("/dashboard");
+    // Success! Hard navigation (full page load) guarantees the server reads the
+    // fresh session cookie — no RSC prefetch cache, no race, no bounce to login.
+    window.location.assign("/dashboard");
   }
 
   async function verifyOtpAndCreateAccount() {
@@ -552,7 +565,7 @@ export default function RegisterPage() {
       }
 
       // OTP verified! Now create account and business
-      const { error: authErr } = await supabase.auth.signUp({
+      const { data: signUpData, error: authErr } = await supabase.auth.signUp({
         email: email.trim(),
         password,
       });
@@ -561,6 +574,19 @@ export default function RegisterPage() {
         setOtpError(authErr.message);
         setOtpLoading(false);
         return;
+      }
+
+      // Guarantee an active session before any authenticated request.
+      if (!signUpData.session) {
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (signInErr) {
+          setOtpError(signInErr.message);
+          setOtpLoading(false);
+          return;
+        }
       }
 
       // Create business
@@ -609,8 +635,9 @@ export default function RegisterPage() {
         body: JSON.stringify({ businessName: place.name }),
       }).catch(() => {});
 
-      // Success! Redirect to dashboard
-      router.push("/dashboard");
+      // Success! Hard navigation guarantees the server reads the fresh session
+      // cookie — no RSC prefetch cache, no race, no bounce to login.
+      window.location.assign("/dashboard");
     } catch (err: any) {
       setOtpError(err.message || (isAr ? "حدث خطأ" : "An error occurred"));
       setOtpLoading(false);

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -12,7 +11,6 @@ import { validateEmail, validatePassword } from "@/lib/validation";
 
 export default function LoginPage() {
   const supabase = createClient();
-  const router = useRouter();
   const { t } = useLanguage();
 
   const [email, setEmail] = useState("");
@@ -52,9 +50,9 @@ export default function LoginPage() {
     }
 
     toast.success(t.login.welcomeBack ?? "Welcome back!", { id });
-    router.push("/dashboard");
-    router.refresh();
-    setLoading(false);
+    // Hard navigation guarantees the server reads the fresh session cookie —
+    // no RSC prefetch cache, no race, no bounce back to login.
+    window.location.assign("/dashboard");
   }
 
   return (
