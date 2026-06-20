@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { deleteUserAndData } from "@/lib/delete-user";
 
 export async function DELETE() {
   const supabase = await createClient();
@@ -17,9 +18,9 @@ export async function DELETE() {
 
   const admin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
 
-  await admin.from("businesses").delete().eq("user_id", user.id);
-  const { error } = await admin.auth.admin.deleteUser(user.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // Removes R2 images + all business rows + the auth user.
+  const result = await deleteUserAndData(admin, user.id);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }

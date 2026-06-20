@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { deleteUserAndData } from "@/lib/delete-user";
 
 // POST /api/admin/site — publish or expire a site
 export async function POST(request: Request) {
@@ -99,8 +100,48 @@ export async function DELETE(request: Request) {
   if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
   const admin = createAdminClient();
-  const { error } = await admin.from("businesses").delete().eq("id", id);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // Grab details before deletion so we can notify the owner and clean up.
+  const { data: biz } = await admin
+    .from("businesses")
+    .select("name, slug, user_id, created_at")
+    .eq("id", id)
+    .single();
+
+  if (!biz) return NextResponse.json({ error: "Site not found" }, { status: 404 });
+
+  // Capture the owner's email before we delete the auth user.
+  let ownerEmail: string | undefined;
+  try {
+    const { data: userRes } = await admin.auth.admin.getUserById(biz.user_id);
+    ownerEmail = userRes?.user?.email ?? undefined;
+  } catch (err) {
+    console.error("Failed to look up site owner before deletion:", err);
+  }
+
+  // Fully remove the owner: R2 images + all their business rows + auth user.
+  const result = await deleteUserAndData(admin, biz.user_id);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+
+  // Best-effort "site removed" email to the owner (never blocks the response).
+  (async () => {
+    try {
+      if (!ownerEmail || (biz.slug && biz.slug.startsWith("_tmp_"))) return;
+      const registeredDate = biz.created_at
+        ? new Date(biz.created_at).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" })
+        : "—";
+
+      const { sendMail } = await import("@/lib/email/mailer");
+      const { siteDeletedEmailHtml } = await import("@/lib/email/templates/site-deleted");
+      await sendMail(
+        ownerEmail,
+        "Your Site Has Been Removed | تم حذف موقعك - syrflow.com",
+        siteDeletedEmailHtml({ businessName: biz.name, registeredDate })
+      );
+    } catch (err) {
+      console.error("Error sending site-deleted email:", err);
+    }
+  })();
+
   return NextResponse.json({ ok: true });
 }
