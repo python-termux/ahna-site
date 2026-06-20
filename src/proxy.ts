@@ -42,7 +42,7 @@ function securityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const hostWithoutPort = host.split(":")[0];
   const { pathname } = request.nextUrl;

@@ -1952,7 +1952,7 @@ function SlugSetupScreen({ biz, onComplete }: { biz: Business; onComplete: () =>
                 />
                 <div className="flex items-center gap-1.5 px-3 shrink-0 border-s border-input bg-secondary/40">
                   {indicatorIcon}
-                  <span className="text-xs text-muted-foreground">.{ROOT_DOMAIN}</span>
+                  <span dir="ltr" className="text-xs text-muted-foreground">.{ROOT_DOMAIN}</span>
                 </div>
               </div>
               <div className="mt-1.5 min-h-[18px]">{statusNode}</div>
@@ -1960,7 +1960,7 @@ function SlugSetupScreen({ biz, onComplete }: { biz: Business; onComplete: () =>
 
             {slug.length >= 4 && available === true && (
               <div className="mb-5 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-[6px] text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                {isAr ? `موقعك: ${slug}.${ROOT_DOMAIN}` : `Your site: ${slug}.${ROOT_DOMAIN}`}
+                {isAr ? "موقعك: " : "Your site: "}<span dir="ltr">{slug}.{ROOT_DOMAIN}</span>
               </div>
             )}
 

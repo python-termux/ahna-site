@@ -593,7 +593,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                   <Phone size={16} />
                 </div>
                 <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>{i18n.phone}</p>
-                <p className={`font-semibold text-sm ${T.text}`}>{biz.phone}</p>
+                <p className={`font-semibold text-sm ${T.text}`}><bdi dir="ltr">{biz.phone}</bdi></p>
               </a>
             )}
 
@@ -624,7 +624,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                   <Mail size={16} />
                 </div>
                 <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>{i18n.email}</p>
-                <p className={`font-semibold text-sm break-all ${T.text}`}>{biz.email}</p>
+                <p className={`font-semibold text-sm break-all ${T.text}`}><bdi dir="ltr">{biz.email}</bdi></p>
               </a>
             )}
 
@@ -654,7 +654,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
                   <img src="/social-icons/whatsapp.png" alt="WhatsApp" width={18} height={18} className="object-contain" />
                 </div>
                 <p className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${T.faint}`}>{i18n.whatsapp}</p>
-                <p className={`font-semibold text-sm ${T.text}`}>{biz.social.whatsapp}</p>
+                <p className={`font-semibold text-sm ${T.text}`}><bdi dir="ltr">{biz.social.whatsapp}</bdi></p>
               </a>
             )}
 
