@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Zap, ChevronDown, Flame } from "lucide-react";
+import { Check, X, Zap, ChevronDown } from "lucide-react";
 import InView from "@/components/InView";
 
 // framer-motion kept only for FAQ accordion open/close animation
@@ -219,14 +219,7 @@ export default function PricingPage() {
                     href="/register"
                     className="w-full flex items-center justify-center gap-2 py-2.5 font-medium transition-opacity hover:opacity-90 active:scale-95 mb-6 border border-[#0066cc] text-[#0066cc] rounded-[8px]"
                   >
-                    {slotsLeft === null ? (
-                      <span className="opacity-60">{t.pricing.loading}</span>
-                    ) : (
-                      <>
-                        <Flame size={14} className="text-orange-400 shrink-0" />
-                        {t.pricing.slotsLeft(slotsLeft)}
-                      </>
-                    )}
+                    {t.pricing.registerNow}
                   </Link>
                 )}
 

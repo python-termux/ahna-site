@@ -27,6 +27,7 @@ interface Translations {
     monthly: string; billedAnnually: string;
     faqTitle: string; faqSub: string;
     slotsLeft: (n: number) => string;
+    registerNow: string;
   };
   contact: {
     title: string; emailTitle: string; emailSub: string;
@@ -168,6 +169,7 @@ const T: Record<Lang, Translations> = {
       faqTitle: "Frequently Asked Questions",
       faqSub: "Everything you need to know about our plans and features",
       slotsLeft: (n) => `Limited · ${n} Slot${n !== 1 ? "s" : ""} Left`,
+      registerNow: "Register now",
     },
     contact: {
       title: "Get in touch",
@@ -310,6 +312,7 @@ const T: Record<Lang, Translations> = {
       faqTitle: "الأسئلة الشائعة",
       faqSub: "كل ما تحتاج معرفته عن خططنا وميزاتنا",
       slotsLeft: (n) => `محدود · ${n} مقعد متبقٍ`,
+      registerNow: "إنشاء حساب",
     },
     contact: {
       title: "تواصل معنا",
