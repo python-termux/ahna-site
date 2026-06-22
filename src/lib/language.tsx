@@ -425,25 +425,38 @@ const LanguageContext = createContext<LanguageContextValue>({
   isAr: false,
 });
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
+// Device language from the browser (used only when the user hasn't chosen one).
+function deviceLang(): Lang {
+  if (typeof navigator === "undefined") return "en";
+  const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+  return langs.some((l) => l?.toLowerCase().startsWith("ar")) ? "ar" : "en";
+}
 
+export function LanguageProvider({
+  children,
+  initialLang = "en",
+}: {
+  children: ReactNode;
+  initialLang?: Lang;
+}) {
+  const [lang, setLangState] = useState<Lang>(initialLang);
+
+  // Single source of truth: explicit cookie choice → otherwise device language.
+  // localStorage is intentionally NOT used (it isn't shared across *.syrflow.com
+  // subdomains, which caused English content to render with an RTL layout).
   useEffect(() => {
-    try {
-      const cookieLang = getLangCookie();
-      const stored = cookieLang ?? (localStorage.getItem("lang") as Lang | null);
-      if (stored === "ar") {
-        setLangState("ar");
-        document.documentElement.dir = "rtl";
-        document.documentElement.lang = "ar";
-      }
-    } catch {}
+    const cookieLang = getLangCookie();
+    const resolved: Lang = cookieLang ?? deviceLang();
+    setLangState(resolved);
+    document.documentElement.dir = resolved === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = resolved;
+    // Persist the device default so every page/subdomain stays consistent.
+    if (!cookieLang) setLangCookie(resolved);
   }, []);
 
   function setLang(l: Lang) {
     setLangState(l);
     try {
-      localStorage.setItem("lang", l);
       setLangCookie(l);
     } catch {}
     document.documentElement.dir = l === "ar" ? "rtl" : "ltr";

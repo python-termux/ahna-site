@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Toaster } from "sonner";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -43,8 +43,16 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
+  const headerStore = await headers();
   const theme = cookieStore.get("syrflow_theme")?.value === "light" ? "light" : "dark";
-  const lang = cookieStore.get("syrflow_lang")?.value === "ar" ? "ar" : "en";
+
+  // Single source of truth: explicit cookie choice → otherwise the device
+  // language (Accept-Language). Resolved on the server so the very first paint
+  // has the correct direction (no English-in-RTL flash).
+  const cookieLang = cookieStore.get("syrflow_lang")?.value;
+  const deviceAr = /(^|,)\s*ar\b/i.test(headerStore.get("accept-language") ?? "");
+  const lang: "ar" | "en" =
+    cookieLang === "ar" ? "ar" : cookieLang === "en" ? "en" : deviceAr ? "ar" : "en";
 
   return (
     <html
@@ -57,12 +65,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Script
           id="anti-flash"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme')||document.cookie.match(/syrflow_theme=([^;]+)/)?.[1];document.documentElement.classList.toggle('dark',(t??'dark')==='dark');var l=localStorage.getItem('lang')||document.cookie.match(/syrflow_lang=([^;]+)/)?.[1];if(l==='ar'){document.documentElement.dir='rtl';document.documentElement.lang='ar';}else{document.documentElement.dir='ltr';}}catch(e){}` }}
+          dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme')||document.cookie.match(/syrflow_theme=([^;]+)/)?.[1];document.documentElement.classList.toggle('dark',(t??'dark')==='dark');var lc=document.cookie.match(/syrflow_lang=(ar|en)/);var l=lc?lc[1]:((navigator.language||'').toLowerCase().indexOf('ar')===0?'ar':'en');document.documentElement.dir=l==='ar'?'rtl':'ltr';document.documentElement.lang=l;}catch(e){}` }}
         />
       </head>
       <body className="antialiased">
         <ThemeProvider>
-          <LanguageProvider>
+          <LanguageProvider initialLang={lang}>
             {children}
             <Toaster
               position="bottom-right"

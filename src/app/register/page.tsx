@@ -462,30 +462,19 @@ export default function RegisterPage() {
       return;
     }
 
-    // Create the account directly (no OTP step)
-    const { data: signUpData, error: authErr } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
+    // Create the account on the SERVER so the session cookies come back as real
+    // Set-Cookie headers (reliably stored) — guarantees the dashboard sees the
+    // session and the user is never bounced to login.
+    const regRes = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim(), password }),
     });
-
-    if (authErr) {
-      setAuthError(authErr.message);
+    const regJson = await regRes.json().catch(() => ({}));
+    if (!regRes.ok) {
+      setAuthError(regJson.error ?? (isAr ? "تعذّر إنشاء الحساب" : "Could not create account"));
       setAuthLoading(false);
       return;
-    }
-
-    // Guarantee an active session before any authenticated request. If signUp
-    // didn't return one, sign in explicitly so the cookie is definitely set.
-    if (!signUpData.session) {
-      const { error: signInErr } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-      if (signInErr) {
-        setAuthError(signInErr.message);
-        setAuthLoading(false);
-        return;
-      }
     }
 
     // Create business
@@ -534,8 +523,9 @@ export default function RegisterPage() {
       body: JSON.stringify({ businessName: place.name }),
     }).catch(() => {});
 
-    // Success! Hard navigation (full page load) guarantees the server reads the
-    // fresh session cookie — no RSC prefetch cache, no race, no bounce to login.
+    // The session was created server-side (/api/auth/register set the cookies)
+    // and just re-confirmed by /api/business succeeding above — so the dashboard
+    // will see it. Hard navigation (full page load) avoids any RSC prefetch cache.
     window.location.assign("/dashboard");
   }
 
@@ -635,8 +625,14 @@ export default function RegisterPage() {
         body: JSON.stringify({ businessName: place.name }),
       }).catch(() => {});
 
-      // Success! Hard navigation guarantees the server reads the fresh session
-      // cookie — no RSC prefetch cache, no race, no bounce to login.
+      // Final guard: confirm the session is live before leaving the page.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setOtpError(isAr ? "تعذّر بدء الجلسة. حاول تسجيل الدخول." : "Couldn't start your session — please log in.");
+        setOtpLoading(false);
+        return;
+      }
+      // Hard navigation guarantees the server reads the fresh session cookie.
       window.location.assign("/dashboard");
     } catch (err: any) {
       setOtpError(err.message || (isAr ? "حدث خطأ" : "An error occurred"));
