@@ -59,14 +59,16 @@ export async function proxy(request: NextRequest) {
       ? `.${ROOT_DOMAIN}`
       : undefined;
 
-  // ── Refresh the Supabase session on every request ─────────────────────────
+  // ── Refresh the Supabase session — ONLY on authenticated hosts ────────────
   // Token refresh can't be persisted from a Server Component render, so we do it
-  // here (middleware) where Set-Cookie is allowed. This keeps the session alive
-  // and prevents stale-token "Unauthorized" errors on API routes / page loads.
+  // here (middleware) where Set-Cookie is allowed. We skip it entirely for public
+  // user sites (slug.syrflow.com) and the marketing apex, so a public visit (or a
+  // logged-in user browsing a public page) never costs a Supabase auth call.
+  const needsAuth = isApp || isAdminHost;
   const refreshedCookies: { name: string; value: string; options: CookieOptions }[] = [];
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (supabaseUrl && supabaseKey) {
+  if (needsAuth && supabaseUrl && supabaseKey) {
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {

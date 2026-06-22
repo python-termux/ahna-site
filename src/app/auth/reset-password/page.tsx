@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
@@ -15,10 +15,14 @@ function ResetPasswordContent() {
   const { t, lang, isAr } = useLanguage();
   const supabase = createClient();
 
+  // token_hash (our own reset link) is the primary path; `code` kept for compat.
+  const tokenHash = searchParams.get("token_hash");
+  const linkType = (searchParams.get("type") as "recovery" | null) ?? "recovery";
   const code = searchParams.get("code");
   const emailParam = searchParams.get("email") || "";
   const verified = searchParams.get("verified") === "true";
   const showOtp = searchParams.get("otp") === "true";
+  const ranRef = useRef(false);
 
   const [step, setStep] = useState<Step>("loading");
   const [email, setEmail] = useState(emailParam);
@@ -30,58 +34,59 @@ function ResetPasswordContent() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function initPage() {
-      // If code is provided (from Supabase forgot-password link)
-      if (code) {
-        try {
-          // First check if there's already a session from the email link
-          const { data: { session } } = await supabase.auth.getSession();
+    // Run once — verifying a single-use token twice would fail the second time.
+    if (ranRef.current) return;
+    ranRef.current = true;
 
-          if (session && session.user) {
-            // Session already established from email link
+    async function initPage() {
+      const hash = tokenHash || code;
+
+      // Reset link with a token_hash — verify on the client (scanner-safe).
+      if (hash) {
+        try {
+          // If the user is already logged in (clicked the link in the same
+          // browser), they can change their password without re-verifying.
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
             setStep("password_form");
             return;
           }
 
-          // If no session, try to verify the code
           const { error: err } = await supabase.auth.verifyOtp({
-            token_hash: code,
-            type: "recovery",
+            token_hash: hash,
+            type: linkType,
           });
 
           if (err) {
-            setError(isAr ? "الرمز غير صالح أو انتهى" : "Invalid or expired code");
+            setError(isAr ? "الرابط غير صالح أو انتهى" : "Invalid or expired link");
             setStep("error");
             return;
           }
 
           setStep("password_form");
-        } catch (err) {
+        } catch {
           setError(isAr ? "حدث خطأ" : "Error occurred");
           setStep("error");
         }
         return;
       }
 
-      // If verified from OTP flow
       if (verified) {
         setStep("password_form");
         return;
       }
 
-      // If showing OTP entry
       if (showOtp) {
         setStep("otp_entry");
         return;
       }
 
-      // No valid path provided
       setError(isAr ? "رابط غير صالح" : "Invalid link");
       setStep("error");
     }
 
     initPage();
-  }, [code, verified, showOtp, isAr, supabase.auth]);
+  }, [tokenHash, linkType, code, verified, showOtp, isAr, supabase.auth]);
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,14 +114,18 @@ function ResetPasswordContent() {
         return;
       }
 
-      // Send password changed notification email
-      fetch("/api/auth/password-changed-notify", {
+      // Send password-changed notification while the session is still valid.
+      // Awaited so signOut below doesn't cancel the request / drop the session.
+      await fetch("/api/auth/password-changed-notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       }).catch(() => {});
 
+      // Sign out so the user logs in fresh with the new password.
+      await supabase.auth.signOut();
       toast.success(isAr ? "تم تحديث كلمة المرور" : "Password updated");
       setStep("success");
+      setTimeout(() => router.push("/auth/login"), 1500);
     } catch (err: any) {
       setError(err.message || (isAr ? "حدث خطأ" : "Error occurred"));
       setLoading(false);
@@ -167,13 +176,13 @@ function ResetPasswordContent() {
             {isAr ? "تم بنجاح" : "Success"}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-8">
-            {isAr ? "تم تحديث كلمة المرور الخاصة بك" : "Your password has been updated"}
+            {isAr ? "تم تحديث كلمة المرور. جارٍ تحويلك لتسجيل الدخول…" : "Your password has been updated. Redirecting to login…"}
           </p>
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/auth/login")}
             className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
           >
-            {isAr ? "انتقل إلى لوحة التحكم" : "Go to Dashboard"}
+            {isAr ? "تسجيل الدخول" : "Go to login"}
           </button>
         </div>
       </div>
@@ -203,6 +212,7 @@ function ResetPasswordContent() {
               </label>
               <div className="relative">
                 <input
+                  dir="ltr"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -226,6 +236,7 @@ function ResetPasswordContent() {
               </label>
               <div className="relative">
                 <input
+                  dir="ltr"
                   type={showConfirmPassword ? "text" : "password"}
                   value={passwordConfirm}
                   onChange={(e) => setPasswordConfirm(e.target.value)}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
 import { Mail, Loader2 } from "lucide-react";
@@ -9,7 +8,6 @@ import { useLanguage } from "@/lib/language";
 import { validateEmail } from "@/lib/validation";
 
 export default function ForgotPasswordPage() {
-  const supabase = createClient();
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,12 +27,15 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.syrflow.com"}/auth/reset-password`,
+    const res = await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim() }),
     });
     setLoading(false);
-    if (error) {
-      setError(error.message);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setError(d.error || "Something went wrong");
     } else {
       setSent(true);
     }
@@ -84,6 +85,7 @@ export default function ForgotPasswordPage() {
                   <div className="relative">
                     <Mail size={15} className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                     <input
+                      dir="ltr"
                       type="email"
                       placeholder={t.forgot.email}
                       value={email}

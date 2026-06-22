@@ -37,7 +37,7 @@ export default function TermsPage() {
               </Section>
               <Section title="٣. الاشتراكات والدفع">
                 <p>تُقدَّم الخدمة على أساس اشتراك متكرر (شهري أو سنوي).</p>
-                <p>نقبل الدفع عبر <strong className="text-foreground">Sham Cash</strong> والتحويل البنكي السوري. للاشتراك وإتمام الدفع، تواصل معنا عبر <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> وسيرد فريقنا خلال 24 ساعة لإرشادك بخطوات الدفع وتفعيل حسابك.</p>
+                <p>نقبل الدفع عبر <strong className="text-foreground">Sham Cash</strong> والتحويل البنكي السوري. للاشتراك وإتمام الدفع، تواصل معنا عبر واتساب على <a href="https://wa.me/963994831314" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline"><bdi dir="ltr">+963 994 831 314</bdi></a> أو عبر البريد <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> وسيرد فريقنا خلال 24 ساعة لإرشادك بخطوات الدفع وتفعيل حسابك.</p>
                 <p>جميع الأسعار مُدرجة بالدولار الأمريكي ما لم يُذكر خلاف ذلك. رسوم الاشتراك تُحصَّل في بداية كل فترة فوترة.</p>
               </Section>
               <Section title="٤. الإلغاء">
@@ -86,7 +86,7 @@ export default function TermsPage() {
                 <p>تخضع هذه الشروط لقوانين الجمهورية العربية السورية. تخضع أي نزاعات للاختصاص القضائي للمحاكم السورية المختصة.</p>
               </Section>
               <Section title="١٥. التواصل">
-                <p>للاستفسار عن هذه الشروط، تواصل معنا على <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>.</p>
+                <p>للاستفسار عن هذه الشروط، تواصل معنا على <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> أو عبر واتساب على <a href="https://wa.me/963994831314" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline"><bdi dir="ltr">+963 994 831 314</bdi></a>.</p>
               </Section>
             </>
           ) : (
@@ -99,7 +99,7 @@ export default function TermsPage() {
               </Section>
               <Section title="3. Subscriptions and Payment">
                 <p>The Service is offered on a recurring subscription basis (monthly or annually).</p>
-                <p>We accept payment via <strong className="text-foreground">Sham Cash</strong> and Syrian bank transfer. To subscribe and complete payment, contact us at <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> and our team will respond within 24 hours with payment instructions and account activation.</p>
+                <p>We accept payment via <strong className="text-foreground">Sham Cash</strong> and Syrian bank transfer. To subscribe and complete payment, contact us on WhatsApp at <a href="https://wa.me/963994831314" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline"><bdi dir="ltr">+963 994 831 314</bdi></a> or by email at <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> and our team will respond within 24 hours with payment instructions and account activation.</p>
                 <p>All prices are listed in USD unless otherwise stated. Subscription fees are charged at the start of each billing period.</p>
               </Section>
               <Section title="4. Cancellation">
@@ -148,7 +148,7 @@ export default function TermsPage() {
                 <p>These Terms are governed by the laws of the Syrian Arab Republic. Any disputes shall be subject to the jurisdiction of the competent Syrian courts.</p>
               </Section>
               <Section title="15. Contact">
-                <p>For questions about these Terms, contact us at <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>.</p>
+                <p>For questions about these Terms, contact us at <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> or on WhatsApp at <a href="https://wa.me/963994831314" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline"><bdi dir="ltr">+963 994 831 314</bdi></a>.</p>
               </Section>
             </>
           )}

@@ -67,6 +67,10 @@ export default function DataDeletionPage() {
               {d.contactBody}{" "}
               <a href="mailto:support@syrflow.com" className="underline" style={{ color: "#0066cc" }}>
                 support@syrflow.com
+              </a>{" "}
+              ·{" "}
+              <a href="https://wa.me/963994831314" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#0066cc" }}>
+                <bdi dir="ltr">+963 994 831 314</bdi>
               </a>
               .
             </p>

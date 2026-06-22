@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useRateLimit } from "@/lib/use-rate-limit";
+import { SECTION_FIELDS, SECTION_LABELS, SECTION_IDS, sectionLimit, type SectionId } from "@/lib/section-limits";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeProvider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -416,7 +417,7 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
   const [discardModal, setDiscardModal] = useState<{ onConfirm: () => void } | null>(null);
 
   const accountId = accountIdFrom(userId);
-  const SUPPORT_PHONE = "+963 962 711 141";
+  const SUPPORT_PHONE = "+963 994 831 314";
   const isSiteActive =
     data.published === true &&
     (!data.published_until || new Date(data.published_until).getTime() > Date.now());
@@ -540,12 +541,9 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
 
   async function resetPassword() {
     setResetLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.syrflow.com"}/auth/reset-password`,
-    });
+    const res = await fetch("/api/auth/send-reset-link", { method: "POST" });
     setResetLoading(false);
-    if (error) {
+    if (!res.ok) {
       toast.error(isAr ? "فشل إرسال رابط إعادة التعيين" : "Failed to send reset link");
     } else {
       setResetSent(true);
@@ -739,12 +737,60 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
       toast.error(isAr ? `محاولات كثيرة — انتظر ${rlLabel}` : `Too many saves — wait ${rlLabel}`, { id });
     } else if (!res.ok) {
       toast.error(json.error ?? (isAr ? "فشل الحفظ" : "Failed to save"), { id });
+    } else if (Array.isArray(json.limited) && json.limited.length > 0) {
+      // Partial save: allowed sections were saved; limited ones were skipped and
+      // stay unsaved (dirty) so the user can retry them later.
+      toast.dismiss(id);
+      showSectionLimit(json.limited as { section: string; retryAfter: number }[]);
+      try {
+        const prev = JSON.parse(savedSnapshot.current) as Record<string, unknown>;
+        const snap: Record<string, unknown> = { ...(data as unknown as Record<string, unknown>) };
+        for (const { section } of json.limited) {
+          for (const f of SECTION_FIELDS[section as SectionId] ?? []) snap[f] = prev[f];
+        }
+        savedSnapshot.current = JSON.stringify(snap);
+      } catch { /* keep current snapshot on parse error */ }
+      setSaved(false);
     } else {
       toast.success(isAr ? "تم حفظ التغييرات!" : "Changes saved!", { id });
       savedSnapshot.current = JSON.stringify(data);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     }
+  }
+
+  // Friendly, bilingual per-section rate-limit message. Names the limited
+  // section(s), the wait time, and the sections still free to edit.
+  function showSectionLimit(limited: { section: string; retryAfter: number }[]) {
+    const labelOf = (s: string) => {
+      const l = SECTION_LABELS[s as SectionId];
+      return l ? (isAr ? l.ar : l.en) : s;
+    };
+    const names = limited.map((l) => `'${labelOf(l.section)}'`).join(isAr ? "، " : ", ");
+    const mins = Math.max(1, Math.ceil(Math.max(...limited.map((l) => l.retryAfter)) / 60));
+    const perHour = sectionLimit(limited[0].section as SectionId);
+    const limitedSet = new Set(limited.map((l) => l.section));
+    const free = SECTION_IDS.filter((s) => !limitedSet.has(s)).map(labelOf).slice(0, 2);
+    const freeStr = free.join(isAr ? " و" : " & ");
+
+    toast(
+      <div className="text-[13px] leading-relaxed flex flex-col gap-1">
+        <span className="font-medium text-foreground">
+          {isAr
+            ? `⏳ لقد وصلت إلى الحد الأقصى لتعديل ${names} (${perHour} تعديلات في الساعة).`
+            : `⏳ You've reached the edit limit for ${names} (${perHour} edits per hour).`}
+        </span>
+        <span className="text-muted-foreground">
+          {isAr ? `⏰ حاول مرة أخرى بعد ${mins} دقيقة.` : `⏰ Try again in ${mins} minute${mins > 1 ? "s" : ""}.`}
+        </span>
+        {freeStr && (
+          <span className="text-emerald-600 dark:text-emerald-400">
+            {isAr ? `✅ لا يزال بإمكانك تحديث ${freeStr} دون أي قيود.` : `✅ You can still update ${freeStr} without any restrictions.`}
+          </span>
+        )}
+      </div>,
+      { duration: 9000 }
+    );
   }
 
   const isLight = data.theme_color === "white" || data.theme_color.startsWith("white-");
@@ -2116,13 +2162,14 @@ function SlugSetupScreen({ biz, onComplete }: { biz: Business; onComplete: () =>
               </label>
               <div className="flex items-center border border-input rounded-[6px] overflow-hidden focus-within:border-[#0066cc] transition-colors bg-background">
                 <input
+                  dir="ltr"
                   value={slug}
                   onChange={(e) => handleChange(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSave()}
                   placeholder={isAr ? "اسمك" : "yourname"}
                   maxLength={30}
                   autoFocus
-                  className="flex-1 bg-transparent px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none min-w-0"
+                  className="flex-1 bg-transparent px-3 py-2.5 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none min-w-0 text-start"
                 />
                 <div className="flex items-center gap-1.5 px-3 shrink-0 border-s border-input bg-secondary/40">
                   {indicatorIcon}

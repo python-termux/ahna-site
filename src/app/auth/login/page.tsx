@@ -81,6 +81,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Mail size={15} className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <input
+                  dir="ltr"
                   type="email"
                   placeholder={t.login.email}
                   value={email}
@@ -93,6 +94,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock size={15} className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <input
+                  dir="ltr"
                   type={showPw ? "text" : "password"}
                   placeholder={t.login.password}
                   value={password}

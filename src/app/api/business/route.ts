@@ -4,6 +4,8 @@ import { generateWhyUs } from "@/lib/why-us";
 import { NextResponse } from "next/server";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { sanitizeInput, validatePhoneNumber, validateWebsiteUrl, validateThemeColor } from "@/lib/validation";
+import { revalidateSite } from "@/lib/site-cache";
+import { SECTION_IDS, SECTION_FIELDS, sectionLimit, SECTION_EDIT_WINDOW } from "@/lib/section-limits";
 
 // Strip control characters and null bytes, enforce max length
 function clean(v: unknown, max = 500): string {
@@ -146,53 +148,78 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
+  // Load the current row once: for the category-change image refresh and to
+  // diff which sections actually changed (for per-section rate limiting).
+  const { data: current } = await supabase
+    .from("businesses").select("*").eq("id", id).eq("user_id", user.id).single();
+  if (!current) return NextResponse.json({ error: "Business not found" }, { status: 404 });
+  const cur = current as Record<string, unknown>;
+
   // Auto-update images when category changes
-  if (fields.category && !fields.hero_image) {
-    const { data: existing } = await supabase
-      .from("businesses").select("category").eq("id", id).eq("user_id", user.id).single();
-    if (existing && existing.category !== fields.category) {
-      fields.hero_image = getHeroImage(fields.category as string);
-      fields.gallery = getImagesForCategory(fields.category as string).slice(1, 4);
+  if (fields.category && !fields.hero_image && cur.category !== fields.category) {
+    fields.hero_image = getHeroImage(fields.category as string);
+    fields.gallery = getImagesForCategory(fields.category as string).slice(1, 4);
+  }
+
+  // ── Per-section rate limiting ───────────────────────────────────────────────
+  // Each section has its own hourly limit and only consumes a token when it
+  // actually changed. Over-limit sections are skipped (not saved); every other
+  // section still saves — one section's limit never blocks the rest.
+  const changed = (key: string): boolean => {
+    const a = fields[key];
+    const b = cur[key];
+    if (a === null || typeof a !== "object") return a !== b;
+    return JSON.stringify(a) !== JSON.stringify(b);
+  };
+
+  const saved: string[] = [];
+  const limited: { section: string; retryAfter: number }[] = [];
+
+  for (const section of SECTION_IDS) {
+    const sectionFields = SECTION_FIELDS[section].filter((f) => f in fields);
+    if (sectionFields.length === 0 || !sectionFields.some(changed)) continue; // unchanged → free
+    const rl = rateLimit(`edit:${user.id}:${section}`, sectionLimit(section), SECTION_EDIT_WINDOW);
+    if (rl.ok) {
+      saved.push(section);
+    } else {
+      limited.push({ section, retryAfter: rl.retryAfter });
+      for (const f of SECTION_FIELDS[section]) delete fields[f]; // don't save this section
     }
   }
 
-  const { error } = await supabase
-    .from("businesses")
-    .update({ ...fields, updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .eq("user_id", user.id);
+  // Apply only the allowed sections (skip a no-op write when nothing was allowed).
+  if (saved.length > 0) {
+    const { error } = await supabase
+      .from("businesses")
+      .update({ ...fields, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("user_id", user.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    // Refresh this site's cached public page so visitors see the change.
+    revalidateSite(typeof cur.slug === "string" ? cur.slug : null);
 
-  // Send "changes live" email (fire-and-forget, throttled to 1/hr)
-  const emailRl = rateLimit(`changes-live-email:${user.id}`, 1, 3600);
-  if (emailRl.ok) {
-    (async () => {
-      try {
-        const { data: biz } = await supabase
-          .from("businesses")
-          .select("name, slug")
-          .eq("id", id)
-          .eq("user_id", user.id)
-          .single();
-
-        if (biz && biz.slug && !biz.slug.startsWith("_tmp_")) {
-          const siteUrl = `https://${biz.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`;
+    // Send "changes live" email (fire-and-forget, throttled to 1/hr)
+    const emailRl = rateLimit(`changes-live-email:${user.id}`, 1, 3600);
+    if (emailRl.ok && typeof cur.slug === "string" && !cur.slug.startsWith("_tmp_")) {
+      (async () => {
+        try {
+          const siteUrl = `https://${cur.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "syrflow.com"}`;
           const { sendMail } = await import("@/lib/email/mailer");
           const { changesLiveEmailHtml } = await import("@/lib/email/templates/changes-live");
           await sendMail(
             user.email!,
             "Your Changes Are Live | تغييراتك أصبحت مباشرة - syrflow.com",
-            changesLiveEmailHtml({ businessName: biz.name, siteUrl })
+            changesLiveEmailHtml({ businessName: String(fields.name ?? cur.name ?? ""), siteUrl })
           );
+        } catch (err) {
+          console.error("Error sending changes-live email:", err);
         }
-      } catch (err) {
-        console.error("Error sending changes-live email:", err);
-      }
-    })();
+      })();
+    }
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, saved, limited });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

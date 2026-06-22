@@ -1,5 +1,6 @@
 import { S3Client, ListObjectsV2Command, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { revalidateSite } from "@/lib/site-cache";
 
 function r2Client(): S3Client | null {
   if (!process.env.R2_ACCOUNT_ID || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
@@ -49,9 +50,14 @@ export async function deleteUserAndData(
     console.error("R2 cleanup failed (continuing with account deletion):", err);
   }
 
+  // Grab slugs first so we can drop their cached public pages after deletion.
+  const { data: rows } = await admin.from("businesses").select("slug").eq("user_id", userId);
+
   await admin.from("businesses").delete().eq("user_id", userId);
 
   const { error } = await admin.auth.admin.deleteUser(userId);
   if (error) return { ok: false, error: error.message };
+
+  for (const r of rows ?? []) revalidateSite(r.slug as string | null);
   return { ok: true };
 }

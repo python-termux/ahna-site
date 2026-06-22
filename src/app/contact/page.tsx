@@ -53,6 +53,25 @@ export default function ContactPage() {
                   team@syrflow.com
                 </a>
               </div>
+
+              <a
+                href="https://wa.me/963994831314"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block bg-card rounded-[6px] p-5 border border-border hover:border-[#0066cc]/40 transition-colors"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/social-icons/whatsapp.png" alt="WhatsApp" width={20} height={20} className="object-contain" />
+                  <h3 className="font-semibold">{lang === "ar" ? "واتساب" : "WhatsApp"}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {lang === "ar" ? "للدعم والاستفسارات والدفع" : "Support, questions & payments"}
+                </p>
+                <span className="text-sm text-[#0066cc] dark:text-[#2997ff]">
+                  <bdi dir="ltr">+963 994 831 314</bdi>
+                </span>
+              </a>
             </div>
 
             {/* Right — FAQs */}

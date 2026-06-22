@@ -83,7 +83,7 @@ export default function PrivacyPage() {
                 <p>قد نحدّث سياسة الخصوصية هذه بصورة دورية. سنُعلمك بالتغييرات الجوهرية عبر البريد الإلكتروني أو بنشر إشعار على الخدمة.</p>
               </Section>
               <Section title="١١. التواصل">
-                <p>لأي استفسارات تتعلق بالخصوصية، راسلنا على <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>.</p>
+                <p>لأي استفسارات تتعلق بالخصوصية، راسلنا على <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> أو عبر واتساب على <a href="https://wa.me/963994831314" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline"><bdi dir="ltr">+963 994 831 314</bdi></a>.</p>
               </Section>
             </>
           ) : (
@@ -142,7 +142,7 @@ export default function PrivacyPage() {
                 <p>We may update this Privacy Policy periodically. We will notify you of material changes by email or by posting a notice on the Service.</p>
               </Section>
               <Section title="11. Contact">
-                <p>For privacy-related questions, contact us at <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a>.</p>
+                <p>For privacy-related questions, contact us at <a href="mailto:team@syrflow.com" className="text-[#0066cc] dark:text-[#2997ff] hover:underline">team@syrflow.com</a> or on WhatsApp at <a href="https://wa.me/963994831314" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#2997ff] hover:underline"><bdi dir="ltr">+963 994 831 314</bdi></a>.</p>
               </Section>
             </>
           )}

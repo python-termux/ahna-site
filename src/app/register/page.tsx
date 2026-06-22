@@ -92,11 +92,30 @@ const mapsReasoningPool = [
   "Just a few more seconds...", "Fetching the latest updates...",
 ];
 
+const mapsReasoningPoolAr = [
+  "جارٍ الاتصال بخوادم Google...", "جارٍ فحص ملف النشاط التجاري...",
+  "جارٍ تحليل بيانات قائمتك...", "جارٍ جلب تقييمات العملاء...",
+  "جارٍ استخراج معلومات النشاط...", "جارٍ معالجة تفاصيل الموقع...",
+  "جارٍ التحقق من صحة النشاط...", "جارٍ تحميل معلومات التواصل...",
+  "جارٍ جلب ساعات العمل...", "جارٍ جمع صور المعرض...",
+  "جارٍ قراءة آراء العملاء...", "جارٍ توليد رؤى عن نشاطك...",
+  "اقتربنا من الانتهاء...", "جارٍ سحب بيانات خرائط Google...",
+  "جارٍ استخراج التقييمات والإحصائيات...", "جارٍ تجهيز ملف نشاطك...",
+  "بضع ثوانٍ إضافية...", "جارٍ جلب آخر التحديثات...",
+];
+
 const fbReasoningPool = [
   "Connecting to Facebook...", "Reading your page profile...",
   "Fetching page details...", "Loading contact information...",
   "Importing photos and cover...", "Reading about section...",
   "Fetching follower stats...", "Almost there...",
+];
+
+const fbReasoningPoolAr = [
+  "جارٍ الاتصال بفيسبوك...", "جارٍ قراءة ملف صفحتك...",
+  "جارٍ جلب تفاصيل الصفحة...", "جارٍ تحميل معلومات التواصل...",
+  "جارٍ استيراد الصور والغلاف...", "جارٍ قراءة قسم نبذة عنّا...",
+  "جارٍ جلب إحصائيات المتابعين...", "اقتربنا من الانتهاء...",
 ];
 
 // Use strict validation from validation library
@@ -334,7 +353,7 @@ export default function RegisterPage() {
     setIsLoading(true);
     setFetchError("");
     setUrlError("");
-    const animPromise = runLoadingAnimation(mapsReasoningPool);
+    const animPromise = runLoadingAnimation(isAr ? mapsReasoningPoolAr : mapsReasoningPool);
     try {
       const res = await fetch("/api/places/preview", {
         method: "POST",
@@ -349,7 +368,7 @@ export default function RegisterPage() {
         setFetchError(isAr ? `الرجاء الانتظار ${rlLabel} قبل المحاولة مجدداً` : `Too many requests — try again in ${rlLabel}`);
         return;
       }
-      if (!res.ok) { setFetchError(data.error ?? "Could not find that business."); return; }
+      if (!res.ok) { setFetchError(data.error ?? (isAr ? "تعذّر العثور على هذا النشاط التجاري." : "Could not find that business.")); return; }
       setPlace(data as PlaceResult);
       setStep(2);
     } catch {
@@ -370,7 +389,7 @@ export default function RegisterPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (res: any) => {
         if (res.authResponse) { fetchFBPages(); }
-        else { setFbLoadingPages(false); setFbError("Login cancelled or permission denied."); }
+        else { setFbLoadingPages(false); setFbError(isAr ? "تم إلغاء تسجيل الدخول أو رُفض الإذن." : "Login cancelled or permission denied."); }
       },
       { scope: "pages_show_list,business_management,pages_read_engagement,pages_read_user_content" }
     );
@@ -418,7 +437,7 @@ export default function RegisterPage() {
 
   async function selectFBPage(page: FBPage) {
     setFbSubStep("fetching"); setFbError("");
-    const animPromise = runLoadingAnimation(fbReasoningPool);
+    const animPromise = runLoadingAnimation(isAr ? fbReasoningPoolAr : fbReasoningPool);
     window.FB.api(
       `/${page.id}`,
       {
@@ -449,7 +468,7 @@ export default function RegisterPage() {
     // Validate email format
     const emailValidation = validateEmail(email);
     if (!emailValidation.valid) {
-      setAuthError(emailValidation.error || "Invalid email");
+      setAuthError(isAr ? "أدخل بريداً إلكترونياً صحيحاً" : (emailValidation.error || "Invalid email"));
       setAuthLoading(false);
       return;
     }
@@ -457,7 +476,7 @@ export default function RegisterPage() {
     // Validate password
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.valid) {
-      setAuthError(passwordValidation.error || "Invalid password");
+      setAuthError(isAr ? "كلمة المرور غير صالحة (8 أحرف على الأقل)" : (passwordValidation.error || "Invalid password"));
       setAuthLoading(false);
       return;
     }
@@ -511,7 +530,7 @@ export default function RegisterPage() {
 
     if (!bizRes.ok) {
       const d = await bizRes.json();
-      setAuthError(d.error ?? "Failed to create business");
+      setAuthError(d.error ?? (isAr ? "تعذّر إنشاء النشاط التجاري" : "Failed to create business"));
       setAuthLoading(false);
       return;
     }
@@ -613,7 +632,7 @@ export default function RegisterPage() {
 
       if (!bizRes.ok) {
         const d = await bizRes.json();
-        setOtpError(d.error ?? "Failed to create business");
+        setOtpError(d.error ?? (isAr ? "تعذّر إنشاء النشاط التجاري" : "Failed to create business"));
         setOtpLoading(false);
         return;
       }
@@ -946,7 +965,7 @@ export default function RegisterPage() {
                         <form onSubmit={createAccount} className="flex flex-col gap-5">
                           <div>
                             <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "البريد الإلكتروني" : "Email address"}</label>
-                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                            <input dir="ltr" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                               placeholder={isAr ? "you@example.com" : "you@example.com"} required
                               className={`w-full bg-background border rounded-lg px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${email.length > 0 ? (emailValid ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
                             />
@@ -956,7 +975,7 @@ export default function RegisterPage() {
                           <div>
                             <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "كلمة المرور" : "Password"}</label>
                             <div className="relative">
-                              <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
+                              <input dir="ltr" type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
                                 placeholder={isAr ? "8 أحرف على الأقل" : "At least 8 characters"} required
                                 className="w-full bg-background border border-input rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
                               />
@@ -978,7 +997,7 @@ export default function RegisterPage() {
                           <div>
                             <label className="block text-sm text-muted-foreground mb-1.5">{isAr ? "تأكيد كلمة المرور" : "Confirm password"}</label>
                             <div className="relative">
-                              <input type={showConfirmPw ? "text" : "password"} value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
+                              <input dir="ltr" type={showConfirmPw ? "text" : "password"} value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
                                 placeholder={isAr ? "كرّر كلمة المرور" : "Repeat your password"} required
                                 className={`w-full bg-background border rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${confirmPw.length > 0 ? (pwMatch ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
                               />

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCachedBusinessBySlug } from "@/lib/site-cache";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -151,8 +152,7 @@ function buildTheme(themeColor: string) {
 // ── Metadata ──────────────────────────────────────────────────────────────────
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase.from("businesses").select("name,tagline,description,category,theme_color,hero_image,published,published_until").eq("slug", slug).single();
+  const data = await getCachedBusinessBySlug<Business>(slug);
   if (!data) return { title: "Business" };
 
   // Offline (unpublished or expired) sites must not be indexed.
@@ -223,16 +223,22 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   const i18n = SITE_I18N[siteLang];
   const isRtl = siteLang === "ar";
 
-  const supabase = await createClient();
-  const { data: biz } = await supabase.from("businesses").select("*").eq("slug", slug).single<Business>();
-  if (!biz) notFound();
+  // Public read served from the Next.js Data Cache — repeated visits don't hit
+  // Supabase. Only refreshes when the site's tag is revalidated (on a DB change)
+  // or after the fallback window.
+  let biz = await getCachedBusinessBySlug<Business>(slug);
 
   // Gate: unpublished/expired sites are hidden from the public, but the owner
-  // (logged in) can always preview their own page.
-  if (!isLive(biz)) {
+  // (logged in) can always preview their own page. Owner preview is the only
+  // path that touches Supabase auth, and only for non-live sites (rare).
+  if (!biz || !isLive(biz)) {
+    const supabase = await createClient();
+    const { data: ownerBiz } = await supabase.from("businesses").select("*").eq("slug", slug).single<Business>();
+    if (!ownerBiz) notFound();
     const { data: { user } } = await supabase.auth.getUser();
-    const isOwner = !!user && user.id === biz.user_id;
+    const isOwner = !!user && user.id === ownerBiz.user_id;
     if (!isOwner) return <SiteUnavailable isRtl={isRtl} />;
+    biz = ownerBiz;
   }
 
   const T = buildTheme(biz.theme_color);
@@ -729,7 +735,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
 
 // ── Unavailable (unpublished / expired) site ──────────────────────────────────
 function SiteUnavailable({ isRtl }: { isRtl: boolean }) {
-  const phone = "+963 962 711 141";
+  const phone = "+963 994 831 314";
   const t = isRtl
     ? { title: "هذا الموقع غير متاح حالياً", body: "هذا الموقع مسجّل ولكنه غير منشور بعد. إذا كنت مالك الموقع، يرجى التواصل عبر الرقم" }
     : { title: "This site is not currently available", body: "This site is registered but not live yet. If you are the owner of this site, please contact" };
