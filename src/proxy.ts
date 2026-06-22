@@ -83,9 +83,14 @@ export async function proxy(request: NextRequest) {
       },
     });
     try {
-      await supabase.auth.getUser();
+      const { data } = await supabase.auth.getUser();
+      // Only persist refreshed cookies for a confirmed user. This prevents a
+      // transient validation failure from writing sign-out/clearing cookies and
+      // wiping a freshly-created session (seen on mobile right after register).
+      if (!data.user) refreshedCookies.length = 0;
     } catch {
-      // Network/refresh errors must not break routing.
+      // Network/refresh errors must not break routing — and must not clear cookies.
+      refreshedCookies.length = 0;
     }
   }
 
