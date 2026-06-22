@@ -40,11 +40,17 @@ export async function POST(request: Request) {
     }
   }
 
-  // Confirm the session is established before reporting success.
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  // Confirm the session and return its tokens so the client can also write the
+  // cookies via setSession() — mobile browsers don't reliably persist cookies
+  // from a fetch() Set-Cookie header, so this guarantees the session sticks.
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
     return NextResponse.json({ error: "Could not establish a session. Please log in." }, { status: 401 });
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+  });
 }

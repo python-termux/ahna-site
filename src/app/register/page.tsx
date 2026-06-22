@@ -496,6 +496,15 @@ export default function RegisterPage() {
       return;
     }
 
+    // Also write the session via the browser client so the cookies are stored
+    // reliably on mobile (where fetch Set-Cookie headers aren't always kept).
+    if (regJson.access_token && regJson.refresh_token) {
+      await supabase.auth.setSession({
+        access_token: regJson.access_token,
+        refresh_token: regJson.refresh_token,
+      });
+    }
+
     // Create business
     const bizRes = await fetch("/api/business", {
       method: "POST",
