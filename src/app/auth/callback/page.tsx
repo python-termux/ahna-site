@@ -28,7 +28,6 @@ export default function AuthCallbackPage() {
           });
 
           if (error) {
-            console.error("Session setup error:", error);
             router.push("/auth/login");
             return;
           }
@@ -55,8 +54,7 @@ export default function AuthCallbackPage() {
           // No session found, redirect to login
           router.push("/auth/login");
         }
-      } catch (error) {
-        console.error("Auth callback error:", error);
+      } catch {
         router.push("/auth/login");
       }
     }

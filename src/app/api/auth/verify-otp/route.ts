@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   try {
     const valid = await verifyOtp(email, code, purpose as OtpPurpose);
     if (!valid) {
-      console.error("OTP verification failed", { email, code: code.slice(0, 2) + "****", purpose });
+      console.error("OTP verification failed", { purpose });
       return NextResponse.json({ error: "Invalid or expired code" }, { status: 400 });
     }
 

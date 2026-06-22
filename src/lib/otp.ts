@@ -58,7 +58,7 @@ export async function verifyOtp(
   // Normalize the code: trim and ensure it's 6 digits
   const normalizedCode = submittedCode.trim().replace(/\D/g, "").slice(0, 6);
   if (normalizedCode.length !== 6) {
-    console.error("Code validation failed: not 6 digits", { submittedCode, normalizedCode });
+    console.error("OTP validation failed: code is not 6 digits");
     return false;
   }
 
@@ -87,18 +87,18 @@ export async function verifyOtp(
   }
 
   if (!data) {
-    console.error("No OTP found", { email, purpose });
+    console.error("OTP verification failed: no active code");
     return false;
   }
 
   if (new Date(data.expires_at) < new Date()) {
-    console.error("OTP expired", { expires_at: data.expires_at });
+    console.error("OTP verification failed: code expired");
     return false;
   }
 
   const hashed = await hashOtp(normalizedCode);
   if (hashed !== data.code) {
-    console.error("OTP hash mismatch", { submitted: normalizedCode, stored: data.code, hashed });
+    console.error("OTP verification failed: code mismatch");
     return false;
   }
 
