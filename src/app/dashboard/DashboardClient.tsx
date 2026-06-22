@@ -2160,7 +2160,7 @@ function SlugSetupScreen({ biz, onComplete }: { biz: Business; onComplete: () =>
               <label className="text-sm text-foreground block mb-2">
                 {isAr ? "رابط الموقع" : "Site link"}
               </label>
-              <div className="flex items-center border border-input rounded-[6px] overflow-hidden focus-within:border-[#0066cc] transition-colors bg-background">
+              <div dir="ltr" className="flex items-center border border-input rounded-[6px] overflow-hidden focus-within:border-[#0066cc] transition-colors bg-background">
                 <input
                   dir="ltr"
                   value={slug}

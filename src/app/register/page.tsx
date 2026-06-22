@@ -989,7 +989,7 @@ export default function RegisterPage() {
                                 className="w-full bg-background border border-input rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-[#0066cc] transition-colors"
                               />
                               <button type="button" onClick={() => setShowPw((v) => !v)}
-                                className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
                                 {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
                               </button>
                             </div>
@@ -1011,7 +1011,7 @@ export default function RegisterPage() {
                                 className={`w-full bg-background border rounded-lg px-4 py-3 pr-11 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none transition-colors ${confirmPw.length > 0 ? (pwMatch ? "border-green-600 dark:border-green-700" : "border-red-500") : "border-input focus:border-[#0066cc]"}`}
                               />
                               <button type="button" onClick={() => setShowConfirmPw((v) => !v)}
-                                className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
                                 {showConfirmPw ? <EyeOff size={17} /> : <Eye size={17} />}
                               </button>
                             </div>
