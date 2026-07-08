@@ -33,7 +33,7 @@ export default function TermsPage() {
                 <p>تحكم شروط الخدمة هذه ("الشروط") وصولك إلى منصة <strong className="text-foreground">syrflow.com</strong> واستخدامك لها. بإنشاء حساب أو استخدام المنصة، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق، فلا تستخدم المنصة.</p>
               </Section>
               <Section title="٢. وصف الخدمة">
-                <p>syrflow.com هي منصة تتيح للشركات والأفراد في سوريا والمنطقة العربية إنشاء موقع ويب احترافي من صفحة واحدة عن طريق استيراد البيانات من ملفهم التجاري على Google. تُقدَّم الخدمة على أساس الاشتراك بدءاً من دولارين شهرياً.</p>
+                <p>syrflow.com هي منصة تتيح للشركات والأفراد في سوريا والمنطقة العربية إنشاء موقع ويب احترافي من صفحة واحدة عن طريق استيراد البيانات من ملفهم التجاري على Google. تُقدَّم الخدمة على أساس الاشتراك بسعر 5 دولارات شهرياً، تُدفع سنوياً مع خصم 10 دولارات (50 دولاراً في السنة).</p>
               </Section>
               <Section title="٣. الاشتراكات والدفع">
                 <p>تُقدَّم الخدمة على أساس اشتراك متكرر (شهري أو سنوي).</p>
@@ -95,7 +95,7 @@ export default function TermsPage() {
                 <p>These Terms of Service ("Terms") govern your access to and use of the platform at <strong className="text-foreground">syrflow.com</strong> ("Platform", "Service", "we", "us"). By creating an account or using the Platform you agree to be bound by these Terms. If you do not agree, do not use the Platform.</p>
               </Section>
               <Section title="2. Description of Service">
-                <p>syrflow.com is a platform that allows businesses and individuals in Syria and the Arab world to create a professional one-page website by importing data from their Google Business Profile. The Service is offered on a subscription basis starting from $2/month.</p>
+                <p>syrflow.com is a platform that allows businesses and individuals in Syria and the Arab world to create a professional one-page website by importing data from their Google Business Profile. The Service is offered on a subscription basis at $5/month, billed annually with a $10 discount ($50/year).</p>
               </Section>
               <Section title="3. Subscriptions and Payment">
                 <p>The Service is offered on a recurring subscription basis (monthly or annually).</p>

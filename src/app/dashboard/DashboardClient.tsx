@@ -473,8 +473,8 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
               </p>
               <p className="text-xs text-amber-700/80 dark:text-amber-300/80 leading-relaxed">
                 {isAr
-                  ? "موقعك متاح لك فقط أثناء تسجيل دخولك. لتفعيله للعامة، يُرجى دفع الرسوم 20 دولاراً لمدة سنة واحدة. اضغط على الزر أدناه للدفع."
-                  : "Your site is only visible to you while you're logged in. To activate it publicly, please pay the fee of $20 for 1 year. Click the button below for payment."}
+                  ? "موقعك متاح لك فقط أثناء تسجيل دخولك. لتفعيله للعامة، يُرجى دفع رسوم الاشتراك: 5 دولارات شهرياً تُدفع سنوياً مع خصم 10 دولارات (50 دولاراً في السنة). اضغط على الزر أدناه للدفع."
+                  : "Your site is only visible to you while you're logged in. To activate it publicly, please pay the subscription: $5/month billed annually with a $10 discount ($50/year). Click the button below for payment."}
               </p>
               <p className="mt-2 text-xs font-semibold text-red-600 dark:text-red-400 leading-relaxed">
                 {isAr

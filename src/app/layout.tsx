@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s | syrflow.com",
     default: "syrflow.com — Turn Your Business Into a Website",
   },
-  description: "Create a professional one-page website from your Google Maps listing in under 5 minutes. No coding. Plans from $2/month.",
+  description: "Create a professional one-page website from your Google Maps listing in under 5 minutes. No coding. $5/month, billed annually with a $10 discount.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

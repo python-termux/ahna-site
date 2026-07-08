@@ -35,19 +35,19 @@ const telegramFeaturesEn = [{ name: "Telegram Channel Export", included: true, v
 
 const plansEn = [
   {
-    name: "With Google Link", price: 2, period: "monthly", yearlyPrice: 20,
+    name: "With Google Link", price: 5, period: "monthly", yearlyPrice: 50,
     description: "Perfect for businesses that have a Google Business profile.",
     icon: "/pricing/star-94.png", buttonText: "Get started", popular: false, comingSoon: false,
     features: googleFeaturesEn,
   },
   {
-    name: "With Facebook", price: 2, period: "monthly", yearlyPrice: 20,
+    name: "With Facebook", price: 5, period: "monthly", yearlyPrice: 50,
     description: "Import your business directly from your Facebook Page. Coming soon.",
     icon: "/pricing/fire-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
     features: facebookFeaturesEn,
   },
   {
-    name: "With Telegram", price: 2, period: "monthly", yearlyPrice: 20,
+    name: "With Telegram", price: 5, period: "monthly", yearlyPrice: 50,
     description: "Import your business from your Telegram channel or group. Coming soon.",
     icon: "/pricing/crown-94.png", buttonText: "Coming Soon", popular: false, comingSoon: true,
     features: telegramFeaturesEn,
@@ -73,19 +73,19 @@ const telegramFeaturesAr = [{ name: "تصدير قناة تيليجرام",    i
 
 const plansAr = [
   {
-    name: "مع رابط جوجل", price: 2, period: "شهرياً", yearlyPrice: 20,
+    name: "مع رابط جوجل", price: 5, period: "شهرياً", yearlyPrice: 50,
     description: "مثالي للأعمال التي لديها ملف تجاري على Google.",
     icon: "/pricing/star-94.png", buttonText: "ابدأ الآن", popular: false, comingSoon: false,
     features: googleFeaturesAr,
   },
   {
-    name: "مع فيسبوك", price: 2, period: "شهرياً", yearlyPrice: 20,
+    name: "مع فيسبوك", price: 5, period: "شهرياً", yearlyPrice: 50,
     description: "استورد نشاطك التجاري مباشرة من صفحة Facebook الخاصة بك. قريباً.",
     icon: "/pricing/fire-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
     features: facebookFeaturesAr,
   },
   {
-    name: "مع تيليجرام", price: 2, period: "شهرياً", yearlyPrice: 20,
+    name: "مع تيليجرام", price: 5, period: "شهرياً", yearlyPrice: 50,
     description: "استورد نشاطك التجاري من قناة أو مجموعة Telegram. قريباً.",
     icon: "/pricing/crown-94.png", buttonText: "قريباً", popular: false, comingSoon: true,
     features: telegramFeaturesAr,
@@ -95,7 +95,7 @@ const plansAr = [
 const faqsEn = [
   { question: "What is SyrFlow?", answer: "SyrFlow is a platform that turns your Google Maps business link into a professional one-page website in minutes. No coding or design skills required — just paste your link and you're live." },
   { question: "How does it work?", answer: "Paste your Google Maps link, choose your free subdomain (yourbiz.syrflow.com), and your website is live. We automatically import your business name, photos, reviews, opening hours, and contact info." },
-  { question: "How much does it cost?", answer: "Plans start from $2/month — cheaper than a pizza and cheaper than any website developer. See the pricing table above for full plan details." },
+  { question: "How much does it cost?", answer: "Plans cost $5/month, billed annually at $50/year — that's a $10 discount included. Cheaper than any website developer. See the pricing table above for full plan details." },
   { question: "What payment methods do you accept?", answer: "We accept Sham Cash and Syrian bank transfer. Contact us at team@syrflow.com to complete your payment and our team will activate your account within 24 hours." },
   { question: "Does SyrFlow support Arabic?", answer: "Yes! Full Arabic support with RTL layout is built in on all plans. You can switch between Arabic and English at any time, and your visitors can do the same." },
   { question: "Will my website appear on Google?", answer: "Yes. Every website created with SyrFlow is automatically optimized for search engines (SEO) so customers can find your business on Google without any extra work from you." },
@@ -108,7 +108,7 @@ const faqsEn = [
 const faqsAr = [
   { question: "ما هو سوريا فلو؟", answer: "سوريا فلو هي منصة تحوّل رابط نشاطك التجاري على Google Maps إلى موقع احترافي من صفحة واحدة في دقائق. لا حاجة لبرمجة أو تصميم — الصق رابطك وموقعك حي." },
   { question: "كيف تعمل المنصة؟", answer: "الصق رابط Google Maps، اختر نطاقك الفرعي المجاني (yourbiz.syrflow.com)، وسيكون موقعك حياً. نستورد تلقائياً اسم نشاطك والصور والتقييمات وساعات العمل ومعلومات الاتصال." },
-  { question: "كم تكلف الخدمة؟", answer: "تبدأ الخطط من دولارين شهرياً — أرخص من بيتزا وأرخص من أي مطور مواقع. اطلع على جدول الأسعار أعلاه للتفاصيل الكاملة." },
+  { question: "كم تكلف الخدمة؟", answer: "الخطط بسعر 5 دولارات شهرياً، تُدفع سنوياً بقيمة 50 دولاراً في السنة — أي بخصم 10 دولارات. أرخص من أي مطور مواقع. اطلع على جدول الأسعار أعلاه للتفاصيل الكاملة." },
   { question: "ما طرق الدفع المتاحة؟", answer: "نقبل Sham Cash والتحويل البنكي السوري. تواصل معنا على team@syrflow.com لإتمام الدفع وسيفعّل فريقنا حسابك خلال 24 ساعة." },
   { question: "هل تدعم المنصة اللغة العربية؟", answer: "نعم! الدعم العربي الكامل مع تخطيط RTL مدمج في جميع الخطط. يمكنك ولزوارك التبديل بين العربية والإنجليزية في أي وقت." },
   { question: "هل سيظهر موقعي على Google؟", answer: "نعم. كل موقع يُنشأ مع سوريا فلو يُحسَّن تلقائياً لمحركات البحث (SEO) حتى يجدك العملاء على Google دون أي جهد إضافي منك." },
