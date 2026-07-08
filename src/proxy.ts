@@ -43,6 +43,21 @@ function securityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
+// True only when Supabase says the refresh token itself is invalid/revoked
+// (400-class auth error mentioning the refresh token, or its known codes) —
+// never for network/transient failures, which have no such code/message.
+// Variants seen in the wild: "Invalid Refresh Token: Refresh Token Not Found",
+// "Refresh token is not valid", codes refresh_token_not_found / _already_used.
+function isDeadRefreshToken(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const e = error as { code?: string; status?: number; message?: string };
+  if (e.code === "refresh_token_not_found" || e.code === "refresh_token_already_used") return true;
+  const msg = e.message ?? "";
+  return (e.status === undefined || (e.status >= 400 && e.status < 500)) &&
+    /refresh token/i.test(msg) &&
+    /not valid|invalid|not found|already used|revoked/i.test(msg);
+}
+
 export async function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const hostWithoutPort = host.split(":")[0];
@@ -64,8 +79,13 @@ export async function proxy(request: NextRequest) {
   // here (middleware) where Set-Cookie is allowed. We skip it entirely for public
   // user sites (slug.syrflow.com) and the marketing apex, so a public visit (or a
   // logged-in user browsing a public page) never costs a Supabase auth call.
-  const needsAuth = isApp || isAdminHost;
+  // Skip /api/* (route handlers run their own getUser and can set cookies) and
+  // requests carrying no Supabase cookie — avoids burning Supabase's per-IP auth
+  // rate limit with redundant calls (seen as login 429s + dashboard bounce on mobile).
+  const hasSbCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
+  const needsAuth = (isApp || isAdminHost) && hasSbCookie && !pathname.startsWith("/api");
   const refreshedCookies: { name: string; value: string; options: CookieOptions }[] = [];
+  let deadSession = false;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (needsAuth && supabaseUrl && supabaseKey) {
@@ -83,14 +103,22 @@ export async function proxy(request: NextRequest) {
       },
     });
     try {
-      const { data } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getUser();
       // Only persist refreshed cookies for a confirmed user. This prevents a
       // transient validation failure from writing sign-out/clearing cookies and
       // wiping a freshly-created session (seen on mobile right after register).
-      if (!data.user) refreshedCookies.length = 0;
-    } catch {
+      if (!data.user) {
+        refreshedCookies.length = 0;
+        // BUT: a definitively-dead refresh token must be cleared, or every
+        // subsequent request retries the refresh and hammers /token until
+        // Supabase rate-limits the IP — which then 429s even fresh password
+        // logins (seen in auth logs as refresh_token 400/429 storms on mobile).
+        if (isDeadRefreshToken(error)) deadSession = true;
+      }
+    } catch (error) {
       // Network/refresh errors must not break routing — and must not clear cookies.
       refreshedCookies.length = 0;
+      if (isDeadRefreshToken(error)) deadSession = true;
     }
   }
 
@@ -99,6 +127,17 @@ export async function proxy(request: NextRequest) {
     refreshedCookies.forEach(({ name, value, options }) =>
       res.cookies.set(name, value, cookieDomain ? { ...options, domain: cookieDomain } : options)
     );
+    if (deadSession) {
+      // Expire every Supabase auth cookie — both the shared-domain variant and
+      // any host-only leftover — so the dead refresh token stops being resent.
+      for (const c of request.cookies.getAll()) {
+        if (!c.name.startsWith("sb-")) continue;
+        res.headers.append("Set-Cookie", `${c.name}=; Path=/; Max-Age=0`);
+        if (cookieDomain) {
+          res.headers.append("Set-Cookie", `${c.name}=; Path=/; Max-Age=0; Domain=${cookieDomain}`);
+        }
+      }
+    }
     return securityHeaders(res);
   }
 
