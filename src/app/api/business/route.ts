@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getHeroImage, getImagesForCategory } from "@/lib/images";
-import { generateWhyUs } from "@/lib/why-us";
+import { generateWhyUs, hasArabic, type WhyUsPoint } from "@/lib/why-us";
 import { NextResponse } from "next/server";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { sanitizeInput, validatePhoneNumber, validateWebsiteUrl, validateThemeColor } from "@/lib/validation";
@@ -64,7 +64,13 @@ export async function POST(request: Request) {
     : getImagesForCategory(category).slice(1, 4);
 
   const slug = `_tmp_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
-  const whyUs = await generateWhyUs(name, category, body.testimonials ?? []);
+  // Why-us cards follow the language of the site's own content when present,
+  // otherwise the language of the reviews.
+  const contentText = `${clean(body.tagline, 400)} ${clean(body.description, 500)}`.trim();
+  const whyUs = await generateWhyUs(
+    name, category, body.testimonials ?? [],
+    contentText ? (hasArabic(contentText) ? "ar" : "en") : undefined
+  );
 
   const { data, error } = await supabase
     .from("businesses")
@@ -186,6 +192,30 @@ export async function PATCH(request: Request) {
     } else {
       limited.push({ section, retryAfter: rl.retryAfter });
       for (const f of SECTION_FIELDS[section]) delete fields[f]; // don't save this section
+    }
+  }
+
+  // Keep the why-us cards in the same language as the site's own content: if a
+  // branding save flips the tagline/description language (e.g. English→Arabic),
+  // regenerate the cards in the new language. Runs only on an actual flip.
+  if (saved.includes("branding")) {
+    const newText = `${typeof fields.tagline === "string" ? fields.tagline : String(cur.tagline ?? "")} ${typeof fields.description === "string" ? fields.description : String(cur.description ?? "")}`.trim();
+    const curWhy = Array.isArray(cur.why_us) ? (cur.why_us as WhyUsPoint[]) : [];
+    const reviews = Array.isArray(cur.testimonials)
+      ? (cur.testimonials as { text: string; rating: number }[])
+      : [];
+    if (newText && curWhy.length > 0 && reviews.length > 0) {
+      const wantAr = hasArabic(newText);
+      const haveAr = hasArabic(curWhy.map((p) => `${p.title} ${p.description}`).join(" "));
+      if (wantAr !== haveAr) {
+        const regenerated = await generateWhyUs(
+          String(fields.name ?? cur.name ?? ""),
+          String(fields.category ?? cur.category ?? ""),
+          reviews,
+          wantAr ? "ar" : "en"
+        );
+        if (regenerated.length > 0) fields.why_us = regenerated;
+      }
     }
   }
 

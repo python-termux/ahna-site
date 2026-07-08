@@ -3,10 +3,19 @@ export interface WhyUsPoint {
   description: string;
 }
 
+// True when the text contains Arabic script — used to keep AI-generated copy
+// in the same language as the site's own content.
+export function hasArabic(text: string | null | undefined): boolean {
+  return /[؀-ۿ]/.test(text ?? "");
+}
+
 export async function generateWhyUs(
   businessName: string,
   category: string,
-  reviews: { text: string; rating: number }[]
+  reviews: { text: string; rating: number }[],
+  // Explicit language wins (e.g. detected from the site's tagline/description);
+  // otherwise follow the language of the reviews themselves.
+  lang?: "ar" | "en"
 ): Promise<WhyUsPoint[]> {
   const key = process.env.GROQ_API_KEY;
   if (!key || reviews.length === 0) return [];
@@ -19,9 +28,14 @@ export async function generateWhyUs(
 
   if (topReviews.length === 0) return [];
 
+  const useArabic = lang ? lang === "ar" : hasArabic(topReviews.join(" "));
+  const langLine = useArabic
+    ? "Write the titles and descriptions in Arabic (Modern Standard Arabic) only."
+    : "Write the titles and descriptions in English only.";
+
   const prompt = `You are writing marketing copy for "${businessName}", a ${category} business.
 
-Based on these real customer reviews, extract 3 distinct strengths or benefits. Present each as a professional benefit statement — NOT as a review or quote. Write like a marketing team describing what makes this business great.
+Based on these real customer reviews, extract 3 distinct strengths or benefits. Present each as a professional benefit statement — NOT as a review or quote. Write like a marketing team describing what makes this business great. ${langLine}
 
 Reviews:
 ${topReviews.map((t, i) => `${i + 1}. ${t}`).join("\n")}
