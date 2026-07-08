@@ -9,20 +9,18 @@ import { useLanguage } from "@/lib/language";
 
 const faqsEn = [
   { question: "How long does it take to create a website?", answer: "It takes less than 5 minutes. Just paste your Google Maps link and your website is ready instantly." },
-  { question: "Can I edit my website after it's created?", answer: "Yes! Basic plan includes 1 time edit. Pro plan includes unlimited edits anytime from your dashboard." },
   { question: "Do I need coding skills?", answer: "No coding required at all. Everything is done through our simple dashboard." },
-  { question: "Can I use my own domain?", answer: "Yes, Pro plan includes custom domain support. You can connect your own domain easily." },
+  { question: "Do I get a free subdomain?", answer: "Yes! You get a free subdomain (yourbiz.syrflow.com) included with your website — no extra cost." },
   { question: "How does the AI content generation work?", answer: "Our AI analyzes your business and generates professional headings, taglines, and descriptions instantly with one click." },
-  { question: "What payment methods do you accept?", answer: "We accept credit cards, debit cards, and PayPal. All payments are secure." },
+  { question: "What payment methods do you accept?", answer: "We accept Sham Cash only. All payments are secure." },
 ];
 
 const faqsAr = [
   { question: "كم يستغرق إنشاء موقع إلكتروني؟", answer: "يستغرق أقل من 5 دقائق. الصق رابط Google Maps وسيكون موقعك جاهزاً فوراً." },
-  { question: "هل يمكنني تعديل موقعي بعد إنشائه؟", answer: "نعم! الخطة الأساسية تتيح تعديلاً واحداً. Pro تتيح تعديلات غير محدودة في أي وقت." },
   { question: "هل أحتاج مهارات برمجية؟", answer: "لا برمجة مطلوبة على الإطلاق. كل شيء يتم من خلال لوحة التحكم البسيطة." },
-  { question: "هل يمكنني استخدام نطاقي الخاص؟", answer: "نعم، خطة Pro تتضمن دعم النطاقات المخصصة. يمكنك ربط نطاقك بسهولة." },
+  { question: "هل أحصل على نطاق فرعي مجاني؟", answer: "نعم! تحصل على نطاق فرعي مجاني (yourbiz.syrflow.com) مع موقعك — بدون أي تكلفة إضافية." },
   { question: "كيف يعمل إنشاء المحتوى بالذكاء الاصطناعي؟", answer: "يحلل الذكاء الاصطناعي نشاطك ويُنشئ عناوين وشعارات وأوصافاً احترافية بنقرة واحدة." },
-  { question: "ما طرق الدفع المقبولة؟", answer: "نقبل بطاقات الائتمان والخصم وPayPal. جميع المدفوعات آمنة." },
+  { question: "ما طرق الدفع المقبولة؟", answer: "نقبل الدفع عبر شام كاش فقط. جميع المدفوعات آمنة." },
 ];
 
 export default function ContactPage() {
