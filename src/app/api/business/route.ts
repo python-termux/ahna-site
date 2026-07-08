@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { sanitizeInput, validatePhoneNumber, validateWebsiteUrl, validateThemeColor } from "@/lib/validation";
 import { revalidateSite } from "@/lib/site-cache";
+import { revalidateDash } from "@/lib/dashboard-cache";
 import { SECTION_IDS, SECTION_FIELDS, sectionLimit, SECTION_EDIT_WINDOW } from "@/lib/section-limits";
 
 // Strip control characters and null bytes, enforce max length
@@ -93,6 +94,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidateDash(user.id);
   return NextResponse.json({ id: data.id, slug: data.slug });
 }
 
@@ -196,8 +198,9 @@ export async function PATCH(request: Request) {
       .eq("user_id", user.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // Refresh this site's cached public page so visitors see the change.
+    // Refresh this site's cached public page + the owner's cached dashboard data.
     revalidateSite(typeof cur.slug === "string" ? cur.slug : null);
+    revalidateDash(user.id);
 
     // Send "changes live" email (fire-and-forget, throttled to 1/hr)
     const emailRl = rateLimit(`changes-live-email:${user.id}`, 1, 3600);

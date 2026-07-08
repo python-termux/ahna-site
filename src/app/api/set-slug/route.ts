@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { revalidateSite } from "@/lib/site-cache";
+import { revalidateDash } from "@/lib/dashboard-cache";
 
 const SLUG_RE = /^[a-z0-9]{4,30}$/;
 const RESERVED = new Set([
@@ -94,5 +95,6 @@ export async function POST(request: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   revalidateSite(slug);
+  revalidateDash(user.id);
   return NextResponse.json({ ok: true, slug });
 }

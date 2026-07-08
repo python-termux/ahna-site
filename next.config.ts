@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Client Router Cache: reuse fetched page payloads for 5 minutes on
+  // client-side navigations. Revisiting a page (e.g. back to the dashboard)
+  // within that window never hits the server — zero Supabase auth/DB calls.
+  // After Save the dashboard calls router.refresh(), replacing its cache
+  // entry with fresh data immediately.
+  experimental: {
+    staleTimes: {
+      dynamic: 300,
+      static: 300,
+    },
+  },
   // Strip console output from production bundles (keeps console.error for
   // server-side observability). Nothing leaks to the browser console.
   compiler: {

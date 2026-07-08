@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { deleteUserAndData } from "@/lib/delete-user";
 import { revalidateSite } from "@/lib/site-cache";
+import { revalidateDash } from "@/lib/dashboard-cache";
 
 // POST /api/admin/site — publish or expire a site
 export async function POST(request: Request) {
@@ -42,8 +43,9 @@ export async function POST(request: Request) {
 
     // Refresh the cached public page now that it's live.
     {
-      const { data: row } = await admin.from("businesses").select("slug").eq("id", id).single();
+      const { data: row } = await admin.from("businesses").select("slug, user_id").eq("id", id).single();
       revalidateSite(row?.slug ?? null);
+      revalidateDash(row?.user_id);
     }
 
     // Best-effort "site activated" email to the owner (never blocks the response).
@@ -85,7 +87,7 @@ export async function POST(request: Request) {
   }
 
   if (action === "expire") {
-    const { data: row } = await admin.from("businesses").select("slug").eq("id", id).single();
+    const { data: row } = await admin.from("businesses").select("slug, user_id").eq("id", id).single();
     const { error } = await admin
       .from("businesses")
       .update({ published: false })
@@ -95,6 +97,7 @@ export async function POST(request: Request) {
 
     // Refresh the cached public page so it immediately shows as unavailable.
     revalidateSite(row?.slug ?? null);
+    revalidateDash(row?.user_id);
     return NextResponse.json({ ok: true });
   }
 
@@ -134,8 +137,9 @@ export async function DELETE(request: Request) {
   const result = await deleteUserAndData(admin, biz.user_id);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
 
-  // Drop the deleted site's cached page.
+  // Drop the deleted site's cached page + the owner's cached dashboard data.
   revalidateSite(biz.slug);
+  revalidateDash(biz.user_id);
 
   // Best-effort "site removed" email to the owner (never blocks the response).
   (async () => {

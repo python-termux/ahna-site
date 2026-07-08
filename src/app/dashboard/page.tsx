@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import DashboardClient from "./DashboardClient";
 import AuthRecover from "./AuthRecover";
+import { getCachedBusinessesByUser } from "@/lib/dashboard-cache";
 
 export default async function DashboardPage({
   searchParams,
@@ -19,11 +20,9 @@ export default async function DashboardPage({
     redirect("/auth/login");
   }
 
-  const { data: businesses } = await supabase
-    .from("businesses")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  // Served from the Next.js Data Cache — Supabase is only queried on the first
+  // visit or after a write revalidates the user's dash tag (see dashboard-cache).
+  const businesses = await getCachedBusinessesByUser<Parameters<typeof DashboardClient>[0]["businesses"][number]>(user.id);
 
-  return <DashboardClient user={user} businesses={businesses ?? []} />;
+  return <DashboardClient user={user} businesses={businesses} />;
 }
