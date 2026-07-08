@@ -398,6 +398,7 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
   onBack?: () => void;
   onLogout: () => void;
 }) {
+  const router = useRouter();
   const { lang } = useLanguage();
   const isAr = lang === "ar";
   const [data, setData] = useState<Business>({ ...biz });
@@ -556,6 +557,13 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
     await fetch("/api/delete-image", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
   }
 
+  // Fire-and-forget lossless shrink of a freshly-uploaded R2 image (PNG
+  // recompress / JPEG metadata strip — pixels, colors and dimensions are
+  // never altered). Failures are ignored; the original stays in place.
+  function optimizeR2Image(url: string) {
+    fetch("/api/optimize-image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) }).catch(() => {});
+  }
+
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [galleryUploading, setGalleryUploading] = useState(false);
   const aboutInputRef = useRef<HTMLInputElement>(null);
@@ -625,6 +633,7 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
       const putRes = await fetch(presignedUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
       if (!putRes.ok) { toast.error(isAr ? `فشل الرفع (${putRes.status})` : `Upload failed (${putRes.status})`); return; }
       if (data.about_image) deleteR2Image(data.about_image);
+      optimizeR2Image(publicUrl);
       update("about_image", publicUrl);
     } catch (e) {
       toast.error(isAr ? `خطأ في الرفع: ${e instanceof Error ? e.message : "غير معروف"}` : `Upload error: ${e instanceof Error ? e.message : "unknown"}`);
@@ -663,6 +672,7 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
           toast.error(isAr ? `فشل رفع ${file.name} (${putRes.status})` : `Failed to upload ${file.name} (${putRes.status})`);
           continue;
         }
+        optimizeR2Image(publicUrl);
         uploaded.push(publicUrl);
       } catch (e) {
         toast.error(isAr ? `خطأ في الرفع: ${e instanceof Error ? e.message : "غير معروف"}` : `Upload error: ${e instanceof Error ? e.message : "unknown"}`);
@@ -678,7 +688,8 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
       const res = await fetch("/api/ai-fill", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ field, context }),
+        // lang follows the dashboard language: Arabic UI → Arabic AI text.
+        body: JSON.stringify({ field, context, lang }),
       });
       const json = await res.json();
       if (res.status === 429) {
@@ -756,6 +767,9 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
       savedSnapshot.current = JSON.stringify(data);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
+      // Replace this route's client-cache entry with the fresh post-save data
+      // (the PATCH just revalidated the server-side dash tag).
+      router.refresh();
     }
   }
 
