@@ -5,39 +5,46 @@ import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MODEL = "llama-3.3-70b-versatile";
 
+// Matches the dashboard language: Arabic dashboards get Arabic AI text.
+function langLine(lang: "ar" | "en"): string {
+  return lang === "ar"
+    ? " Write the text in Arabic (Modern Standard Arabic) only."
+    : " Write the text in English only.";
+}
+
 const FIELDS: Record<string, {
   minChars: number;
   maxChars: number;
   maxTokens: number;
-  prompt: (ctx: Record<string, string>) => string;
+  prompt: (ctx: Record<string, string>, lang: "ar" | "en") => string;
 }> = {
   tagline: {
     minChars: 250,
     maxChars: 300,
     maxTokens: 100,
-    prompt: (c) =>
-      `Write a tagline for a ${c.category} business called "${c.name}". It must be between 250 and 300 characters. Return ONLY the tagline text, no quotes, no explanation.`,
+    prompt: (c, l) =>
+      `Write a tagline for a ${c.category} business called "${c.name}". It must be between 250 and 300 characters. Return ONLY the tagline text, no quotes, no explanation.${langLine(l)}`,
   },
   description: {
     minChars: 350,
     maxChars: 400,
     maxTokens: 140,
-    prompt: (c) =>
-      `Write an "About us" paragraph for a ${c.category} business called "${c.name}"${c.tagline ? ` (tagline: "${c.tagline}")` : ""}. It must be between 350 and 400 characters. Return ONLY the paragraph, no explanation.`,
+    prompt: (c, l) =>
+      `Write an "About us" paragraph for a ${c.category} business called "${c.name}"${c.tagline ? ` (tagline: "${c.tagline}")` : ""}. It must be between 350 and 400 characters. Return ONLY the paragraph, no explanation.${langLine(l)}`,
   },
   service_title: {
     minChars: 0,
     maxChars: 50,
     maxTokens: 20,
-    prompt: (c) =>
-      `Suggest a service name for a ${c.category} business called "${c.name}". Max 50 characters. Return ONLY the name.`,
+    prompt: (c, l) =>
+      `Suggest a service name for a ${c.category} business called "${c.name}". Max 50 characters. Return ONLY the name.${langLine(l)}`,
   },
   service_description: {
     minChars: 150,
     maxChars: 150,
     maxTokens: 70,
-    prompt: (c) =>
-      `Write a service description for "${c.serviceTitle}" at a ${c.category} business. It must be exactly 150 characters. Return ONLY the description.`,
+    prompt: (c, l) =>
+      `Write a service description for "${c.serviceTitle}" at a ${c.category} business. It must be exactly 150 characters. Return ONLY the description.${langLine(l)}`,
   },
 };
 
@@ -83,6 +90,7 @@ export async function POST(request: Request) {
   }
 
   const field = sanitize(body.field, 50);
+  const lang: "ar" | "en" = body.lang === "ar" ? "ar" : "en";
   const rawCtx = body.context as Record<string, unknown>;
 
   const cfg = FIELDS[field];
@@ -104,10 +112,12 @@ export async function POST(request: Request) {
 
     for (let attempt = 0; attempt < 3; attempt++) {
       const prompt = attempt === 0
-        ? cfg.prompt(context)
-        : `The text below is ${value.length} characters, but it MUST be between ${cfg.minChars} and ${cfg.maxChars} characters. Rewrite it and add more detail until it reaches at least ${cfg.minChars} characters. Count carefully. Return ONLY the rewritten text:\n\n${value}`;
+        ? cfg.prompt(context, lang)
+        : `The text below is ${value.length} characters, but it MUST be between ${cfg.minChars} and ${cfg.maxChars} characters. Rewrite it and add more detail until it reaches at least ${cfg.minChars} characters. Count carefully. Keep the same language as the text. Return ONLY the rewritten text:\n\n${value}`;
 
-      value = await callAI(prompt, cfg.maxTokens + attempt * 50, key);
+      // Arabic needs more token headroom for the same character count.
+      const tokenBudget = Math.ceil((cfg.maxTokens + attempt * 50) * (lang === "ar" ? 1.6 : 1));
+      value = await callAI(prompt, tokenBudget, key);
 
       if (value.length > cfg.maxChars) { value = value.slice(0, cfg.maxChars); break; }
       if (cfg.minChars === 0 || value.length >= cfg.minChars) break;
