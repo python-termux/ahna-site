@@ -19,14 +19,14 @@ const FIELDS: Record<string, {
   prompt: (ctx: Record<string, string>, lang: "ar" | "en") => string;
 }> = {
   tagline: {
-    minChars: 250,
+    minChars: 1,
     maxChars: 300,
     maxTokens: 100,
     prompt: (c, l) =>
       `Write a tagline for a ${c.category} business called "${c.name}". It must be between 250 and 300 characters. Return ONLY the tagline text, no quotes, no explanation.${langLine(l)}`,
   },
   description: {
-    minChars: 350,
+    minChars: 1,
     maxChars: 400,
     maxTokens: 140,
     prompt: (c, l) =>
@@ -40,7 +40,7 @@ const FIELDS: Record<string, {
       `Suggest a service name for a ${c.category} business called "${c.name}". Max 50 characters. Return ONLY the name.${langLine(l)}`,
   },
   service_description: {
-    minChars: 150,
+    minChars: 1,
     maxChars: 150,
     maxTokens: 70,
     prompt: (c, l) =>
