@@ -126,8 +126,8 @@ function getSectionMeta(category: string) {
 function calcCompletion(data: Business): number {
   const checks = [
     (data.name?.trim().length ?? 0) > 0,
-    (data.tagline?.trim().length ?? 0) >= 250,
-    (data.description?.trim().length ?? 0) >= 350,
+    (data.tagline?.trim().length ?? 0) > 0,
+    (data.description?.trim().length ?? 0) > 0,
     (data.gallery?.length ?? 0) > 0,
     (data.about_image?.trim().length ?? 0) > 0,
     (data.services?.length ?? 0) > 0,
@@ -707,16 +707,8 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
   }
 
   async function save() {
-    if (data.tagline && data.tagline.length < 250) {
-      toast.error(isAr ? `الشعار قصير جداً — الحد الأدنى 250 حرفاً (حالياً ${data.tagline.length})` : `Tagline too short — min 250 chars (currently ${data.tagline.length})`);
-      setActive("branding"); return;
-    }
     if (data.tagline && data.tagline.length > 300) {
       toast.error(isAr ? `الشعار طويل جداً — الحد الأقصى 300 حرفاً (حالياً ${data.tagline.length})` : `Tagline too long — max 300 chars (currently ${data.tagline.length})`);
-      setActive("branding"); return;
-    }
-    if (data.description && data.description.length < 350) {
-      toast.error(isAr ? `الوصف قصير جداً — الحد الأدنى 350 حرفاً (حالياً ${data.description.length})` : `Description too short — min 350 chars (currently ${data.description.length})`);
       setActive("branding"); return;
     }
     if (data.description && data.description.length > 400) {
@@ -725,12 +717,8 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
     }
     for (let i = 0; i < data.services.length; i++) {
       const svc = data.services[i];
-      if (svc.description && svc.description.length < 150) {
-        toast.error(isAr ? `وصف الخدمة "${svc.title || `#${i + 1}`}" يجب أن يكون 150 حرفاً بالضبط` : `Service "${svc.title || `#${i + 1}`}" description must be exactly 150 chars`);
-        setActive("services"); return;
-      }
       if (svc.description && svc.description.length > 150) {
-        toast.error(isAr ? `وصف الخدمة "${svc.title || `#${i + 1}`}" يجب أن يكون 150 حرفاً بالضبط` : `Service "${svc.title || `#${i + 1}`}" description must be exactly 150 chars`);
+        toast.error(isAr ? `وصف الخدمة "${svc.title || `#${i + 1}`}" طويل جداً — الحد الأقصى 150 حرفاً (حالياً ${svc.description.length})` : `Service "${svc.title || `#${i + 1}`}" description too long — max 150 chars (currently ${svc.description.length})`);
         setActive("services"); return;
       }
     }
@@ -1479,19 +1467,19 @@ function EditForm({ biz, userEmail, userId, onBack, onLogout }: {
                 value={data.tagline}
                 onChange={(v) => update("tagline", v)}
                 placeholder={isAr ? "مثال: أفضل بيتزا في المدينة منذ 1998" : "e.g. Best pizza in town since 1998"}
-                maxLength={300} minLength={250}
+                maxLength={300}
                 aiLoading={aiLoading["tagline"]}
                 onAI={async () => { const v = await fillWithAI("tagline", "tagline", { name: data.name, category: data.category }); if (v) update("tagline", v); }}
-                hint={isAr ? "جملة جذابة تحت الاسم — بين 250 و300 حرف" : "Catchy one-liner below your name — 250 to 300 chars"}
+                hint={isAr ? "جملة جذابة تحت الاسم — حتى 300 حرف" : "Catchy one-liner below your name — up to 300 chars"}
               />
               <TextareaField
                 label={isAr ? "وصف النشاط" : "About description"}
                 value={data.description}
                 onChange={(v) => update("description", v)}
-                maxLength={400} minLength={350}
+                maxLength={400}
                 aiLoading={aiLoading["description"]}
                 onAI={async () => { const v = await fillWithAI("description", "description", { name: data.name, category: data.category, tagline: data.tagline }); if (v) update("description", v); }}
-                hint={isAr ? "فقرة قسم 'من نحن' — بين 350 و400 حرف" : "Your About section paragraph — 350 to 400 chars"}
+                hint={isAr ? "فقرة قسم 'من نحن' — حتى 400 حرف" : "Your About section paragraph — up to 400 chars"}
               />
               <div>
                 <label className="block text-sm text-foreground mb-1.5">{isAr ? "الفئة" : "Category"}</label>
@@ -2265,8 +2253,7 @@ function ServicesEditor({ value, onChange, bizName, bizCategory, sectionLang, ai
             onChange={(v) => set(i, "description", v)}
             placeholder={isAr ? "وصف مختصر..." : "Brief description..."}
             maxLength={150}
-            minLength={150}
-            hint={isAr ? "وصف من 150 حرفاً بالضبط لهذا العنصر" : "Exactly 150 chars describing this item"}
+            hint={isAr ? "وصف حتى 150 حرفاً لهذا العنصر" : "Up to 150 chars describing this item"}
             aiLoading={aiLoading[`svc_desc_${i}`]}
             onAI={async () => {
               const v = await onFillAI(`svc_desc_${i}`, "service_description", { name: bizName, category: bizCategory, serviceTitle: s.title || "service" });
